@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Compulsory XML type declaration-->
+<!--Entities below are mapped to corresponding entities in AgenaRisk Desktop GUI (ARD) and AgenaRisk API v1 extended and core classes (ARC)-->
+<!--If a Boolean property is absent, its value is assumed to be "False"-->
+
+<model>
+	<!--Encodes the complete contents of a model analogous to the CMP format-->
+	
+	<networks>
+		<!--Corresponds to uk.​co.​agena.​minerva.​model.Model.extendedBnList.extendedBns in ARC-->
+		<!--Converted into an array of objects in JSON-->
+
+		<network>
+			<!--Corresponds to Risk Object in ARD and to uk.​co.​agena.​minerva.​model.Model.ExtendedBN in ARC-->
+			<!--Tag omitted during XML-to-JSON conversion-->
+
+			<name>
+				<!--Corresponds to Name in ARD and uk.co.agena.minerva.util.model.NameDescription.shortDescription in ARC-->
+			</name>
+			
+			<id>
+				<!--Corresponds to ID in ARD and uk.co.agena.minerva.util.model.ExtendedBN.connID in ARC-->
+			</id>
+			
+			<description>
+				<!--Corresponds to Description in ARD and uk.co.agena.minerva.util.model.NameDescription.longDescription in ARC-->
+				<!--CDATA-->
+				<!--Optional-->
+			</description>
+
+			<nodes>
+				<!--Corresponds to uk.​co.​agena.​minerva.​model.ExtendedBN.extendedNodes in ARC-->
+				<!--Converted into an array of objects in JSON-->
+
+				<node>
+					<!--Corresponds to Node in ARD and uk.​co.​agena.​minerva.​model.ExtendedBN.ExtendedNode in ARC-->
+					<!--Tag omitted during XML-to-JSON conversion-->
+					
+					<id>
+						<!--Corresponds to Unique Identifier in ARD and uk.​co.​agena.​minerva.​model.ExtendedBN.ExtendedNode.connNodeId in ARC-->
+					</id>
+					
+					<name>
+						<!--Corresponds to Name in ARD and uk.co.agena.minerva.util.model.NameDescription.shortDescription in ARC-->
+					</name>
+					
+					<description>
+						<!--Corresponds to Description in ARD and uk.co.agena.minerva.util.model.NameDescription.longDescription in ARC-->
+						<!--CDATA-->
+						<!--Optional-->
+					</description>
+					
+					<definition>
+						<!--This block defines mathematical properties of the node/variable-->
+						
+						<type>
+							<!--Corresponds to Node Type in ARD and to one of concrete implementations of  uk.co.agena.minerva.model.extendedbn.ExtendedNode in ARC-->
+							<!--Values defined in Ref.NODE_TYPE-->
+						</type>
+						
+						<simulated>
+							<!--Corresponds the node being created as a Simulation node in ARD or to uk.co.agena.minerva.model.extendedbn.ContinuousEN.dynamicallyDiscretisable in ARC-->
+							<!--Boolean; if "True", node is set to be a simulated node with auto states-->
+							<!--Required to be "True" if definition.states are not provided or empty-->
+							<!--Invalid if definition.type is not "ContinuousInterval" or "IntegerInterval"-->
+						</simulated>
+						
+						<states>
+							<!--Corresponds to Node States in ARD and uk.co.agena.minerva.model.extendedbn.ExtendedNode.extendedStates-->
+							<!--Ignored if definition.simulated is "True"-->
+							<!--Converted into an array of objects in JSON-->
+
+							<state>
+								<!--Corresponds to uk.co.agena.minerva.model.extendedbn.ExtendedState in ARC-->
+								<!--Name of the state-->
+								<!--Range-states must be given as two numbers separated by a dash surrounded by spaces, e.g. "0 - 1"-->
+								<!--Tag omitted during XML-to-JSON conversion-->
+							</state>
+							...
+						</states>
+						
+						<table>
+							<!--Defines the underlying NPT/Function-->
+							
+							<type>
+								<!--Corresponds to NPT Editing Mode in ARD and uk.co.agena.minerva.model.extendedbn.ExtendedNode.functionMode in ARC-->
+								<!--NPT type as in Ref.TABLE_TYPE-->
+								<!--"Manual" value is invalid if definition.simulated is "True"-->
+							</type>
+							
+							<partitions>
+								<!--Lists parent nodes that are used for this node's table partitioning-->
+								<!--Corresponds to and must be ordered as uk.co.agena.minerva.model.extendedbn.ExtendedNode.currentPartitionedParentModelNodes-->
+								<!--Required if table.type is "Partitioned"-->
+								<!--Converted into an array of objects in JSON-->
+								
+								<partition>
+									<!--ID of the parent node-->
+									<!--Tag omitted during XML-to-JSON conversion-->
+								</partition>
+								...
+							</partitions>
+							
+							<expressions>
+								<!--Required if table.type is "Expression" or "Partitioned"-->
+								<!--If table.type is "Expression", contains only one expression (the rest will be ignored)-->
+								<!--If table.type is "Partitioned", contains as many expressions as cells resulting from partitioning-->
+								<!--Corresponds to uk.co.agena.minerva.model.extendedbn.ExtendedNode.currentNodeFunction if table.type is "Expression"-->
+								<!--Corresponds to uk.co.agena.minerva.model.extendedbn.ExtendedNode.currentPartitionedModelNodeFunctions if table.type is "Partitioned"-->
+								<!--Expressions must be given in the same order as partition cells-->
+								<!--Converted into an array of objects in JSON-->
+								
+								<expression>
+									<!--CDATA-->
+									<!--Expression must include the top level expression type (distribution, Arithmetic or Comparative), e.g.:<![CDATA[Comparative(if(parent1=="True" && parent2=="True","True","False"))]]> -->
+									<!--Tag omitted during XML-to-JSON conversion-->
+								</expression>
+								...
+							</expressions>
+							
+							<probabilities>
+								<!--Corresponds Node Probability Table in ARD and to uk.co.agena.minerva.model.corebn.CoreBNNode.condProbsLinear in ARC (albeit in a matrix form)-->
+								<!--Required when table.type is "Manual"-->
+								<!--Contains either rows or columns-->
+								<!--The order of rows/columns corresponds to the combinations of parent states-->
+								<!--Converted into a 2D array in JSON, such that the first dimension are columns/rows and the second dimension are the cell probability values-->
+								
+								<row>
+									<!--A row from NPT-->
+									<!--Mutually exclusive with columns-->
+									<!--Tag omitted during XML-to-JSON conversion-->
+
+									<cell>
+										<!--Normalised probability value (such that all cells in a column add up to 1)-->
+										<!--Tag omitted during XML-to-JSON conversion-->
+									</cell>
+									...
+								</row>
+								...
+
+								<column>
+									<!--A column from NPT-->
+									<!--Mutually exclusive with rows-->
+									<!--Tag omitted during XML-to-JSON conversion-->
+
+									<cell>
+										<!--Normalised probability value (such that all cells in a column add up to 1)-->
+										<!--Tag omitted during XML-to-JSON conversion-->
+									</cell>
+									...
+								</column>
+								...
+							</probabilities>
+						</table>
+						
+						<variables>
+							<!--Corresponds to Node Constants in ARD and uk.co.agena.minerva.model.extendedbn.ExtendedNode.expressionVariables-->
+							<!--Defines the variables to be used in the node's expression-->
+							<!--Must not include variables automatically created by AgenaRisk to facilitate cross-network linking (i.e. excludes those with Variable.isEditable() being False)-->
+							<!--Converted into an array of objects in JSON-->
+							
+							<variable>
+								<!--Corresponds to Node Constant in ARD and uk.co.agena.minerva.util.model.Variable in ARC-->
+								<!--Tag omitted during XML-to-JSON conversion-->
+								
+								<name>
+									<!--Corresponds to Constant Name in ARD and uk.co.agena.minerva.util.model.Variable.name in ARC-->
+								</name>
+								
+								<value>
+									<!--Corresponds to Constant Default Value in ARD and uk.co.agena.minerva.util.model.Variable.defaultValue in ARC-->
+								</value>
+								
+							</variable>
+							...
+						</variables>
+						
+					</definition>
+					
+					<meta>
+						<!--Extra information about the node-->
+						<notes>
+							<!--Corresponds to Notes in ARD and uk.co.agena.minerva.model.extendedbn.ExtendedNode.notes in ARC-->
+							<!--Converted into an array of objects in JSON-->
+							
+							<note>
+								<!--Corresponds to Node Note in ARD and uk.co.agena.minerva.util.model.Note in ARC-->
+								<!--Tag omitted during XML-to-JSON conversion-->
+								
+								<name>
+									<!--Corresponds to Note Title in ARD and NameDescription.shortDescription in ARC-->
+								</name>
+								
+								<text>
+									<!--Corresponds to Note Body in ARD and NameDescription.longDescription in ARC-->
+									<!--CDATA-->
+								</text>
+							</note>
+							...
+						</notes>
+					</meta>
+					
+					<graphics>
+						<!--Graphical properties for displaying this object in Risk Map-->
+						
+						<position>
+							<!--Position on Canvas Map-->
+							
+							<x>
+								<!--Horizontal offset from top-left corner-->
+							</x>
+							
+							<y>
+								<!--Vertical offset from top-left corner-->
+							</y>
+						</position>
+
+						<figure>
+							<!--Partially corresponds to Appearance in ARD-->
+							<!--Properties of the shape-->
+							
+							<shape>
+								<!--Corresponds to Appearance Shape in ARD-->
+								<!--Values as specified in Ref.NODE_GRAPHICS_SHAPE-->
+							</shape>
+							
+							<width>
+								<!--Corresponds to Appearance Width in ARD-->
+							</width>
+							
+							<height>
+								<!--Corresponds to Appearance Height in ARD-->
+							</height>
+							
+							<background>
+								<!--Properties of the background-->
+								
+								<color>
+									<!--Corresponds to Appearance Background Colour in ARD-->
+									<!--Hex color-->
+								</color>
+
+								<transparency>
+									<!--Corresponds to Appearance Shape Transparency in ARD-->
+									<!--Percentage transparency between 0 and 100, multiples of 10-->
+								</transparency>
+								
+								<filled>
+									<!--Corresponds to Appearance Filled in ARD-->
+									<!--Boolean-->
+								</filled>
+
+							</background>
+							
+							<border>
+								<!--Properties of the border-->
+								
+								<visible>
+									<!--Corresponds to Appearance Visible Border in ARD-->
+									<!--Boolean-->
+								</visible>
+								
+								<color>
+									<!--Corresponds to Appearance Border Colour in ARD-->
+									<!--Hex color-->
+								</color>
+
+								<transparency>
+									<!--Corresponds to Appearance Border Transparency in ARD-->
+									<!--Percentage transparency between 0 and 100, multiples of 10-->
+								</transparency>
+								
+								<thickness>
+									<!--Corresponds to Appearance Line Thickness in ARD-->
+									<!--Integer values between 1 and 50-->
+								</thickness>
+								
+								<style>
+									<!--Corresponds to Appearance Line Style in ARD-->
+									<!--Line style as defined in Ref.NODE_GRAPHICS_LINE_STYLE-->
+								</style>
+								
+							</border>
+							
+							<clip>
+								<!--Corresponds to Text Format Clip Text in ARD-->
+								<!--Whether to clip contained text in the bounding shape-->
+								<!--Boolean-->
+							</clip>
+							
+							<padding>
+								<!--Corresponds to Text Format Buffer between Text and Border in ARD-->
+							</padding>
+							
+						</figure>
+						
+						<text>
+							<!--Properties of the node's text (not graph)-->
+							
+							<color>
+								<!--Corresponds to Text Format Text Colour in ARD-->
+								<!--Hex color-->
+							</color>
+							
+							<size>
+								<!--Corresponds to Text Format Font Size in ARD-->
+								<!--Font size-->
+							</size>
+							
+							<alignment>
+								<!--Text alignment-->
+								
+								<horizontal>
+									<!--Corresponds to Text Format Horizontal Text Alignment in ARD-->
+									<!--As defined in Ref.NODE_TEXT_ALIGNH-->
+								</horizontal>
+								
+								<vertical>
+									<!--Corresponds to Text Format Vertical Text Alignment in ARD-->
+									<!--As defined in Ref.NODE_TEXT_ALIGNV-->
+								</vertical>
+							</alignment>
+							
+						</text>
+						
+						<visible>
+							<!--Corresponds to Node Details Visible in ARD-->
+							<!--Boolean-->
+						</visible>
+						
+						<graph>
+							<!--Corresponds to Graph Defaults in ARD-->
+							
+						</graph>
+
+					</graphics>
+					
+				</node>
+				...
+			</nodes>
+
+			<links>
+				<!--Contains links between nodes in this network-->
+
+				<link>
+					<!--Tag omitted during XML-to-JSON conversion-->
+
+					<parent>
+						<!--ID of the parent node-->
+					</parent>
+					
+					<child>
+						<!--ID of the child node-->
+					</child>
+					
+					<graphics>
+						<!--Optional-->
+						<!--PLACEHOLDER-->
+						<visible>
+							<!--Optional Boolean-->
+						</visible>
+					</graphics>
+				</link>
+				...
+			</links>
+			
+			<graphics>
+				<!--Optional-->
+				<!--Graphical properties for displaying this object in Risk Map-->
+				
+				<position>
+					<!--Optional-->
+					<!--Position on Canvas Map-->
+					<x></x>
+					<y></y>
+				</position>
+				
+				<shape>
+					<!--Optional-->
+					<!--Properties of the shape-->
+					<width></width>
+					<height></height>
+				</shape>
+				
+			</graphics>
+			
+			<riskTable>
+				<!--Optional-->
+				<!--PLACEHOLDER-->
+				
+				<riskTableEntry>
+					<node></node>
+					<type></type>
+					<visible></visible>
+					<syncName></syncName>
+					<name></name>
+					<text></text>
+					<mode></mode>
+				</riskTableEntry>
+				...
+			</riskTable>
+			
+			<texts>
+				<!--Optional-->
+				<!--PLACEHOLDER-->
+				
+				<text>
+					<!--Tag omitted during XML-to-JSON conversion-->
+					
+					<content>
+						<!--CDATA-->
+					</content>
+					
+					<graphics>
+						
+					</graphics>
+				</text>
+				...
+			</texts>
+			
+			<pictures>
+				<!--Optional-->
+				<!--PLACEHOLDER-->
+				
+				<picture>
+					
+					<data>
+						<!--CDATA-->
+					</data>
+					
+					<graphics>
+						
+					</graphics>
+				</picture>
+				...
+			</pictures>
+			
+		</network>
+		...
+	</networks>
+	
+	<links>
+		<!--Contains links between nodes in different networks-->
+		
+		<link>
+			<!--Tag omitted during XML-to-JSON conversion-->
+			
+			<sourceNetwork>
+				<!--Parent network ID-->
+			</sourceNetwork>
+			
+			<targetNetwork>
+				<!--Child network ID-->
+			</targetNetwork>
+			
+			<sourceNode>
+				<!--Parent node ID-->
+			</sourceNode>
+			
+			<targetNode>
+				<!--Child node ID-->
+			</targetNode>
+			
+			<type>
+				<!--Type of the information passed by the link as specified in Ref.LINK_TYPE-->
+			</type>
+			
+			<passState>
+				<!--Provided if link.type is "State"; value is the name of the state to pass-->
+			</passState>
+		</link>
+		...
+	</links>
+	
+	<settings>
+		<!--PLACEHOLDER-->
+	</settings>
+	
+	<scenarios>
+		<!--PLACEHOLDER-->
+		
+		<scenario>
+			<!--Tag omitted during XML-to-JSON conversion-->
+			<!--PLACEHOLDER-->
+			
+			<name></name>
+			<active></active>
+			
+			<graphics>
+				<display></display>
+				<color></color>
+			</graphics>
+			
+			<observations>
+				
+				<observation>
+					<!--Tag omitted during XML-to-JSON conversion-->
+				</observation>
+				...
+			</observations>
+			
+			<marginals>
+				
+				<marginal>
+					<!--Tag omitted during XML-to-JSON conversion-->
+					
+					<network>
+						
+					</network>
+					
+					<node>
+						
+					</node>
+				</marginal>
+				...
+			</marginals>
+			
+		</scenario>
+		...
+	</scenarios>
+	
+	
+	<audit>
+		<!--PLACEHOLDER-->
+		<!--Provides extra information to satisfy audit requirements of corporate users-->
+		<changelog>
+			<!--PLACEHOLDER-->
+			<!--Contains the changelog of the model-->
+			
+			<change>
+				<!--PLACEHOLDER-->
+				<!--Dated, timestamped, signed and commented change commit. Also includes the revision of AgenaRisk used to save the model.-->
+				<!--Tag omitted during XML-to-JSON conversion-->
+				
+				<dateTime>
+					<!--Date and time in ISO 8601 format: YYYY-MM-DDThh:mm:ssZ-->
+					<!--Example: "2018-12-24T14:15:59Z" for "December 24, 2018 at 2pm 15 min 59 sec UTC"-->
+					<!--Same date and time can be represented with time offset as "2018-12-24T10:15:59-0400"-->
+				</dateTime>
+				
+				<agenariskVersion>
+					<!--Revision of AgenaRisk used to save the model-->
+				</agenariskVersion>
+				
+				<user>
+					<!--Name / user name of the person saving the model-->
+				</user>
+				
+				<comment>
+					<!--CDATA-->
+				</comment>
+			</change>
+			...
+		</changelog>
+	</audit>
+	
+</model>
