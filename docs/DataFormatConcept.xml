@@ -331,6 +331,78 @@
 						<graph>
 							<!--Corresponds to Graph Defaults in ARD-->
 							
+							<graphTypeSingle>
+								<!--Corresponds to Graph Type for Single Scenario in ARD-->
+							</graphTypeSingle>
+							
+							<graphTypeMultiple>
+								<!--Corresponds to Graph Type for Single Scenario in ARD-->
+								<!--Defined in Ref.NODE_GRAPH_TYPE-->
+							</graphTypeMultiple>
+							
+							<displayHorizontally>
+								<!--Boolean-->
+							</displayHorizontally>
+							
+							<axis>
+								<!--Applies when definition.type is "ContinuousInterval" or "IntegerInterval"-->
+								
+								<plotType>
+									<!--Corresponds to Graph Type Plot Type in ARD-->
+									<!--Defined in Ref.NODE_GRAPH_PLOT_TYPE-->
+								</plotType>
+
+								<minY></minY>
+
+								<maxY></maxY>
+
+								<continuousX>
+									<!--Boolean-->
+									<!--Corresponds to Graph Defaults Continuous X-Axis in ARD-->
+								</continuousX>
+
+								<asLog>
+									<!--Corresponds to Graph Defaults as Log-->
+									<!--Boolean-->
+									<!--Ignored if continuousX is not "True"-->
+								</asLog>
+
+								<minMaxXAsPercentiles>
+									<!--Corresponds to Treat as min/max X as percentiles in ARD-->
+									<!--Boolean-->
+								</minMaxXAsPercentiles>
+
+								<minX></minX>
+
+								<maxX></maxX>
+								
+							</axis>
+							
+							<formatting>
+								<!--Corresponds to Graph Defaults Formatting-->
+								<!--If present, overrides model.graphics.formatting-->
+								<!--Applies when definition.type is not "ContinuousInterval" or "IntegerInterval"-->
+
+								<decimalPlaces>
+									<!--Corresponds to Model Properties Model Graph Properties decimal places to round to in ARD-->
+								</decimalPlaces>
+
+								<xAxisAsPercentages>
+									<!--Corresponds to Model Properties Model Graph Properties show horizontal values as precentages in ARD-->
+									<!--Boolean-->
+								</xAxisAsPercentages>
+
+								<minimumProbabilityDisplayed>
+									<!--Corresponds to Model Properties Model Graph Properties minimum probability value displayed in ARD-->
+								</minimumProbabilityDisplayed>
+							</formatting>
+							
+							<visibility></visibility>
+							
+							<summaryStatistics>
+								<!--Applies when definition.type is "ContinuousInterval" or "IntegerInterval"-->
+							</summaryStatistics>
+							
 						</graph>
 
 					</graphics>
@@ -473,8 +545,79 @@
 	</links>
 	
 	<settings>
-		<!--PLACEHOLDER-->
+		<!--Corresponds to Model Properties Simulation Settings in ARD-->
+		
+		<iterations>
+			<!--Corresponds to Model Properties Simulation Settings Maximum number of iterations in ARD and uk.co.agena.minerva.model.Model.simulationNoOfIterations in ARC-->
+		</iterations>
+		
+		<convergence>
+			<!--Corresponds to Model Properties Simulation Settings Simulation convergence in ARD and uk.co.agena.minerva.model.Model.simulationEntropyConvergenceTolerance in ARC-->
+		</convergence>
+		
+		<tolerance>
+			<!--Corresponds to Model Properties Simulation Settings evidence tolerance % in ARD and uk.co.agena.minerva.model.Model.simulationEvidenceTolerancePercent in ARC-->
+		</tolerance>
+		
+		<sampleSize>
+			<!--Corresponds to Model Properties Simulation Settings sample size for ranked nodes in ARD and uk.co.agena.minerva.model.Model.sampleSize in ARC-->
+		</sampleSize>
+		
+		<discreteTails>
+			<!--Corresponds to Model Properties Simulation Settings discretize tails in ARD and uk.co.agena.minerva.model.Model.simulationTails in ARC-->
+		</discreteTails>
+		
+		<simulationLogging>
+			<!--Corresponds to Model Properties Simulation Settings enable simulation logging in ARD and uk.co.agena.minerva.model.Model.simulationLogging in ARC-->
+		</simulationLogging>
+		
+		<parameterLearningLogging>
+			<!--Corresponds to Model Properties Simulation Settings enable parameter learning logging in ARD and uk.co.agena.minerva.model.Model.emLogging in ARC-->
+		</parameterLearningLogging>
 	</settings>
+	
+	<graphics>
+		<!--Corresponds to Model Properties Model Graph Properties in ARD-->
+		
+		<formatting>
+			
+			<decimalPlaces>
+				<!--Corresponds to Model Properties Model Graph Properties decimal places to round to in ARD-->
+			</decimalPlaces>
+			
+			<xAxisAsPercentages>
+				<!--Corresponds to Model Properties Model Graph Properties show horizontal values as precentages in ARD-->
+				<!--Boolean-->
+			</xAxisAsPercentages>
+			
+			<minimumProbabilityDisplayed>
+				<!--Corresponds to Model Properties Model Graph Properties minimum probability value displayed in ARD-->
+			</minimumProbabilityDisplayed>
+		</formatting>
+	</graphics>
+	
+	<meta>
+		<!--Extra information about the model-->
+		<notes>
+			<!--Corresponds to Model Properties Notes in ARD and uk.co.agena.minerva.model.Model.notes in ARC-->
+			<!--Converted into an array of objects in JSON-->
+
+			<note>
+				<!--Corresponds to Model Properties Notes Note in ARD and uk.co.agena.minerva.util.model.Note in ARC-->
+				<!--Tag omitted during XML-to-JSON conversion-->
+
+				<name>
+					<!--Corresponds to Note Title in ARD and NameDescription.shortDescription in ARC-->
+				</name>
+
+				<text>
+					<!--Corresponds to Note Body in ARD and NameDescription.longDescription in ARC-->
+					<!--CDATA-->
+				</text>
+			</note>
+			...
+		</notes>
+	</meta>
 	
 	<scenarios>
 		<!--PLACEHOLDER-->
