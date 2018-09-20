@@ -754,12 +754,12 @@
 
 				<horizontal>
 					<!--Corresponds to Text Format Horizontal Text Alignment in ARD-->
-					<!--As defined in Ref.TEXT_ALIGNH-->
+					<!--As defined in Ref.GRAPHICS_TEXT_ALIGNH-->
 				</horizontal>
 
 				<vertical>
 					<!--Corresponds to Text Format Vertical Text Alignment in ARD-->
-					<!--As defined in Ref.TEXT_ALIGNV-->
+					<!--As defined in Ref.GRAPHICS_TEXT_ALIGNV-->
 				</vertical>
 			</alignment>
 		</text>

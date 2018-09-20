@@ -55,27 +55,40 @@ public final class Ref {
 		IntegerInterval
 	}
 	
-	public static enum NODE_GRAPHICS_SHAPE {
+	public static enum GRAPHICS_SHAPE {
 		Ellipse,
 		Rectangle,
 		RoundedRectangle
 	}
 	
-	public static enum NODE_GRAPHICS_LINE_STYLE {
+	public static enum GRAPHICS_LINE_STYLE {
 		Solid,
 		Dashed
 	}
 	
-	public static enum NODE_TEXT_ALIGNV {
+	public static enum GRAPHICS_TEXT_ALIGNV {
 		Top,
 		Center,
 		Bottom
 	}
 	
-	public static enum NODE_TEXT_ALIGNH {
+	public static enum GRAPHICS_TEXT_ALIGNH {
 		Left,
 		Center,
 		Right
+	}
+	
+	public static enum NODE_GRAPH_TYPE {
+		Line,
+		Bar,
+		Area,
+		ScatterPlot,
+		Histogram
+	}
+	
+	public static enum NODE_GRAPH_PLOT_TYPE {
+		ProbabilityDistribution,
+		CumulativeDistribution
 	}
 	
 	public static final String NODE_INPUT = "input";
