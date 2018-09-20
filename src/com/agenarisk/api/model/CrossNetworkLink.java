@@ -1,0 +1,266 @@
+package com.agenarisk.api.model;
+
+import com.agenarisk.api.exception.AgenaRiskRuntimeException;
+import com.agenarisk.api.exception.LinkException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import uk.co.agena.minerva.model.ConstantMessagePassingLink;
+import uk.co.agena.minerva.model.ConstantStateMessagePassingLink;
+import uk.co.agena.minerva.model.ConstantSummaryMessagePassingLink;
+import uk.co.agena.minerva.model.MessagePassingLink;
+import uk.co.agena.minerva.model.MessagePassingLinks;
+import uk.co.agena.minerva.model.ModelEvent;
+import uk.co.agena.minerva.model.corebn.CoreBNException;
+import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
+import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
+import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
+import uk.co.agena.minerva.model.extendedbn.ExtendedState;
+import uk.co.agena.minerva.model.extendedbn.LabelledEN;
+import uk.co.agena.minerva.model.extendedbn.RankedEN;
+import uk.co.agena.minerva.util.helpers.MathsHelper;
+import com.agenarisk.api.Ref;
+import uk.co.agena.minerva.util.model.MinervaRangeException;
+import uk.co.agena.minerva.util.model.Variable;
+import uk.co.agena.minerva.util.nptgenerator.Arithmetic;
+import uk.co.agena.minerva.util.nptgenerator.Normal;
+
+/**
+ *
+ * @author Eugene Dementiev
+ */
+public class CrossNetworkLink extends Link {
+	
+	private MessagePassingLink logicLink;
+	
+	private Ref.LINK_TYPE type = null;
+	private String stateToPass = null;
+	
+	protected static CrossNetworkLink createCrossNetworkLink(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) throws LinkException{
+		if (Objects.equals(fromNode.getNetwork(), toNode.getNetwork())){
+			throw new LinkException("Trying to link nodes in same network by a cross network link");
+		}
+		
+		if (type == null){
+			throw new LinkException("Cross network link type not specified");
+		}
+		
+		if (type.equals(Ref.LINK_TYPE.State) && stateToPass == null){
+			throw new LinkException("State to pass not provided");
+		}
+		
+		if (stateToPass != null && !type.equals(Ref.LINK_TYPE.State)){
+			throw new LinkException("Link type `"+type.toString()+"` does not pass a state");
+		}
+		
+		CrossNetworkLink link = new CrossNetworkLink(fromNode, toNode, type, stateToPass);
+		
+		return link;
+	}
+	
+	
+	/**
+	 * This will create a link in the underlying logic.<br/>
+	 * The underlying table of the child node will be reset to some default value
+	 * @throws LinkException if logical link was not created
+	 */
+	@Override
+	protected void createLogicLink() throws LinkException {
+		if (logicLink != null){
+			throw new LinkException("Link already created");
+		}
+		
+		ExtendedBN ebn1 = getFromNode().getNetwork().getLogicNetwork();
+		ExtendedNode en1 = getFromNode().getLogicNode();
+		
+		ExtendedBN ebn2 = getToNode().getNetwork().getLogicNetwork();
+		ExtendedNode en2 = getToNode().getLogicNode();
+		
+		
+		try {
+			en2.setConnectableInputNode(true);
+		}
+		catch (ExtendedBNException ex){
+			throw new LinkException("Logic node " + getToNode().toStringExtra() + " already has parents", ex);
+		}
+		en1.setConnectableOutputNode(true);
+		
+		if (Ref.LINK_TYPE.Marginals.equals(type)){
+			// Passing state marginals
+			if (en2 instanceof LabelledEN || en2 instanceof RankedEN){
+				// If target is labelled node, just copy states from source to target
+				List<ExtendedState> states = new ArrayList<>();
+				for(ExtendedState es: (List<ExtendedState>)en1.getExtendedStates()){
+					String esname = es.getName().getShortDescription();
+					states.add(ExtendedState.createLabelledState(esname, esname));
+				}
+
+				try {
+					en2.setExtendedStates(states);
+				}
+				catch (CoreBNException ex){
+					throw new AgenaRiskRuntimeException("Failed to create states for link pass " + toStringExtra(), ex);
+				}
+			}
+			else {
+				// Passing numeric marginals
+				List parameters = new ArrayList();
+				parameters.add("0");
+				parameters.add("1000000");
+				ExtendedNodeFunction enf = new ExtendedNodeFunction(Normal.displayName, parameters);
+				((ContinuousEN)en2).setExpression(enf);
+			}
+
+			logicLink = new MessagePassingLink(ebn2.getId(), ebn1.getId(), en2.getId(), en1.getId());
+		}
+		else if (Ref.LINK_TYPE.State.equals(type)){
+			// Translating a state
+			String stateName = stateToPass;
+
+			// ID of the selected state
+			int stateID = -1;
+			for(ExtendedState es: (List<ExtendedState>)en1.getExtendedStates()){
+				String esname = es.getName().getShortDescription();
+				if (esname.equalsIgnoreCase(stateName)){
+					stateID = es.getId();
+				}
+			}
+
+			if (stateID == -1){
+				throw new LinkException("Invalid state being passed in link " + toStringExtra());
+			}
+
+			// Create constant to translate the source node
+			String constantName = ConstantMessagePassingLink.createConstantName(en1);
+			try {
+				Variable variable = ebn2.addExpressionVariable(en2, constantName, new Double(0), false);
+				variable.setValueSet(true);
+			}
+			catch (ExtendedBNException ex){
+				throw new LinkException("Failed to create variable for link " + toStringExtra(), ex);
+			}
+
+			// Create states for target node
+			if (en2 instanceof ContinuousEN && !(en2 instanceof RankedEN)){
+				// Translating probability of a state
+				// Create a single state of range 0 - 1 to express this probability
+				List extendedStates = new ArrayList();
+				ExtendedState estate;
+				try {
+					estate = ExtendedState.createContinuousIntervalState(0, 1);
+					extendedStates.add(estate);
+					en2.setExtendedStates(extendedStates);
+				}
+				catch (MinervaRangeException | CoreBNException ex){
+					// Should not happen
+					throw new AgenaRiskRuntimeException("Failed to create a state for input node in " + toStringExtra(), ex);
+				}
+
+				// Set target node to use function equal to the constant
+				List parameters = new ArrayList();
+				parameters.add(constantName);
+				ExtendedNodeFunction enf = new ExtendedNodeFunction(Arithmetic.displayName, parameters);
+				en2.setExpression(enf);
+			}
+			else {
+				// Copy states
+				List<ExtendedState> states = new ArrayList<>();
+				for(ExtendedState es: (List<ExtendedState>)en1.getExtendedStates()){
+					String esname = es.getName().getShortDescription();
+					states.add(ExtendedState.createLabelledState(esname, esname));
+				}
+				try {
+					en2.setExtendedStates(states);
+				}
+				catch (CoreBNException ex){
+					throw new AgenaRiskRuntimeException("Failed to copy states to input node in " + toStringExtra(), ex);
+				}
+			}
+
+			logicLink = new ConstantStateMessagePassingLink(stateID, constantName, ebn2.getId(), ebn1.getId(), en2.getId(), en1.getId());
+		}
+		else {
+			// Translating a summary statistic
+			// Create constant to translate the source node
+			String constantName = ConstantMessagePassingLink.createConstantName(en1);
+			try {
+				Variable variable = ebn2.addExpressionVariable(en2, constantName, new Double(0), false);
+				variable.setValueSet(true);
+			}
+			catch (ExtendedBNException ex){
+				throw new IllegalArgumentException("Failed to create variable for link pass from `"+ebn1.getConnID()+"`.`"+en1.getConnNodeId()+"` to `"+ebn2.getConnID()+"`.`"+en2.getConnNodeId()+"`", ex);
+			}
+
+			// Set target node to use function equal to the constant
+			List parameters = new ArrayList();
+			parameters.add(constantName);
+			ExtendedNodeFunction enf = new ExtendedNodeFunction(Arithmetic.displayName, parameters);
+			en2.setExpression(enf);
+
+			// Determine statistic to pass
+			MathsHelper.SummaryStatistic summaryStat;
+
+			if (Ref.LINK_TYPE.Mean.equals(type)){
+				summaryStat = MathsHelper.SummaryStatistic.MEAN;
+			}
+			else if (Ref.LINK_TYPE.Median.equals(type)){
+				summaryStat = MathsHelper.SummaryStatistic.MEDIAN;
+			}
+			else if (Ref.LINK_TYPE.StandardDeviation.equals(type)){
+				summaryStat = MathsHelper.SummaryStatistic.STANDARD_DEVIATION;
+			}
+			else if (Ref.LINK_TYPE.Variance.equals(type)){
+				summaryStat = MathsHelper.SummaryStatistic.VARIANCE;
+			}
+			else if (Ref.LINK_TYPE.LowerPercentile.equals(type)){
+				summaryStat = MathsHelper.SummaryStatistic.LOWER_PERCENTILE;
+			}
+			else if (Ref.LINK_TYPE.UpperPercentile.equals(type)){
+				summaryStat = MathsHelper.SummaryStatistic.UPPER_PERCENTILE;
+			}
+			else {
+				throw new LinkException("Invalid cross network link type: `"+type+"`");
+			}
+
+			logicLink = new ConstantSummaryMessagePassingLink(summaryStat,constantName, ebn2.getId(),  ebn1.getId(), en2.getId(), en1.getId());
+		}
+		
+		uk.co.agena.minerva.model.Model model = getFromNode().getNetwork().getModel().getLogicModel();
+		MessagePassingLinks mpls = new MessagePassingLinks();
+		mpls.getLinks().add(logicLink);
+		model.getMessagePassingLinks().add(mpls);
+		model.fireModelChangedEvent(model, ModelEvent.MESSAGE_PASSING_LINKS_CHANGED, model.getMessagePassingLinks());
+		
+		/*
+		Can replace MPL with:
+		src.uk.co.agena.minerva.guicomponents.genericdialog.PluginConstantLinkMapping.java
+		replaceLink(mpLink, csmpl);
+		line 668
+		*/
+	}
+	
+	private CrossNetworkLink(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) throws LinkException {
+		super(fromNode, toNode);
+		this.type = type;
+		this.stateToPass = stateToPass;
+	}
+	
+	/**
+	 * Destroys the underlying logic link<br/>
+	 * Has no effect if there is no link or the underlying logical networks do not contain either of the nodes
+	 */
+	@Override
+	protected void destroyLogicLink() {
+		getFromNode().getNetwork().getModel().getLogicModel().removeMessageParseLinks(getFromNode().getLogicNode(), getToNode().getLogicNode());
+		logicLink = null;
+	}
+
+	public MessagePassingLink getLogicLink() {
+		return logicLink;
+	}
+	
+	
+	
+}
