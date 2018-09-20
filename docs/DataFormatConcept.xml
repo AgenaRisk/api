@@ -371,6 +371,7 @@
 
 			<links>
 				<!--Contains links between nodes in this network-->
+				<!--Converted into an array of objects in JSON-->
 
 				<link>
 					<!--Tag omitted during XML-to-JSON conversion-->
@@ -443,6 +444,7 @@
 	
 	<links>
 		<!--Contains links between nodes in different networks-->
+		<!--Converted into an array of objects in JSON-->
 		
 		<link>
 			<!--Tag omitted during XML-to-JSON conversion-->
@@ -609,11 +611,9 @@
 		<!--PLACEHOLDER-->
 		<!--Provides extra information to satisfy audit requirements of corporate users-->
 		<changelog>
-			<!--PLACEHOLDER-->
 			<!--Contains the changelog of the model-->
 			
 			<change>
-				<!--PLACEHOLDER-->
 				<!--Dated, timestamped, signed and commented change commit. Also includes the revision of AgenaRisk used to save the model.-->
 				<!--Tag omitted during XML-to-JSON conversion-->
 				
