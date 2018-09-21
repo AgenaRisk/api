@@ -565,40 +565,104 @@
 	</meta>
 	
 	<scenarios>
-		<!--PLACEHOLDER-->
+		<!--Converted into an array of objects in JSON-->
 		
 		<scenario>
 			<!--Tag omitted during XML-to-JSON conversion-->
-			<!--PLACEHOLDER-->
 			
-			<name></name>
-			<active></active>
+			<name>
+				<!--Scenario name-->
+			</name>
+			
+			<active>
+				<!--Boolean-->
+			</active>
 			
 			<graphics>
-				<display></display>
-				<color></color>
+				
+				<display>
+					<!--Corresponds to Display on Risk Graphs-->
+				</display>
 			</graphics>
 			
 			<observations>
+				<!--Converted into an array of objects in JSON-->
 				
 				<observation>
 					<!--Tag omitted during XML-to-JSON conversion-->
+					
+					<network>
+						<!--Network ID-->
+					</network>
+					
+					<node>
+						<!--Node ID-->
+					</node>
+					
+					<hard>
+						<!--Mutually exclusive with soft-->
+						<!--String or numeric observation-->
+					</hard>
+					
+					<soft>
+						<!--Mutually exclusive with hard-->
+						<!--Converted into an array of objects in JSON-->
+						
+						<weight>
+							<!--Tag omitted during XML-to-JSON conversion-->
+							<!--State-value pair-->
+
+							<state>
+								<!--State name-->
+							</state>
+
+							<value>
+								<!--Soft observation weight-->
+							</value>
+						</weight>
+						...
+					</soft>
+					
 				</observation>
 				...
 			</observations>
 			
 			<marginals>
+				<!--Converted into an array of objects in JSON-->
+				<!--Corresponds to uk.co.agena.minerva.util.model.Model.getMarginalDataStore().getMarginalDataItemListForNode(ExtendeBN, ExtendedNode).getMarginalDataItemAtIndex(scenarioIndex)-->
 				
 				<marginal>
 					<!--Tag omitted during XML-to-JSON conversion-->
+					<!--Corresponds to uk.​co.​agena.​minerva.​model.MarginalDataItem-->
 					
 					<network>
-						
+						<!--Network ID-->
 					</network>
 					
 					<node>
-						
+						<!--Node ID-->
 					</node>
+					
+					<dataset>
+						<!--Corresponds to uk.co.agena.minerva.util.model.DataSet-->
+						
+						<datapoint>
+							<!--Tag omitted during XML-to-JSON conversion-->
+							<!--Corresponds to uk.co.agena.minerva.util.model.DataPoint for discrete nodes-->
+							<!--Corresponds to uk.co.agena.minerva.util.model.IntervalDataPoint for interval nodes-->
+							
+							<label>
+								<!--Corresponds to uk.co.agena.minerva.util.model.DataPoint.label-->
+								<!--For discrete nodes, labels will be matched to states-->
+								<!--For interval nodes, only the first and last data points will be matched to lower bound and upper bound states respectively-->
+							</label>
+							
+							<value>
+								<!--Corresponds to uk.co.agena.minerva.util.model.DataPoint.value-->
+							</value>
+						</datapoint>
+						...
+					</dataset>
 				</marginal>
 				...
 			</marginals>
