@@ -25,7 +25,7 @@ public interface IDContainer <E extends AgenaRiskException, I extends Identifiab
 	void throwIDExistsException(String id) throws E;
 	
 	/**
-	 * Changes the ID of the Identifiable in some mapped reference of the IDContainer<br/>
+	 * Changes the ID of the Identifiable in some mapped reference of the IDContainer
 	 * Does not actually modify Identifiable, which should be done externally
 	 * @param identifiable the object which ID needs updating
 	 * @param id new ID

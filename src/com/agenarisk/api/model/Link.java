@@ -19,7 +19,7 @@ public class Link implements Comparable<Link> {
 	private final Node fromNode, toNode;
 	
 	/**
-	 * Creates the Link object. Only for use by Link class and its subclasses.<br/>
+	 * Creates the Link object. Only for use by Link class and its subclasses.
 	 * @param fromNode
 	 * @param toNode 
 	 * @deprecated For internal use only. Use createLink() instead
@@ -39,7 +39,7 @@ public class Link implements Comparable<Link> {
 	}
 	
 	/**
-	 * This will create a link in the underlying logic.<br/>
+	 * This will create a link in the underlying logic.
 	 * The underlying table of the child node will be reset to some default value
 	 * @throws LinkException if logical link was not created
 	 */
@@ -72,7 +72,7 @@ public class Link implements Comparable<Link> {
 	}
 	
 	/**
-	 * Destroys the underlying logic link<br/>
+	 * Destroys the underlying logic link
 	 * Has no effect if the underlying logical network does not contain either of the nodes
 	 */
 	protected void destroyLogicLink() {

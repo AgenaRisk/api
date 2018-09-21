@@ -1,7 +1,7 @@
 package com.agenarisk.api;
 
 /**
- * This class is a reference dictionary for XML, JSON and relevant values for objects in AgenaRisk API v2<br/>
+ * This class is a reference dictionary for XML, JSON and relevant values for objects in AgenaRisk API v2
  * The notes below map these terms with the corresponding features of AgenaRisk Desktop
  * 
  * @author Eugene Dementiev
@@ -33,7 +33,7 @@ public final class Ref {
 	public static final String NODE = "node";
 	
 	/**
-	 * Represents either uk.​co.​agena.​minerva.​model.ExtendedBN.connID<br/>
+	 * Represents either uk.​co.​agena.​minerva.​model.ExtendedBN.connID
 	 * or uk.co.agena.minerva.model.extendedbn.ExtendedNode.connNodeId
 	 */
 	public static final String ID = "id";

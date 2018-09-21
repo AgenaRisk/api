@@ -232,7 +232,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Creates a Link between two nodes in same or different Networks<br/>
+	 * Creates a Link between two nodes in same or different Networks
 	 * The underlying NPT of the child node will be reset to some default value
 	 * @param fromNode Node to link from
 	 * @param toNode Node to link to

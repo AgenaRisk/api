@@ -62,7 +62,7 @@ public class CrossNetworkLink extends Link {
 	
 	
 	/**
-	 * This will create a link in the underlying logic.<br/>
+	 * This will create a link in the underlying logic.
 	 * The underlying table of the child node will be reset to some default value
 	 * @throws LinkException if logical link was not created
 	 */
@@ -248,7 +248,7 @@ public class CrossNetworkLink extends Link {
 	}
 	
 	/**
-	 * Destroys the underlying logic link<br/>
+	 * Destroys the underlying logic link
 	 * Has no effect if there is no link or the underlying logical networks do not contain either of the nodes
 	 */
 	@Override
