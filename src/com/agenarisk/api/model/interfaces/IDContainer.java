@@ -22,7 +22,13 @@ public interface IDContainer <E extends AgenaRiskException, I extends Identifiab
 	 * Throws an Exception with message e.g. "Object with id `id` already exists", localised for the implementing class
 	 * @param id ID of the existing object
 	 */
-	void throwIDExistsException(String id) throws E;
+	void throwIdExistsException(String id) throws E;
+	
+	/**
+	 * Throws an Exception with message e.g. "No such object or old ID is null", localised for the implementing class
+	 * @param id ID of the existing object
+	 */
+	void throwOldIdNullException(String id) throws E;
 	
 	/**
 	 * Changes the ID of the Identifiable in some mapped reference of the IDContainer
@@ -35,7 +41,7 @@ public interface IDContainer <E extends AgenaRiskException, I extends Identifiab
 	default boolean changeContainedId(I identifiable, String id) throws E {
 		synchronized (IDContainer.class){
 			if (getIDMap().containsKey(id)){
-				throwIDExistsException(id);
+				throwIdExistsException(id);
 			}
 			
 			String oldID = null;
@@ -49,7 +55,7 @@ public interface IDContainer <E extends AgenaRiskException, I extends Identifiab
 			}
 			
 			if (oldID == null){
-				return false;
+				throwOldIdNullException(id);
 			}
 			
 			getIDMap().remove(oldID);

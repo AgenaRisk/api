@@ -93,11 +93,21 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 
 	}
 
+	/**
+	 * Gets the ID of this Network
+	 * @return the ID of this Network
+	 */
 	@Override
 	public final String getId() {
 		return getLogicNetwork().getConnID();
 	}
 	
+	/**
+	 * Changes the ID of this Network to the provided ID, if the new ID is not already taken
+	 * Will lock IDContainer.class while doing so
+	 * @param id the new ID
+	 * @throws NetworkException if fails to change ID
+	 */
 	@Override
 	public final void setId(String id) throws NetworkException {
 		
@@ -244,12 +254,23 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
+	 * @throws com.agenarisk.api.exception.NetworkException
 	 * @deprecated For internal use only
 	 */
 	@Override
 	@Deprecated
-	public void throwIDExistsException(String id) throws NetworkException {
+	public void throwIdExistsException(String id) throws NetworkException {
 		throw new NetworkException("Node with id `" + id + "` already exists");
+	}
+	
+	/**
+	 * @throws com.agenarisk.api.exception.NetworkException
+	 * @deprecated For internal use only
+	 */
+	@Override
+	@Deprecated
+	public void throwOldIdNullException(String id) throws NetworkException {
+		throw new NetworkException("Can't change Node ID to `" + id + "` because the Node does not exist in this Network or old ID is null");
 	}
 	
 	public Node getNode(String id){

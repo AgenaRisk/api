@@ -94,12 +94,23 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 	}
 
 	/**
+	 * @throws com.agenarisk.api.exception.ModelException
 	 * @deprecated For internal use only
 	 */
 	@Override
 	@Deprecated
-	public void throwIDExistsException(String id) throws ModelException {
-		throw new ModelException("Network with id `" + id + "` already exists");
+	public void throwIdExistsException(String id) throws ModelException {
+		throw new ModelException("Network with ID `" + id + "` already exists");
+	}
+	
+	/**
+	 * @throws com.agenarisk.api.exception.ModelException
+	 * @deprecated For internal use only
+	 */
+	@Override
+	@Deprecated
+	public void throwOldIdNullException(String id) throws ModelException {
+		throw new ModelException("Can't change Network ID to `" + id + "` because the Network does not exist in this Model or old ID is null");
 	}
 
 	

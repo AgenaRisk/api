@@ -38,6 +38,7 @@ import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import com.agenarisk.api.Ref;
+import com.agenarisk.api.exception.NetworkException;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -594,11 +595,30 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return logicNode;
 	}
 
+	/**
+	 * Gets the ID of this Network
+	 * @return the ID of this Network
+	 */
+	@Override
 	public String getId() {
 		return getLogicNode().getConnNodeId();
 	}
 
-	public void setId(String id) {
+	/**
+	 * Changes the ID of this Node to the provided ID, if the new ID is not already taken
+	 * Will lock IDContainer.class while doing so
+	 * @param id the new ID
+	 * @throws NodeException if fails to change ID
+	 */
+	@Override
+	public void setId(String id) throws NodeException {
+		try {
+			getNetwork().changeContainedId(this, id);
+		}
+		catch (NetworkException ex){
+			throw new NodeException("Failed to change ID of Network `" + getId() + "`", ex);
+		}
+		
 		getLogicNode().setConnNodeId(id);
 	}
 
