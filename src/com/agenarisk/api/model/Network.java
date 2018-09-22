@@ -26,21 +26,44 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import com.agenarisk.api.Ref;
 
 /**
- *
+ * Network class represents Bayesian Network equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1
  * @author Eugene Dementiev
  */
 public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException, Node>, Storable {
 	
+	/**
+	 * Model that contains this Network
+	 */
 	private final Model model;
 	
+	/**
+	 * Corresponding ExtendedBN
+	 */
 	private final ExtendedBN logicNetwork;
 	
+	/**
+	 * ID-Node map of this Network
+	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
+	 */
 	private final Map<String, Node> nodes = Collections.synchronizedMap(new HashMap<>());
 	
+	/**
+	 * Factory method to be called by a Model object that is trying to add a Network to itself
+	 * @param model the Model to add a Network to
+	 * @param id the ID of the Network
+	 * @param name the name of the Network
+	 * @return the created Network
+	 */
 	protected static Network createNetwork(Model model, String id, String name) {
 		return new Network(model, id, name);
 	}
 	
+	/**
+	 * Constructor for Network class, to be used by createNetwork method
+	 * @param model the Model that this Network belongs to
+	 * @param id the ID of the Network
+	 * @param name the name of the Network
+	 */
 	private Network(Model model, String id, String name) {
 		this.model = model;
 		
@@ -56,10 +79,24 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		
 	}
 	
-	public Node createNode(String id, String name, Ref.NODE_TYPE type) throws NodeException {
-		throw new NodeException("Not implemented");
+	/**
+	 * Creates a Node and adds it to this Network
+	 * @param id ID of the Node
+	 * @param name name of the Node
+	 * @param type type of the Node
+	 * @return the created Node
+	 * @throws NetworkException if Node creation failed
+	 */
+	public Node createNode(String id, String name, Ref.NODE_TYPE type) throws NetworkException {
+		throw new NetworkException("Not implemented");
 	}
 	
+	/**
+	 * Creates a Node from its JSONObject specification and adds it to this Network
+	 * @param json JSONObject with full Node's configuration
+	 * @return the created Node
+	 * @throws NetworkException if Node creation failed (Node with given ID already exists; or JSON configuration is missing required attributes)
+	 */
 	public Node createNode(JSONObject json) throws NetworkException {
 		
 		String id;
@@ -121,10 +158,18 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		getLogicNetwork().setConnID(id);
 	}
 
+	/**
+	 * Returns the underlying logical ExtendedBN network
+	 * @return the underlying logical ExtendedBN network
+	 */
 	protected final ExtendedBN getLogicNetwork() {
 		return logicNetwork;
 	}
 
+	/**
+	 * Returns the Model that this Network belongs to
+	 * @return the Model that this Network belongs to
+	 */
 	public final Model getModel() {
 		return model;
 	}
@@ -171,6 +216,12 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		return "`" + getId() + "`";
 	}
 
+	/**
+	 * Builds and returns a set of Networks, which are parents of this Network.
+	 * Networks are connected with Links between their Nodes
+	 * So for two Networks Net1 and Net2 and Nodes Node1 and Node2, where Node1 belongs to Net1 and Node2 belongs to Net2, and Node1 → Node2, Net2 is the child of Net1
+	 * @return a set of Networks that are parents of this Network
+	 */
 	@Override
 	public Set<Network> getParents() {
 		Set<Network> nets = new HashSet<>();
@@ -182,6 +233,12 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		return nets;
 	}
 
+	/**
+	 * Builds and returns a set of Networks, which are children of this Network.
+	 * Networks are connected with Links between their Nodes
+	 * So for two Networks Net1 and Net2 and Nodes Node1 and Node2, where Node1 belongs to Net1 and Node2 belongs to Net2, and Node1 → Node2, Net2 is the child of Net1
+	 * @return a set of Networks that are children of this Network
+	 */
 	@Override
 	public Set<Network> getChildren() {
 		Set<Network> nets = new HashSet<>();
@@ -193,11 +250,19 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		return nets;
 	}
 
+	/**
+	 * Returns a copy of the incoming Links list
+	 * @return a copy of the incoming Links list
+	 */
 	@Override
 	public List<Link> getLinksIn() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
+	/**
+	 * Returns a copy of the outgoing Links list
+	 * @return a copy of the outgoing Links list
+	 */
 	@Override
 	public List<Link> getLinksOut() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -273,6 +338,11 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		throw new NetworkException("Can't change Node ID to `" + id + "` because the Node does not exist in this Network or old ID is null");
 	}
 	
+	/**
+	 * Gets Node from the Network by its unique ID
+	 * @param id the ID of the Node
+	 * @return the Node with the given ID or null if no such node exists in the Network
+	 */
 	public Node getNode(String id){
 		return nodes.get(id);
 	}
@@ -285,9 +355,13 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		return new HashMap<>(nodes);
 	}
 
+	/**
+	 * Creates a JSON representing this Network, ready for file storage
+	 * @return JSONObject representing this Network
+	 */
 	@Override
 	public JSONObject toJSONObject() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 }
