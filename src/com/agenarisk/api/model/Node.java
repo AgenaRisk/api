@@ -635,24 +635,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return System.identityHashCode(getLogicNode());
 	}
 	
-	public static JSONObject getNodeTemplate(){
-		return JSONUtils.toJSONObject(new Object[][]{
-			{Ref.ID, "ID"},
-			{Ref.NAME, "NAME"},
-			{Ref.DEFINITION, JSONUtils.toJSONObject(new Object[][]{
-				{Ref.TYPE, Ref.NODE_TYPE.Boolean},
-				{Ref.STATES, new JSONArray(Arrays.asList(new String[]{"False", "True"}))},
-				{Ref.TABLE, JSONUtils.toJSONObject(new Object[][]{
-					{Ref.TYPE, Ref.TABLE_TYPE.Manual},
-					{Ref.PROBABILITIES, new JSONArray(Arrays.asList(new JSONArray[]{
-						new JSONArray(Arrays.asList(new Double[]{0.5})),
-						new JSONArray(Arrays.asList(new Double[]{0.5}))
-					}))}
-				})}
-			})}
-		});
-	}
-
+	/**
+	 * Removes a link between this Node and the linkedNode, if such link exists.
+	 * Will check incoming and outgoing Links
+	 * Both Nodes will no longer refer to each other
+	 * @param linkedNode the Node to break Link with
+	 * @return false if there was no Link; or true if the Link was removed
+	 */
 	@Override
 	public boolean unlink(Node linkedNode){
 		return Node.unlinkNodes(this, linkedNode);
