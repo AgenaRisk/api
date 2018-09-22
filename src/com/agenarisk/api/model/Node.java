@@ -325,13 +325,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		String id;
 		String name;
 		JSONObject jsonDefinition; 
-		String type;
+		Ref.NODE_TYPE type;
 		
 		try {
 			id = json.getString(Ref.ID);
 			name = json.getString(Ref.NAME);
 			jsonDefinition = json.getJSONObject(Ref.DEFINITION);
-			type = jsonDefinition.getString(Ref.TYPE);
+			String typeString = jsonDefinition.getString(Ref.TYPE);
+			type = Ref.NODE_TYPE.valueOf(typeString);
 		}
 		catch (JSONException ex){
 			throw new NodeException(JSONUtils.createMissingAttrMessage(ex), ex);
@@ -657,28 +658,35 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return Node.unlinkNodes(this, linkedNode);
 	}
 	
-	protected static String resolveNodeClassName(String type) throws NodeException{
+	/**
+	 * Gets fully-qualified name for ExtendedNode concrete implementation matching the provided Node type from Ref.NODE_TYPE
+	 * @param type Node type
+	 * @return fully-qualified ExtendedNode subclass name
+	 * @throws NodeException if no matching ExtendedNode implementation found
+	 */
+	protected static String resolveNodeClassName(Ref.NODE_TYPE type) throws NodeException{
 		String nodeClassName;
-		if (type.equalsIgnoreCase(Ref.NODE_TYPE.Boolean.toString())){
-			nodeClassName = BooleanEN.class.getName();
-		}
-		else if (type.equalsIgnoreCase(Ref.NODE_TYPE.Labelled.toString())){
-			nodeClassName = LabelledEN.class.getName();
-		}
-		else if (type.equalsIgnoreCase(Ref.NODE_TYPE.Ranked.toString())){
-			nodeClassName = RankedEN.class.getName();
-		}
-		else if (type.equalsIgnoreCase(Ref.NODE_TYPE.DiscreteReal.toString())){
-			nodeClassName = DiscreteRealEN.class.getName();
-		}
-		else if (type.equalsIgnoreCase(Ref.NODE_TYPE.ContinuousInterval.toString())){
-			nodeClassName = ContinuousIntervalEN.class.getName();
-		}
-		else if (type.equalsIgnoreCase(Ref.NODE_TYPE.IntegerInterval.toString())){
-			nodeClassName = IntegerIntervalEN.class.getName();
-		}
-		else {
-			throw new NodeException("Invalid node type provided");
+		switch (type) {
+			case Boolean:
+				nodeClassName = BooleanEN.class.getName();
+				break;
+			case Labelled:
+				nodeClassName = LabelledEN.class.getName();
+				break;
+			case Ranked:
+				nodeClassName = RankedEN.class.getName();
+				break;
+			case DiscreteReal:
+				nodeClassName = DiscreteRealEN.class.getName();
+				break;
+			case ContinuousInterval:
+				nodeClassName = ContinuousIntervalEN.class.getName();
+				break;
+			case IntegerInterval:
+				nodeClassName = IntegerIntervalEN.class.getName();
+				break;
+			default:
+				throw new NodeException("Invalid node type provided");
 		}
 		
 		return nodeClassName;
