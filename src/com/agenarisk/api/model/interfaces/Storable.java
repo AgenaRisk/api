@@ -8,5 +8,5 @@ import org.apache.sling.commons.json.JSONObject;
  */
 public interface Storable {
 	
-	abstract public JSONObject toJSON();
+	abstract public JSONObject toJSONObject();
 }

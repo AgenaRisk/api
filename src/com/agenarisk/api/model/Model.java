@@ -54,7 +54,7 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 	}
 	
 	@Override
-	public JSONObject toJSON() {
+	public JSONObject toJSONObject() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 	

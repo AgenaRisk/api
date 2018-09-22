@@ -692,8 +692,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return nodeClassName;
 	}
 
+	/**
+	 * Creates a JSON representing this Node, ready for file storage
+	 * @return JSONObject representing this Node
+	 */
 	@Override
-	public JSONObject toJSON() {
+	public JSONObject toJSONObject() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }
