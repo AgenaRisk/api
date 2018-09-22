@@ -89,7 +89,7 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 	 */
 	@Override
 	@Deprecated
-	public Map<String, Network> getIDMap() {
+	public Map<String, Network> getIdMap() {
 		return networks;
 	}
 

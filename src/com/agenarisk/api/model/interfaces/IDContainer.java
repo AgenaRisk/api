@@ -16,7 +16,7 @@ public interface IDContainer <E extends AgenaRiskException, I extends Identifiab
 	 * 
 	 * @return the map of Identifiable objects
 	 */
-	Map<String,I> getIDMap();
+	Map<String,I> getIdMap();
 	
 	/**
 	 * Throws an Exception with message e.g. "Object with id `id` already exists", localised for the implementing class
@@ -40,14 +40,14 @@ public interface IDContainer <E extends AgenaRiskException, I extends Identifiab
 	 */
 	default boolean changeContainedId(I identifiable, String id) throws E {
 		synchronized (IDContainer.class){
-			if (getIDMap().containsKey(id)){
+			if (getIdMap().containsKey(id)){
 				throwIdExistsException(id);
 			}
 			
 			String oldID = null;
 			
-			for(String key: getIDMap().keySet()){
-				I idObject = getIDMap().get(key);
+			for(String key: getIdMap().keySet()){
+				I idObject = getIdMap().get(key);
 				if (Objects.equals(identifiable, idObject)){
 					oldID = key;
 					break;
@@ -58,8 +58,8 @@ public interface IDContainer <E extends AgenaRiskException, I extends Identifiab
 				throwOldIdNullException(id);
 			}
 			
-			getIDMap().remove(oldID);
-			getIDMap().put(id, identifiable);
+			getIdMap().remove(oldID);
+			getIdMap().put(id, identifiable);
 			
 			return true;
 		}

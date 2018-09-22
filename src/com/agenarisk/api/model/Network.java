@@ -249,7 +249,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	@Override
 	@Deprecated
-	public Map<String, Node> getIDMap() {
+	public Map<String, Node> getIdMap() {
 		return nodes;
 	}
 
