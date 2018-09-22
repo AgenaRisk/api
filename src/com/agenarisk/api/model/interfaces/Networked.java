@@ -1,13 +1,12 @@
 package com.agenarisk.api.model.interfaces;
 
-import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.model.Link;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 /**
- *
+ * An interface for objects that can be connected into a Network of objects (e.g. Nodes can be connected within a Network, or Networks can be connected within a Model)
  * @author Eugene Dementiev
  * @param <N> specific class implementing Networked, e.g. Network or Node
  */
