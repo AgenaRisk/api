@@ -5,7 +5,6 @@ import com.agenarisk.api.exception.LinkException;
 import com.singularsys.jep.JepException;
 import java.util.List;
 import java.util.Objects;
-import uk.co.agena.minerva.model.MessagePassingLink;
 import uk.co.agena.minerva.model.corebn.CoreBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
@@ -16,12 +15,15 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
  */
 public class Link implements Comparable<Link> {
 	
+	/**
+	 * Source and target Nodes
+	 */
 	private final Node fromNode, toNode;
 	
 	/**
 	 * Creates the Link object. Only for use by Link class and its subclasses.
-	 * @param fromNode
-	 * @param toNode 
+	 * @param fromNode source Node of the Link
+	 * @param toNode target Node of the Link
 	 * @deprecated For internal use only. Use createLink() instead
 	 */
 	@Deprecated
@@ -31,6 +33,13 @@ public class Link implements Comparable<Link> {
 		
 	}
 	
+	/**
+	 * Creates a Link object without manipulating the nodes themselves.
+	 * @param fromNode source Node of the Link
+	 * @param toNode target Node of the Link
+	 * @return the created Link object
+	 * @throws LinkException if Nodes are in different Network (in that case CrossNetworkLink should haves been used)
+	 */
 	protected static Link createLink(Node fromNode, Node toNode) throws LinkException{
 		if (!Objects.equals(fromNode.getNetwork(), toNode.getNetwork())){
 			throw new LinkException("Nodes must be in the same network for simple link");
@@ -90,19 +99,35 @@ public class Link implements Comparable<Link> {
 		}
 	}
 
+	/**
+	 * Returns the source Link Node
+	 * @return the source Link Node
+	 */
 	public Node getFromNode() {
 		return fromNode;
 	}
 
+	/**
+	 * Returns the target Link Node
+	 * @return the target Link Node 
+	 */
 	public Node getToNode() {
 		return toNode;
 	}
 	
+	/**
+	 * Returns toStringExtra()
+	 * @return toStringExtra() 
+	 */
 	@Override
 	public String toString(){
 		return toStringExtra();
 	}
 	
+	/**
+	 * Returns the string representation of the Link as: `Net1`.`Node1` → `Net2`.`Node2`
+	 * @return string representation of the Link
+	 */
 	public String toStringExtra(){
 		return fromNode.toStringExtra() + " → " + toNode.toStringExtra();
 	}
