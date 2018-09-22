@@ -578,15 +578,27 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return false;
 	}
 	
+	/**
+	 * Returns toStringExtra()
+	 * @return toStringExtra()
+	 */
 	@Override
 	public String toString(){
 		return toStringExtra();
 	}
 	
+	/**
+	 * Returns `network`.`node` String representing this Node
+	 * @return detailed String representing this Node
+	 */
 	public String toStringExtra(){
 		return "`"+getNetwork().getId()+"`.`"+this.getId()+"`";
 	}
 
+	/**
+	 * Returns the Network containing this Node
+	 * @return the Network containing this Node
+	 */
 	public Network getNetwork() {
 		return network;
 	}
@@ -596,8 +608,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Gets the ID of this Network
-	 * @return the ID of this Network
+	 * Gets the ID of this Node
+	 * @return the ID of this Node
 	 */
 	@Override
 	public String getId() {
