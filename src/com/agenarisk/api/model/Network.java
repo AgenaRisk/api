@@ -56,11 +56,11 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		
 	}
 	
-	public Node addNode(String id, String name, Ref.NODE_TYPE type) throws NodeException {
+	public Node createNode(String id, String name, Ref.NODE_TYPE type) throws NodeException {
 		throw new NodeException("Not implemented");
 	}
 	
-	public Node addNode(JSONObject json) throws NetworkException {
+	public Node createNode(JSONObject json) throws NetworkException {
 		
 		String id;
 		

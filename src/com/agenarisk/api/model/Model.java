@@ -58,7 +58,7 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 	
-	public Network addNetwork(String id, String name) throws ModelException {
+	public Network createNetwork(String id, String name) throws ModelException {
 		synchronized (IDContainer.class){
 			if (networks.containsKey(id)){
 				throw new ModelException("Network with id `" + id + "` already exists");
@@ -80,7 +80,7 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 		return network;
 	}
 	
-	public Network addNetwork(JSONObject json) throws ModelException {
+	public Network createNetwork(JSONObject json) throws ModelException {
 		throw new ModelException("Not implemented");
 	}
 
