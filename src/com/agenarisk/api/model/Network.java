@@ -24,7 +24,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import com.agenarisk.api.Ref;
 
 /**
- * Network class represents Bayesian Network equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1
+ * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1
  * @author Eugene Dementiev
  */
 public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException, Node>, Storable {
