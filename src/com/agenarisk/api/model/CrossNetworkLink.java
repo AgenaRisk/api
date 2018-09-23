@@ -28,16 +28,53 @@ import uk.co.agena.minerva.util.nptgenerator.Arithmetic;
 import uk.co.agena.minerva.util.nptgenerator.Normal;
 
 /**
- *
+ * CrossNetworkLink represents a link between Nodes in different Networks
+ * It is a special case of a general Link due to the underlying requirements of AgenaRisk logic
  * @author Eugene Dementiev
  */
 public class CrossNetworkLink extends Link {
 	
+	/**
+	 * The underlying logical link in AgenaRisk Extended classes
+	 */
 	private MessagePassingLink logicLink;
 	
+	/**
+	 * The type of the CrossNetworkLink
+	 */
 	private Ref.LINK_TYPE type = null;
+	
+	/**
+	 * The state to pass (if any)
+	 */
 	private String stateToPass = null;
 	
+	/**
+	 * Constructor for CrossNetworkLink.
+	 * Only sets instance variable values, does not do any checks and does not create the underlying logical link
+	 * Should only be used by the createCrossNetworkLink() factory method
+	 * @param fromNode the source Link node
+	 * @param toNode the target Link node
+	 * @param type the type of CrossNetworkLink
+	 * @param stateToPass state to pass (if any)
+	 */
+	private CrossNetworkLink(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) {
+		super(fromNode, toNode);
+		this.type = type;
+		this.stateToPass = stateToPass;
+	}
+	
+	/**
+	 * Factory method to create a CrossNetworkLink instance.
+	 * Does not create the underlying logical link
+	 * Should be used by Node.linkNodes()
+	 * @param fromNode the source Link node
+	 * @param toNode the target Link node
+	 * @param type the type of CrossNetworkLink
+	 * @param stateToPass state to pass (if any)
+	 * @return CrossNetworkLink created
+	 * @throws LinkException if source and target are in the same Network; no CrossNetworkLink type specified; type passes state, but state not specified; type does not pass a state but state specified
+	 */
 	protected static CrossNetworkLink createCrossNetworkLink(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) throws LinkException{
 		if (Objects.equals(fromNode.getNetwork(), toNode.getNetwork())){
 			throw new LinkException("Trying to link nodes in same network by a cross network link");
@@ -64,7 +101,7 @@ public class CrossNetworkLink extends Link {
 	/**
 	 * This will create a link in the underlying logic.
 	 * The underlying table of the child node will be reset to some default value
-	 * @throws LinkException if logical link was not created
+	 * @throws LinkException if logical link already exists or target Node already has parents; link has invalid type; or error/inconsistency in the underlying logic
 	 */
 	@Override
 	protected void createLogicLink() throws LinkException {
@@ -202,26 +239,31 @@ public class CrossNetworkLink extends Link {
 			// Determine statistic to pass
 			MathsHelper.SummaryStatistic summaryStat;
 
-			if (Ref.LINK_TYPE.Mean.equals(type)){
-				summaryStat = MathsHelper.SummaryStatistic.MEAN;
-			}
-			else if (Ref.LINK_TYPE.Median.equals(type)){
-				summaryStat = MathsHelper.SummaryStatistic.MEDIAN;
-			}
-			else if (Ref.LINK_TYPE.StandardDeviation.equals(type)){
-				summaryStat = MathsHelper.SummaryStatistic.STANDARD_DEVIATION;
-			}
-			else if (Ref.LINK_TYPE.Variance.equals(type)){
-				summaryStat = MathsHelper.SummaryStatistic.VARIANCE;
-			}
-			else if (Ref.LINK_TYPE.LowerPercentile.equals(type)){
-				summaryStat = MathsHelper.SummaryStatistic.LOWER_PERCENTILE;
-			}
-			else if (Ref.LINK_TYPE.UpperPercentile.equals(type)){
-				summaryStat = MathsHelper.SummaryStatistic.UPPER_PERCENTILE;
-			}
-			else {
+			if (null == type){
 				throw new LinkException("Invalid cross network link type: `"+type+"`");
+			}
+			
+			switch (type) {
+				case Mean:
+					summaryStat = MathsHelper.SummaryStatistic.MEAN;
+					break;
+				case Median:
+					summaryStat = MathsHelper.SummaryStatistic.MEDIAN;
+					break;
+				case StandardDeviation:
+					summaryStat = MathsHelper.SummaryStatistic.STANDARD_DEVIATION;
+					break;
+				case Variance:
+					summaryStat = MathsHelper.SummaryStatistic.VARIANCE;
+					break;
+				case LowerPercentile:
+					summaryStat = MathsHelper.SummaryStatistic.LOWER_PERCENTILE;
+					break;
+				case UpperPercentile:
+					summaryStat = MathsHelper.SummaryStatistic.UPPER_PERCENTILE;
+					break;
+				default:
+					throw new LinkException("Invalid cross network link type: `"+type+"`");
 			}
 
 			logicLink = new ConstantSummaryMessagePassingLink(summaryStat,constantName, ebn2.getId(),  ebn1.getId(), en2.getId(), en1.getId());
@@ -233,18 +275,6 @@ public class CrossNetworkLink extends Link {
 		model.getMessagePassingLinks().add(mpls);
 		model.fireModelChangedEvent(model, ModelEvent.MESSAGE_PASSING_LINKS_CHANGED, model.getMessagePassingLinks());
 		
-		/*
-		Can replace MPL with:
-		src.uk.co.agena.minerva.guicomponents.genericdialog.PluginConstantLinkMapping.java
-		replaceLink(mpLink, csmpl);
-		line 668
-		*/
-	}
-	
-	private CrossNetworkLink(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) throws LinkException {
-		super(fromNode, toNode);
-		this.type = type;
-		this.stateToPass = stateToPass;
 	}
 	
 	/**
@@ -257,7 +287,11 @@ public class CrossNetworkLink extends Link {
 		logicLink = null;
 	}
 
-	public MessagePassingLink getLogicLink() {
+	/**
+	 * Returns the underlying logical link
+	 * @return the underlying logical link
+	 */
+	protected MessagePassingLink getLogicLink() {
 		return logicLink;
 	}
 	
