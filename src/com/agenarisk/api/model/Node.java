@@ -395,6 +395,25 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
+	 * Sets the manual NPT according to columns provided
+	 * @param columns 2D array where first dimension are the columns and second dimension are the cells
+	 * @throws NodeException if provided table size is wrong or Node does not allow manual NPT
+	 */
+	public void setTableColumns(double[][] columns) throws NodeException {
+		// Set manual table
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Sets the manual NPT according to rows provided
+	 * @param rows 2D array where first dimension are the rows and second dimension are the cells
+	 * @throws NodeException if provided table size is wrong or Node does not allow manual NPT
+	 */
+	public void setTableRows(double[][] rows) throws NodeException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
 	 * Replaces the Node's probability table with one specified in the given JSON
 	 * @param jsonTable configuration of the table in JSON format
 	 * @throws NodeException if table type does not match the rest of the table configuration, if table is not a square matrix or the number of cells does not match the number of partitions created by the combination of parent states
