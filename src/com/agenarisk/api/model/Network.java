@@ -90,6 +90,17 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
+	 * Creates a Node and adds it to this Network
+	 * @param id ID of the Node
+	 * @param type type of the Node
+	 * @return the created Node
+	 * @throws NetworkException if Node creation failed
+	 */
+	public Node createNode(String id, Ref.NODE_TYPE type) throws NetworkException {
+		return createNode(id, id, type);
+	}
+	
+	/**
 	 * Creates a Node from its JSONObject specification and adds it to this Network
 	 * @param json JSONObject with full Node's configuration
 	 * @return the created Node

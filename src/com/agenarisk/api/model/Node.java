@@ -499,9 +499,40 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * NPT in JSON is given by rows, while ExtendedNode expects an array of columns, so we will need to invert it
+	 * Sets Node function to the one provided.
+	 * Resets Node table partitioning and sets Table type to Ref.TABLE_TYPE.Expression.
+	 * @param function function to set
+	 * @throws NodeException if function is invalid
+	 */
+	public void setTableFunction(String function) throws NodeException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Sets Node functions to the ones provided.
+	 * Also sets Table type to Ref.TABLE_TYPE.Partitioned.
+	 * If the node only has one non-simulated parent, this parent will be automatically used to partition this node.
+	 * @param functions functions to set
+	 * @throws NodeException if a function is invalid
+	 */
+	public void setTableFunctions(String[] functions) throws NodeException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Sets node partitions based on the parent states.
+	 * Order of partitions will be based on the order of nodes in the array and states within them.
+	 * @param partitionParents parents to partition by
+	 * @throws NodeException if one of the nodes in partitionParents is simulated or is not a parent of this Node
+	 */
+	public void partitionByParents(Node[] partitionParents) throws NodeException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * NPT in JSON is given by rows, while ExtendedNode expects an array of columns, so we will need to invert it.
 	 * @param jsonNPT
-	 * @return
+	 * @return 2D array where first dimension are the columns and second dimension are the cells
 	 * @throws JSONException 
 	 */
 	private static double[][] extractNPTColumns(JSONArray jsonNPT) throws JSONException {
@@ -525,8 +556,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Replaces Node's states by the ones given in the JSON array
-	 * This action resets the probability table to uniform
+	 * Replaces Node's states by the ones given in the JSON array.
+	 * This action resets the probability table to uniform.
 	 * @param states new Node's states
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
@@ -603,7 +634,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Changes the Node into a simulated node subject to conditions.
 	 * Only ContinuousInterval and IntegerInterval nodes can be simulated.
-	 * This action replaces States with dynamic states
+	 * This action replaces States with dynamic states.
 	 * @param simulated whether the node should be simulated or not
 	 * @throws NodeException if Node type can not be simulated
 	 * @return true if the Node has been changed or false if it already was simulated
@@ -692,6 +723,38 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		
 		getLogicNode().setConnNodeId(id);
+	}
+	
+	/**
+	 * Sets the name of this Node
+	 * @param name new name
+	 */
+	public void setName(String name){
+		getLogicNode().getName().setShortDescription(name);
+	}
+	
+	/**
+	 * Gets the name of this node
+	 * @return the name of this node
+	 */
+	public String getName(){
+		return getLogicNode().getName().getShortDescription();
+	}
+	
+	/**
+	 * Sets the description of this Node
+	 * @param description new description
+	 */
+	public void setDescription(String description){
+		getLogicNode().getName().setLongDescription(description);
+	}
+	
+	/**
+	 * Gets the description of this node
+	 * @return the description of this node
+	 */
+	public String getDescription(){
+		return getLogicNode().getName().getLongDescription();
 	}
 
 	/**
