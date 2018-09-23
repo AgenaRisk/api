@@ -344,7 +344,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		try {
 			id = json.getString(Ref.ID);
 			name = json.getString(Ref.NAME);
-			jsonDefinition = json.getJSONObject(Ref.DEFINITION);
+			jsonDefinition = json.getJSONObject(Ref.CONFIGURATION);
 			String typeString = jsonDefinition.getString(Ref.TYPE);
 			type = Ref.NODE_TYPE.valueOf(typeString);
 		}

@@ -20,7 +20,7 @@ public class NodeTemplate {
 	private static final JSONObject TEMPLATE = JSONUtils.toJSONObject(new Object[][]{
 		{Ref.ID, "ID"},
 		{Ref.NAME, "NAME"},
-		{Ref.DEFINITION, JSONUtils.toJSONObject(new Object[][]{
+		{Ref.CONFIGURATION, JSONUtils.toJSONObject(new Object[][]{
 			{Ref.TYPE, "NODE_TYPE"},
 			{Ref.STATES, new JSONArray()},
 			{Ref.TABLE, JSONUtils.toJSONObject(new Object[][]{
@@ -69,12 +69,12 @@ public class NodeTemplate {
 	}
 
 	public NodeTemplate setNodeType(Ref.NODE_TYPE nodeType) throws JSONException {
-		json.getJSONObject(Ref.DEFINITION).put(Ref.TYPE, nodeType.toString());
+		json.getJSONObject(Ref.CONFIGURATION).put(Ref.TYPE, nodeType.toString());
 		return this;
 	}
 	
 	public NodeTemplate setStates(List<String> states) throws JSONException {
-		json.getJSONObject(Ref.DEFINITION).put(Ref.STATES, new JSONArray(states));
+		json.getJSONObject(Ref.CONFIGURATION).put(Ref.STATES, new JSONArray(states));
 		return this;
 	}
 	
@@ -84,7 +84,7 @@ public class NodeTemplate {
 	}
 	
 	public NodeTemplate setTableType(Ref.TABLE_TYPE tableType) throws JSONException {
-		json.getJSONObject(Ref.DEFINITION).getJSONObject(Ref.TABLE).put(Ref.TYPE, tableType.toString());
+		json.getJSONObject(Ref.CONFIGURATION).getJSONObject(Ref.TABLE).put(Ref.TYPE, tableType.toString());
 		return this;
 	}
 	
@@ -96,7 +96,7 @@ public class NodeTemplate {
 		}))}
 		*/
 		;
-		json.getJSONObject(Ref.DEFINITION)
+		json.getJSONObject(Ref.CONFIGURATION)
 		.getJSONObject(Ref.TABLE)
 		.put(Ref.PROBABILITIES, new JSONArray(
 			Arrays.asList(rows).stream().map(darray -> new JSONArray(Arrays.asList(darray))).collect(Collectors.toList())
@@ -115,7 +115,7 @@ public class NodeTemplate {
 		try {
 			nt.setNPTRows(rows);
 			nt.setTableType(Ref.TABLE_TYPE.Manual);
-			jsonTable = nt.getJSON().getJSONObject(Ref.DEFINITION).getJSONObject(Ref.TABLE);
+			jsonTable = nt.getJSON().getJSONObject(Ref.CONFIGURATION).getJSONObject(Ref.TABLE);
 		}
 		catch (JSONException ex){
 			throw new NodeException("Failed to generate a table JSON", ex);

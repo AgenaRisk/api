@@ -42,7 +42,7 @@ public final class Ref {
 	 * Represents uk.co.agena.minerva.util.model.NameDescription.shortDescription
 	 */
 	public static final String NAME = "name";
-	public static final String DEFINITION = "definition";
+	public static final String CONFIGURATION = "configuration";
 	public static final String SIMULATED = "simulated";
 	
 	public static final String TYPE = "type";
