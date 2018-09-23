@@ -88,6 +88,16 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 	/**
 	 * Creates a new empty Network and adds it to this Model
 	 * @param id unique ID of the Network
+	 * @return the Network instance added to this Model
+	 * @throws ModelException if a Network with this ID already exists
+	 */
+	public Network createNetwork(String id) throws ModelException {
+		return createNetwork(id, id);
+	}
+	
+	/**
+	 * Creates a new empty Network and adds it to this Model
+	 * @param id unique ID of the Network
 	 * @param name non-unique name of the Network
 	 * @return the Network instance added to this Model
 	 * @throws ModelException if a Network with this ID already exists
