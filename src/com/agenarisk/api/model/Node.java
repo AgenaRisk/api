@@ -556,6 +556,16 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
+	 * Replaces Node's states by the ones given in the array.
+	 * This action resets the probability table to uniform.
+	 * @param states new Node's states
+	 * @throws NodeException if state is an invalid range; or if the Node is simulated
+	 */
+	public void setStates(String[] states) throws NodeException{
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
 	 * Replaces Node's states by the ones given in the JSON array.
 	 * This action resets the probability table to uniform.
 	 * @param states new Node's states
