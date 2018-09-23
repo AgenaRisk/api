@@ -42,17 +42,36 @@ import uk.co.agena.minerva.util.model.Range;
 import uk.co.agena.minerva.util.nptgenerator.ExpressionParser;
 
 /**
- *
+ * Node class represents an equivalent to a Node in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1
  * @author Eugene Dementiev
  */
 public class Node implements Networked<Node>, Comparable<Node>, Identifiable<NodeException>, Storable {
+	
+	/**
+	 * The Network containing this Node
+	 */
 	private final Network network;
 	
+	/**
+	 * Incoming Links from other Nodes
+	 */
 	private final Set<Link> linksIn = Collections.synchronizedSet(new HashSet<>());
+	
+	/**
+	 * Outgoing Links to other Nodes
+	 */
 	private final Set<Link> linksOut = Collections.synchronizedSet(new HashSet<>());
 	
+	/**
+	 * Corresponding ExtendedNode
+	 */
 	private final ExtendedNode logicNode;
 	
+	/**
+	 * Constructor for the Node class. Creates a Node object without affecting the logic in any way
+	 * @param network the Network that will contain this Node
+	 * @param logicNode the Node's corresponding logic Node
+	 */
 	private Node(Network network, ExtendedNode logicNode){
 		this.network = network;
 		this.logicNode = logicNode;
@@ -101,16 +120,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	public synchronized Set<Node> getChildren() {
 		return getLinksOut().stream().map(link -> link.getToNode()).collect(Collectors.toSet());
 	}
-	
-//	@Override
-//	public synchronized boolean hasAncestor(Node ancestor) {
-//		return getParents().stream().anyMatch((n) -> (Objects.equals(n, ancestor) || n.hasAncestor(ancestor)));
-//	}
-
-//	@Override
-//	public synchronized boolean hasDescendant(Node descendant) {
-//		return getChildren().stream().anyMatch((n) -> (Objects.equals(n, descendant) || n.hasDescendant(descendant)));
-//	}
 	
 	/**
 	 * Removes the Link object from the linksOut list
@@ -317,6 +326,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 	}
 	
+	/**
+	 * Factory method to create a Node for use by the Network class.
+	 * Creates the underlying logic objects
+	 * @param network Network that the Node will be added to
+	 * @param json configuration of the Node
+	 * @return created Node
+	 * @throws NodeException if JSON configuration is incomplete or invalid; or if there was an error in the logic
+	 */
 	protected static Node createNode(Network network, JSONObject json) throws NodeException {
 		String id;
 		String name;
@@ -387,6 +404,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return node;
 	}
 	
+	/**
+	 * Replaces the Node's probability table with one specified in the given JSON
+	 * @param jsonTable configuration of the table in JSON format
+	 * @throws NodeException if table type does not match the rest of the table configuration, if table is not a square matrix or the number of cells does not match the number of partitions created by the combination of parent states
+	 */
 	public void setTable(JSONObject jsonTable) throws NodeException {
 		if (jsonTable.length() == 0){
 			return;
@@ -491,6 +513,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return npt;
 	}
 	
+	/**
+	 * Replaces Node's states by the ones given in the JSON array
+	 * This action resets the probability table to uniform
+	 * @param states new Node's states
+	 * @throws NodeException if state is an invalid range
+	 */
 	public void setStates(JSONArray states) throws NodeException{
 		
 		ExtendedNode en = getLogicNode();
@@ -598,6 +626,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return network;
 	}
 
+	/**
+	 * Returns the underlying ExtendedNode
+	 * @return the underlying ExtendedNode
+	 */
 	protected ExtendedNode getLogicNode() {
 		return logicNode;
 	}
