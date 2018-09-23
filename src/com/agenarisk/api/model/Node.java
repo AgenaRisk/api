@@ -604,7 +604,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Returns true of the Node is simulated and false otherwise
-	 * @return true of the Node is simulated and false otherwise 
+	 * @return true of the Node is simulated and false otherwise
 	 */
 	public boolean isSimulated(){
 		if (getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN)){
