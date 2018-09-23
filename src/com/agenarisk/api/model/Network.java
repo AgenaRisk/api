@@ -373,4 +373,27 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	/**
+	 * Sets the name of this Network
+	 * @param name new name
+	 */
+	public void setName(String name){
+		getLogicNetwork().getName().setShortDescription(name);
+	}
+	
+	/**
+	 * Gets the name of this Network
+	 * @return the name of this Network
+	 */
+	public String getName(){
+		return getLogicNetwork().getName().getShortDescription();
+	}
+	
+	/**
+	 * Sets the description of this Network
+	 * @param description new description
+	 */
+	public void setDescription(String description){
+		getLogicNetwork().getName().setLongDescription(description);
+	}
 }
