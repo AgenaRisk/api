@@ -34,6 +34,7 @@ import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import com.agenarisk.api.Ref;
 import com.agenarisk.api.exception.NetworkException;
+import uk.co.agena.minerva.model.extendedbn.ExtendedNodeMethodNotSupportedException;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -376,18 +377,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		if (simulated){
 			ContinuousEN cien = (ContinuousEN)en;
-
-			DataSet cids = new DataSet();                          
-			cids.addIntervalDataPoint(Double.NEGATIVE_INFINITY, -1);
-			cids.addIntervalDataPoint(-1, 1);
-			cids.addIntervalDataPoint(1, Double.POSITIVE_INFINITY);
-
-			try {
-				cien.createExtendedStates(cids);
-			}
-			catch (ExtendedStateException | ExtendedStateNumberingException ex){
-				throw new AgenaRiskRuntimeException("Failed to initialise simulation node " + node.toStringExtra(), ex);
-			}
+			setDefaultIntervalStates(node);
 			cien.setSimulationNode(true);
 
 		}
@@ -517,9 +507,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Replaces Node's states by the ones given in the JSON array
 	 * This action resets the probability table to uniform
 	 * @param states new Node's states
-	 * @throws NodeException if state is an invalid range
+	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
 	public void setStates(JSONArray states) throws NodeException{
+		
+		if (isSimulated()){
+			throw new NodeException("Can't set states for a simulated node");
+		}
 		
 		ExtendedNode en = getLogicNode();
 		
@@ -585,15 +579,33 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 	}
 	
-	public void setSimulated(boolean simulated) throws NodeException {
+	/**
+	 * Changes the Node into a simulated node subject to conditions.
+	 * Only ContinuousInterval and IntegerInterval nodes can be simulated.
+	 * This action replaces States with dynamic states
+	 * @param simulated whether the node should be simulated or not
+	 * @throws NodeException if Node type can not be simulated
+	 * @return true if the Node has been changed or false if it already was simulated
+	 */
+	public boolean setSimulated(boolean simulated) throws NodeException {
+		if (isSimulated()){
+			return false;
+		}
+		
 		if (getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN)){
-			((ContinuousEN)getLogicNode()).setSimulationNode(simulated);
-			return;
+			setDefaultIntervalStates(this);
+			ContinuousEN cien = (ContinuousEN)this.getLogicNode();
+			cien.setSimulationNode(true);
+			return true;
 		}
 		
 		throw new NodeException("Simulation is non-applicable to node type of "+toStringExtra()+" can not be simulated");
 	}
 	
+	/**
+	 * Returns true of the Node is simulated and false otherwise
+	 * @return true of the Node is simulated and false otherwise 
+	 */
 	public boolean isSimulated(){
 		if (getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN)){
 			return ((ContinuousEN)getLogicNode()).isSimulationNode();
@@ -747,5 +759,25 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	@Override
 	public JSONObject toJSONObject() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+	
+	/**
+	 * Replaces Node states with 3 default interval states
+	 * @param node 
+	 */
+	private static void setDefaultIntervalStates(Node node){
+		ContinuousEN cien = (ContinuousEN)node.getLogicNode();
+		DataSet cids = new DataSet();                          
+		cids.addIntervalDataPoint(Double.NEGATIVE_INFINITY, -1);
+		cids.addIntervalDataPoint(-1, 1);
+		cids.addIntervalDataPoint(1, Double.POSITIVE_INFINITY);
+
+		try {
+			cien.removeExtendedStates(0, cien.getExtendedStates().size()-1, true);
+			cien.createExtendedStates(cids);
+		}
+		catch (ExtendedBNException | MinervaRangeException ex){
+			throw new AgenaRiskRuntimeException("Failed to initialise interval states for node " + node.toStringExtra(), ex);
+		}
 	}
 }
