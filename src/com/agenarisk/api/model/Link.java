@@ -10,7 +10,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 
 /**
- * This class represents a link between two nodes
+ * Link represents a link between two nodes
  * @author Eugene Dementiev
  */
 public class Link implements Comparable<Link> {
