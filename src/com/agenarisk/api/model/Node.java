@@ -168,6 +168,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Creates a simple Link from this Node to given Node in the same Network
+	 * If child table is in Manual mode, this action will reset it to a uniform table
 	 * @param child the child Node
 	 * @return created Link
 	 * @throws LinkException if Link already exists, or a cross network link is being created (use Node.linkNodes() for that instead)
@@ -178,6 +179,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Creates a simple Link from the given Node to this Node in the same Network
+	 * If this Node's table is in Manual mode, this action will reset it to a uniform table
 	 * @param parent the parent Node
 	 * @return created Link
 	 * @throws LinkException if Link already exists, or a cross network link is being created (use Node.linkNodes() for that instead)
@@ -321,7 +323,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				throw ex;
 			}
 			
-			// cyxy If the link was created, for same-network links we need to reapply child's NPT
+			if(true)throw new UnsupportedOperationException("If the link was created, for same-network links we need to reapply child's NPT");
 			
 			return link;
 		}
