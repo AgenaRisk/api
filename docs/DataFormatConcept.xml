@@ -50,7 +50,7 @@
 						<!--Optional-->
 					</description>
 					
-					<definition>
+					<configuration>
 						<!--This block defines mathematical properties of the node/variable-->
 						
 						<type>
@@ -175,7 +175,7 @@
 							...
 						</variables>
 						
-					</definition>
+					</configuration>
 					
 					<meta>
 						<!--Extra information about the node-->
