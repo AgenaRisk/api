@@ -21,7 +21,8 @@ import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 
 /**
- * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, scenarios etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1
+ * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, scenarios etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
+ * 
  * @author Eugene Dementiev
  */
 public class Model implements IDContainer<ModelException>, Storable {
@@ -49,9 +50,11 @@ public class Model implements IDContainer<ModelException>, Storable {
 	private JSONObject graphics, texts, pictures, meta, audit;
 	
 	/**
-	 * Constructor for Model class
-	 * The Model is created without Scenarios or Networks
-	 * To be used by Model factory method
+	 * Constructor for Model class.
+	 * <br>
+	 * The Model is created without Scenarios or Networks.
+	 * <br>
+	 * To be used by Model factory method.
 	 */
 	private Model(){
 		
@@ -71,7 +74,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Factory method to create an empty instance of a Model class
+	 * Factory method to create an empty instance of a Model class.
 	 * @return new instance of a Model
 	 */
 	public static Model createModel(){
@@ -79,8 +82,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Factory method to create an instance of a Model from provided JSONObject
-	 * Creates all member components
+	 * Factory method to create an instance of a Model from provided JSONObject.
+	 * <br>
+	 * Creates all member components.
+	 * 
 	 * @param json JSONObject representing this model, including structure, tables, graphics etc
 	 * @return Model object
 	 */
@@ -92,8 +97,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Creates a Network and adds it to this Model
-	 * Creates all member components
+	 * Creates a Network and adds it to this Model.
+	 * <br>
+	 * Creates all member components.
+	 * 
 	 * @param json JSONObject representing the network, including structure, tables, graphics etc
 	 * @return Network object
 	 */
@@ -102,7 +109,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Creates a new empty Network and adds it to this Model
+	 * Creates a new empty Network and adds it to this Model.
+	 * 
 	 * @param id unique ID of the Network
 	 * @return the Network instance added to this Model
 	 * @throws ModelException if a Network with this ID already exists
@@ -112,7 +120,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Creates a new empty Network and adds it to this Model
+	 * Creates a new empty Network and adds it to this Model.
+	 * 
 	 * @param id unique ID of the Network
 	 * @param name non-unique name of the Network
 	 * @return the Network instance added to this Model
@@ -141,7 +150,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Creates a JSON representing this Network, ready for file storage
+	 * Creates a JSON representing this Network, ready for file storage.
+	 * 
 	 * @return JSONObject representing this Network
 	 */
 	@Override
@@ -150,6 +160,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 
 	/**
+	 * @throws ModelException when invalid type requested
 	 * @deprecated For internal use only
 	 */
 	@Override
@@ -167,7 +178,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 
 	/**
-	 * @throws com.agenarisk.api.exception.ModelException
+	 * @throws ModelException when invoked
 	 * @deprecated For internal use only
 	 */
 	@Override
@@ -177,7 +188,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * @throws com.agenarisk.api.exception.ModelException
+	 * @throws ModelException when invoked
 	 * @deprecated For internal use only
 	 */
 	@Override
@@ -187,7 +198,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Looks up and returns a Network by its ID
+	 * Looks up and returns a Network by its ID.
+	 * 
 	 * @param id the ID of the Network to return
 	 * @return the Network identified by ID or null, if no such Network exists in this Model
 	 */
@@ -197,6 +209,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 
 	/**
 	 * Returns a copy of ID-Network map. Once generated, membership of this map is not maintained.
+	 * 
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, Network> getNetworks() {
@@ -204,7 +217,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 
 	/**
-	 * Returns the underlying ExtendedBN
+	 * Returns the underlying ExtendedBN.
+	 * 
 	 * @return the underlying ExtendedBN
 	 */
 	protected uk.co.agena.minerva.model.Model getLogicModel() {
@@ -212,7 +226,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Triggers propagation in this model for all Networks and Scenarios
+	 * Triggers propagation in this model for all Networks and Scenarios.
+	 * 
 	 * @throws CalculationException if calculation failed
 	 */
 	public void calculate() throws CalculationException {
@@ -235,7 +250,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Saves the Model to a file path specified in the old CMP format
+	 * Saves the Model to a file path specified in the old CMP format.
+	 * 
 	 * @param path the file path to save to
 	 * @throws FileIOException if saving fails
 	 */
@@ -249,7 +265,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 
 	/**
-	 * Creates a new Scenario and adds it to this Model
+	 * Creates a new Scenario and adds it to this Model.
+	 * 
 	 * @param id unique ID of the Scenario
 	 * @return the Scenario instance added to this Model
 	 * @throws ModelException if a Scenario with this ID already exists
@@ -278,6 +295,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 	/**
 	 * Returns a copy of ID-Network map. Once generated, membership of this map is not maintained.
+	 * 
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, Scenario> getScenarios() {

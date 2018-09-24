@@ -12,7 +12,8 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 
 /**
- * Link represents a link between two nodes
+ * Link represents a link between two nodes.
+ * 
  * @author Eugene Dementiev
  */
 public class Link implements Comparable<Link>, Storable {
@@ -29,6 +30,7 @@ public class Link implements Comparable<Link>, Storable {
 	
 	/**
 	 * Creates the Link object. Only for use by Link class and its subclasses.
+	 * 
 	 * @param fromNode source Node of the Link
 	 * @param toNode target Node of the Link
 	 * @deprecated For internal use only. Use createLink() instead
@@ -42,6 +44,7 @@ public class Link implements Comparable<Link>, Storable {
 	
 	/**
 	 * Creates a Link object without manipulating the nodes themselves.
+	 * 
 	 * @param fromNode source Node of the Link
 	 * @param toNode target Node of the Link
 	 * @return the created Link object
@@ -56,7 +59,9 @@ public class Link implements Comparable<Link>, Storable {
 	
 	/**
 	 * This will create a link in the underlying logic.
-	 * The underlying table of the child node will be reset to some default value
+	 * <br>
+	 * The underlying table of the child node will be reset to some default value.
+	 * 
 	 * @throws LinkException if logical link was not created
 	 */
 	protected void createLogicLink() throws LinkException{
@@ -89,7 +94,8 @@ public class Link implements Comparable<Link>, Storable {
 	
 	/**
 	 * Destroys the underlying logic link
-	 * Has no effect if the underlying logical network does not contain either of the nodes
+	 * <br>
+	 * Has no effect if the underlying logical network does not contain either of the nodes.
 	 */
 	protected void destroyLogicLink() {
 		try {
@@ -107,7 +113,8 @@ public class Link implements Comparable<Link>, Storable {
 	}
 
 	/**
-	 * Returns the source Link Node
+	 * Returns the source Link Node.
+	 * 
 	 * @return the source Link Node
 	 */
 	public Node getFromNode() {
@@ -115,7 +122,8 @@ public class Link implements Comparable<Link>, Storable {
 	}
 
 	/**
-	 * Returns the target Link Node
+	 * Returns the target Link Node.
+	 * 
 	 * @return the target Link Node 
 	 */
 	public Node getToNode() {
@@ -123,7 +131,8 @@ public class Link implements Comparable<Link>, Storable {
 	}
 	
 	/**
-	 * Returns toStringExtra()
+	 * Returns toStringExtra().
+	 * 
 	 * @return toStringExtra() 
 	 */
 	@Override
@@ -132,7 +141,8 @@ public class Link implements Comparable<Link>, Storable {
 	}
 	
 	/**
-	 * Returns the string representation of the Link as: `Net1`.`Node1` → `Net2`.`Node2`
+	 * Returns the string representation of the Link as: `Net1`.`Node1` → `Net2`.`Node2`.
+	 * 
 	 * @return string representation of the Link
 	 */
 	public String toStringExtra(){
@@ -140,7 +150,8 @@ public class Link implements Comparable<Link>, Storable {
 	}
 
 	/**
-	 * Compares this Link object to another based on its underlying logic network and node IDs
+	 * Compares this Link object to another based on its underlying logic network and node IDs.
+	 * 
 	 * @param o another Link object
 	 * @return String comparison of toStringExtra() of both Links
 	 */
@@ -152,6 +163,7 @@ public class Link implements Comparable<Link>, Storable {
 	
 	/**
 	 * Checks equality of a given object to this Link.
+	 * 
 	 * @param obj The object to compare this Link against
 	 * @return true if the two object references are the same
 	 */
@@ -166,6 +178,7 @@ public class Link implements Comparable<Link>, Storable {
 
 	/**
 	 * Returns a hash code value for this object.
+	 * 
 	 * @return a hash code value for this object.
 	 */
 	@Override
@@ -174,7 +187,8 @@ public class Link implements Comparable<Link>, Storable {
 	}
 	
 	/**
-	 * Stores Link's graphics
+	 * Stores Link's graphics.
+	 * 
 	 * @param graphics 
 	 */
 	protected void setGraphics(JSONObject graphics) {
@@ -182,7 +196,8 @@ public class Link implements Comparable<Link>, Storable {
 	}
 
 	/**
-	 * Creates a JSON representing this Link, ready for file storage
+	 * Creates a JSON representing this Link, ready for file storage.
+	 * 
 	 * @return JSONObject representing this Link
 	 */
 	@Override

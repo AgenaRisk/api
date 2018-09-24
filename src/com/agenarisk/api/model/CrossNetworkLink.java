@@ -30,8 +30,10 @@ import uk.co.agena.minerva.util.nptgenerator.Arithmetic;
 import uk.co.agena.minerva.util.nptgenerator.Normal;
 
 /**
- * CrossNetworkLink represents a link between Nodes in different Networks
- * It is a special case of a general Link due to the underlying requirements of AgenaRisk logic
+ * CrossNetworkLink represents a link between Nodes in different Networks.
+ * <br>
+ * It is a special case of a general Link due to the underlying requirements of AgenaRisk logic.
+ * 
  * @author Eugene Dementiev
  */
 public class CrossNetworkLink extends Link implements Storable {
@@ -53,8 +55,11 @@ public class CrossNetworkLink extends Link implements Storable {
 	
 	/**
 	 * Constructor for CrossNetworkLink.
-	 * Only sets instance variable values, does not do any checks and does not create the underlying logical link
-	 * Should only be used by the createCrossNetworkLink() factory method
+	 * <br>
+	 * Only sets instance variable values, does not do any checks and does not create the underlying logical link.
+	 * <br>
+	 * Should only be used by the createCrossNetworkLink() factory method.
+	 * 
 	 * @param fromNode the source Link node
 	 * @param toNode the target Link node
 	 * @param type the type of CrossNetworkLink
@@ -68,8 +73,11 @@ public class CrossNetworkLink extends Link implements Storable {
 	
 	/**
 	 * Factory method to create a CrossNetworkLink instance.
-	 * Does not create the underlying logical link
-	 * Should be used by Node.linkNodes()
+	 * <br>
+	 * Does not create the underlying logical link.
+	 * <br>
+	 * Should be used by Node.linkNodes().
+	 * 
 	 * @param fromNode the source Link node
 	 * @param toNode the target Link node
 	 * @param type the type of CrossNetworkLink
@@ -102,7 +110,9 @@ public class CrossNetworkLink extends Link implements Storable {
 	
 	/**
 	 * This will create a link in the underlying logic.
-	 * The underlying table of the child node will be reset to some default value
+	 * <br>
+	 * The underlying table of the child node will be reset to some default value.
+	 * 
 	 * @throws LinkException if logical link already exists or target Node already has parents; link has invalid type; or error/inconsistency in the underlying logic
 	 */
 	@Override
@@ -280,8 +290,9 @@ public class CrossNetworkLink extends Link implements Storable {
 	}
 	
 	/**
-	 * Destroys the underlying logic link
-	 * Has no effect if there is no link or the underlying logical networks do not contain either of the nodes
+	 * Destroys the underlying logic link.
+	 * <br>
+	 * Has no effect if there is no link or the underlying logical networks do not contain either of the nodes.
 	 */
 	@Override
 	protected void destroyLogicLink() {
@@ -290,7 +301,8 @@ public class CrossNetworkLink extends Link implements Storable {
 	}
 
 	/**
-	 * Returns the underlying logical link
+	 * Returns the underlying logical link.
+	 * 
 	 * @return the underlying logical link
 	 */
 	protected MessagePassingLink getLogicLink() {
@@ -298,7 +310,8 @@ public class CrossNetworkLink extends Link implements Storable {
 	}
 	
 	/**
-	 * Returns the type of this cross-network link
+	 * Returns the type of this cross-network link.
+	 * 
 	 * @return link type
 	 */
 	public Ref.LINK_TYPE getType(){
@@ -306,7 +319,8 @@ public class CrossNetworkLink extends Link implements Storable {
 	}
 
 	/**
-	 * Returns the state to pass with this cross-network link
+	 * Returns the state to pass with this cross-network link.
+	 * 
 	 * @return the state to pass with this cross-network link or null if not passing a state
 	 */
 	public String getStateToPass() {
@@ -314,7 +328,8 @@ public class CrossNetworkLink extends Link implements Storable {
 	}
 	
 	/**
-	 * Creates a JSON representing this Link, ready for file storage
+	 * Creates a JSON representing this Link, ready for file storage.
+	 * 
 	 * @return JSONObject representing this Link
 	 */
 	@Override

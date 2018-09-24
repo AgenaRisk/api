@@ -24,7 +24,8 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import com.agenarisk.api.Ref;
 
 /**
- * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1
+ * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1.
+ * 
  * @author Eugene Dementiev
  */
 public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException>, Storable {
@@ -47,12 +48,14 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	
 	/**
 	 * ID-Node map of this Network
+	 * <br>
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
 	private final Map<String, Node> nodes = Collections.synchronizedMap(new HashMap<>());
 	
 	/**
-	 * Factory method to be called by a Model object that is trying to add a Network to itself
+	 * Factory method to be called by a Model object that is trying to add a Network to itself.
+	 * 
 	 * @param model the Model to add a Network to
 	 * @param id the ID of the Network
 	 * @param name the name of the Network
@@ -63,7 +66,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Factory method to be called by a Model object that is trying to add a Network to itself
+	 * Factory method to be called by a Model object that is trying to add a Network to itself.
+	 * 
 	 * @param model the Model to add a Network to
 	 * @param json JSONObject representing the network, including structure, tables, graphics etc
 	 * @return the created Network
@@ -93,7 +97,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Constructor for Network class, to be used by createNetwork method
+	 * Constructor for Network class, to be used by createNetwork method.
+	 * 
 	 * @param model the Model that this Network belongs to
 	 * @param id the ID of the Network
 	 * @param name the name of the Network
@@ -114,7 +119,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Creates a Node and adds it to this Network
+	 * Creates a Node and adds it to this Network.
+	 * 
 	 * @param id ID of the Node
 	 * @param name name of the Node
 	 * @param type type of the Node
@@ -126,7 +132,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Creates a Node and adds it to this Network
+	 * Creates a Node and adds it to this Network.
+	 * 
 	 * @param id ID of the Node
 	 * @param type type of the Node
 	 * @return the created Node
@@ -137,7 +144,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Creates a Node from its JSONObject specification and adds it to this Network
+	 * Creates a Node from its JSONObject specification and adds it to this Network.
+	 * 
 	 * @param json JSONObject with full Node's configuration
 	 * @return the created Node
 	 * @throws NetworkException if Node creation failed (Node with given ID already exists; or JSON configuration is missing required attributes)
@@ -176,7 +184,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Gets the ID of this Network
+	 * Gets the ID of this Network.
+	 * 
 	 * @return the ID of this Network
 	 */
 	@Override
@@ -185,8 +194,10 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Changes the ID of this Network to the provided ID, if the new ID is not already taken
-	 * Will lock IDContainer.class while doing so
+	 * Changes the ID of this Network to the provided ID, if the new ID is not already taken.
+	 * <br>
+	 * Will lock IDContainer.class while doing so.
+	 * 
 	 * @param id the new ID
 	 * @throws NetworkException if fails to change ID
 	 */
@@ -204,7 +215,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Returns the underlying logical ExtendedBN network
+	 * Returns the underlying logical ExtendedBN network.
+	 * 
 	 * @return the underlying logical ExtendedBN network
 	 */
 	protected final ExtendedBN getLogicNetwork() {
@@ -212,7 +224,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Returns the Model that this Network belongs to
+	 * Returns the Model that this Network belongs to.
+	 * 
 	 * @return the Model that this Network belongs to
 	 */
 	public final Model getModel() {
@@ -220,7 +233,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Compares this Network object to another based on its underlying logic network IDs
+	 * Compares this Network object to another based on its underlying logic network IDs.
+	 * 
 	 * @param o another Network object
 	 * @return String comparison of toStringExtra() of both Networks
 	 */
@@ -231,7 +245,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Checks equality of a given object to this Network. Returns true if logic networks of both objects are the same
+	 * Checks equality of a given object to this Network. Returns true if logic networks of both objects are the same.
+	 * 
 	 * @param obj The object to compare this Network against
 	 * @return true if the given object represents the same Network as this Network, false otherwise
 	 */
@@ -246,6 +261,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 
 	/**
 	 * Returns a hash code value for this object.
+	 * 
 	 * @return a hash code value for this object.
 	 */
 	@Override
@@ -254,7 +270,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Returns 
+	 * Returns the ID of the underlying network surrounded by back ticks.
+	 * 
 	 * @return the ID of the underlying network surrounded by back ticks
 	 */
 	public String toStringExtra(){
@@ -263,8 +280,11 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 
 	/**
 	 * Builds and returns a set of Networks, which are parents of this Network.
-	 * Networks are connected with Links between their Nodes
-	 * So for two Networks Net1 and Net2 and Nodes Node1 and Node2, where Node1 belongs to Net1 and Node2 belongs to Net2, and Node1 → Node2, Net2 is the child of Net1
+	 * <br>
+	 * Networks are connected with Links between their Nodes.
+	 * <br>
+	 * So for two Networks Net1 and Net2 and Nodes Node1 and Node2, where Node1 belongs to Net1 and Node2 belongs to Net2, and Node1 → Node2, Net2 is the child of Net1.
+	 * 
 	 * @return a set of Networks that are parents of this Network
 	 */
 	@Override
@@ -280,8 +300,11 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 
 	/**
 	 * Builds and returns a set of Networks, which are children of this Network.
-	 * Networks are connected with Links between their Nodes
-	 * So for two Networks Net1 and Net2 and Nodes Node1 and Node2, where Node1 belongs to Net1 and Node2 belongs to Net2, and Node1 → Node2, Net2 is the child of Net1
+	 * <br>
+	 * Networks are connected with Links between their Nodes.
+	 * <br>
+	 * So for two Networks Net1 and Net2 and Nodes Node1 and Node2, where Node1 belongs to Net1 and Node2 belongs to Net2, and Node1 → Node2, Net2 is the child of Net1.
+	 * 
 	 * @return a set of Networks that are children of this Network
 	 */
 	@Override
@@ -296,7 +319,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Returns a copy of the incoming Links list
+	 * Returns a copy of the incoming Links list.
+	 * 
 	 * @return a copy of the incoming Links list
 	 */
 	@Override
@@ -305,7 +329,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Returns a copy of the outgoing Links list
+	 * Returns a copy of the outgoing Links list.
+	 * 
 	 * @return a copy of the outgoing Links list
 	 */
 	@Override
@@ -314,7 +339,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Removes all links (if any exist) between the two networks
+	 * Removes all links (if any exist) between the two networks.
+	 * 
 	 * @param network the Network to sever connections with
 	 * @return false if Network objects are the same, true otherwise
 	 */
@@ -355,6 +381,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
+	 * @throws NetworkException when invalid type requested
 	 * @deprecated For internal use only
 	 */
 	@Override
@@ -367,7 +394,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * @throws com.agenarisk.api.exception.NetworkException
+	 * @throws NetworkException when invoked
 	 * @deprecated For internal use only
 	 */
 	@Override
@@ -377,7 +404,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * @throws com.agenarisk.api.exception.NetworkException
+	 * @throws NetworkException when invoked
 	 * @deprecated For internal use only
 	 */
 	@Override
@@ -387,7 +414,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Gets Node from the Network by its unique ID
+	 * Gets Node from the Network by its unique ID.
+	 * 
 	 * @param id the ID of the Node
 	 * @return the Node with the given ID or null if no such node exists in the Network
 	 */
@@ -396,7 +424,10 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Returns a copy of ID-Node map. Once generated, membership of this map is not maintained.
+	 * Returns a copy of ID-Node map.
+	 * <br>
+	 * Once generated, membership of this map is not maintained.
+	 * 
 	 * @return copy of ID-Node map
 	 */
 	public Map<String, Node> getNodes() {
@@ -404,7 +435,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Creates a JSON representing this Network, ready for file storage
+	 * Creates a JSON representing this Network, ready for file storage.
 	 * @return JSONObject representing this Network
 	 */
 	@Override
@@ -413,7 +444,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 
 	/**
-	 * Sets the name of this Network
+	 * Sets the name of this Network.
+	 * 
 	 * @param name new name
 	 */
 	public void setName(String name){
@@ -421,7 +453,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Gets the name of this Network
+	 * Gets the name of this Network.
+	 * 
 	 * @return the name of this Network
 	 */
 	public String getName(){
@@ -429,7 +462,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Sets the description of this Network
+	 * Sets the description of this Network.
+	 * 
 	 * @param description new description
 	 */
 	public void setDescription(String description){
@@ -437,7 +471,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Gets the description of this Network
+	 * Gets the description of this Network.
+	 * 
 	 * @return the description of this Network
 	 */
 	public String getDescription(){

@@ -34,7 +34,6 @@ import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import com.agenarisk.api.Ref;
 import com.agenarisk.api.exception.NetworkException;
-import uk.co.agena.minerva.model.extendedbn.ExtendedNodeMethodNotSupportedException;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -43,7 +42,8 @@ import uk.co.agena.minerva.util.model.Range;
 import uk.co.agena.minerva.util.nptgenerator.ExpressionParser;
 
 /**
- * Node class represents an equivalent to a Node in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1
+ * Node class represents an equivalent to a Node in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1.
+ * 
  * @author Eugene Dementiev
  */
 public class Node implements Networked<Node>, Comparable<Node>, Identifiable<NodeException>, Storable {
@@ -79,7 +79,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	private JSONObject graphics;
 	
 	/**
-	 * Constructor for the Node class. Creates a Node object without affecting the logic in any way
+	 * Constructor for the Node class. Creates a Node object without affecting the logic in any way.
+	 * 
 	 * @param network the Network that will contain this Node
 	 * @param logicNode the Node's corresponding logic Node
 	 */
@@ -90,6 +91,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Returns a copy of the list of incoming Links. The membership is only guaranteed to be valid at the time of request and is not maintained.
+	 * 
 	 * @return list of incoming Links
 	 */
 	@Override
@@ -103,6 +105,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 
 	/**
 	 * Returns a copy of the list of outgoing Links. The membership is only guaranteed to be valid at the time of request and is not maintained.
+	 * 
 	 * @return list of outgoing Links
 	 */
 	@Override
@@ -116,6 +119,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Builds and returns a set of Node's parents, which is valid at the time of request. This set will not reflect any membership changes made afterwards.
+	 * 
 	 * @return a set of Node's parents
 	 */
 	@Override
@@ -125,6 +129,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 
 	/**
 	 * Builds and returns a set of Node's children, which is valid at the time of request. This set will not reflect any membership changes made afterwards.
+	 * 
 	 * @return a set of Node's children
 	 */
 	@Override
@@ -133,7 +138,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Removes the Link object from the linksOut list
+	 * Removes the Link object from the linksOut list.
+	 * 
 	 * @param link the Link to remove
 	 * @return true if Link was added and false if the Link does not concern this Node
 	 * @deprecated For internal use only
@@ -155,7 +161,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Removes the Link object from the linksOut list
+	 * Removes the Link object from the linksOut list.
+	 * 
 	 * @param link the Link to remove
 	 * @return true if Link was removed and false if the Link does not concern this Node
 	 * @deprecated For internal use only
@@ -177,8 +184,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Creates a simple Link from this Node to given Node in the same Network
-	 * If child table is in Manual mode, this action will reset it to a uniform table
+	 * Creates a simple Link from this Node to given Node in the same Network.
+	 * <br>
+	 * If child table is in Manual mode, this action will reset it to a uniform table.
+	 * 
 	 * @param child the child Node
 	 * @return created Link
 	 * @throws LinkException if Link already exists, or a cross network link is being created (use Node.linkNodes() for that instead)
@@ -188,8 +197,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Creates a simple Link from the given Node to this Node in the same Network
-	 * If this Node's table is in Manual mode, this action will reset it to a uniform table
+	 * Creates a simple Link from the given Node to this Node in the same Network.
+	 * <br>
+	 * If this Node's table is in Manual mode, this action will reset it to a uniform table.
+	 * 
 	 * @param parent the parent Node
 	 * @return created Link
 	 * @throws LinkException if Link already exists, or a cross network link is being created (use Node.linkNodes() for that instead)
@@ -199,7 +210,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Checks that there is a Link between two nodes and destroys it. No effect if there is no link between these two nodes
+	 * Checks that there is a Link between two nodes and destroys it. No effect if there is no link between these two nodes.
+	 * 
 	 * @param node1 Node 1
 	 * @param node2 Node 2
 	 * @return true if the link was destroyed, false if there was no link
@@ -227,7 +239,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Creates a simple Link between two nodes in the same Network
+	 * Creates a simple Link between two nodes in the same Network.
+	 * 
 	 * @param fromNode Node to link from
 	 * @param toNode Node to link to
 	 * @return created Link
@@ -238,7 +251,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Creates a Link between two nodes in same or different Networks
+	 * Creates a Link between two nodes in same or different Networks.
+	 * 
 	 * @param fromNode Node to link from
 	 * @param toNode Node to link to
 	 * @param type type of CrossNetworkLink if applicable
@@ -250,8 +264,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Creates a Link between two nodes in same or different Networks
-	 * The underlying NPT of the child node will be reset to some default value
+	 * Creates a Link between two nodes in same or different Networks.
+	 * <br>
+	 * The underlying NPT of the child node will be reset to some default value.
+	 * 
 	 * @param fromNode Node to link from
 	 * @param toNode Node to link to
 	 * @param type type of CrossNetworkLink if applicable
@@ -341,7 +357,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Factory method to create a Node for use by the Network class.
-	 * Creates the underlying logic objects
+	 * <br>
+	 * Creates the underlying logic objects.
+	 * 
 	 * @param network Network that the Node will be added to
 	 * @param json configuration of the Node
 	 * @return created Node
@@ -350,14 +368,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	protected static Node createNode(Network network, JSONObject json) throws NodeException {
 		String id;
 		String name;
-		JSONObject jsonDefinition; 
+		JSONObject jsonConfiguration; 
 		Ref.NODE_TYPE type;
 		
 		try {
 			id = json.getString(Ref.ID);
 			name = json.getString(Ref.NAME);
-			jsonDefinition = json.getJSONObject(Ref.CONFIGURATION);
-			String typeString = jsonDefinition.getString(Ref.TYPE);
+			jsonConfiguration = json.getJSONObject(Ref.CONFIGURATION);
+			String typeString = jsonConfiguration.getString(Ref.TYPE);
 			type = Ref.NODE_TYPE.valueOf(typeString);
 		}
 		catch (JSONException ex){
@@ -378,9 +396,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		Node node = new Node(network, en);
 		
 		boolean simulated = false;
-		if (jsonDefinition.has(Ref.SIMULATED)){
+		if (jsonConfiguration.has(Ref.SIMULATED)){
 			try {
-				simulated = jsonDefinition.getBoolean(Ref.SIMULATED);
+				simulated = jsonConfiguration.getBoolean(Ref.SIMULATED);
 			}
 			catch (JSONException ex){
 				throw new NodeException("Invalid simulation attribute value", ex);
@@ -395,13 +413,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		else {
 			try {
-				node.setStates(jsonDefinition.getJSONArray(Ref.STATES));
+				node.setStates(jsonConfiguration.getJSONArray(Ref.STATES));
 			}
 			catch (JSONException ex){
 				// Should not happen
 				throw new AgenaRiskRuntimeException("Failed to access states array", ex);
 			}
 		}
+		
+		// Retrieve and store properties that are not used in the API but should persist through load/save
 		
 		if (json.has(Ref.META)){
 			node.meta = json.optJSONObject(Ref.META);
@@ -415,7 +435,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Sets the manual NPT according to columns provided
+	 * Sets the manual NPT according to columns provided.
+	 * 
 	 * @param columns 2D array where first dimension are the columns and second dimension are the cells
 	 * @throws NodeException if provided table size is wrong or Node does not allow manual NPT
 	 */
@@ -425,7 +446,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Sets the manual NPT according to rows provided
+	 * Sets the manual NPT according to rows provided.
+	 * 
 	 * @param rows 2D array where first dimension are the rows and second dimension are the cells
 	 * @throws NodeException if provided table size is wrong or Node does not allow manual NPT
 	 */
@@ -434,7 +456,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Replaces the Node's probability table with one specified in the given JSON
+	 * Replaces the Node's probability table with one specified in the given JSON.
+	 * 
 	 * @param jsonTable configuration of the table in JSON format
 	 * @throws NodeException if table type does not match the rest of the table configuration, if table is not a square matrix or the number of cells does not match the number of partitions created by the combination of parent states
 	 */
@@ -518,7 +541,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Sets Node function to the one provided.
+	 * <br>
 	 * Resets Node table partitioning and sets Table type to Ref.TABLE_TYPE.Expression.
+	 * 
 	 * @param function function to set
 	 * @throws NodeException if function is invalid
 	 */
@@ -528,8 +553,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Sets Node functions to the ones provided.
+	 * <br>
 	 * Also sets Table type to Ref.TABLE_TYPE.Partitioned.
+	 * <br>
 	 * If the node only has one non-simulated parent, this parent will be automatically used to partition this node.
+	 * 
 	 * @param functions functions to set
 	 * @throws NodeException if a function is invalid
 	 */
@@ -539,7 +567,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Sets node partitions based on the parent states.
+	 * <br>
 	 * Order of partitions will be based on the order of nodes in the array and states within them.
+	 * 
 	 * @param partitionParents parents to partition by
 	 * @throws NodeException if one of the nodes in partitionParents is simulated or is not a parent of this Node
 	 */
@@ -549,6 +579,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * NPT in JSON is given by rows, while ExtendedNode expects an array of columns, so we will need to invert it.
+	 * 
 	 * @param jsonNPT
 	 * @return 2D array where first dimension are the columns and second dimension are the cells
 	 * @throws JSONException 
@@ -567,15 +598,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				
 		}
 		
-		//System.out.println("NPT created:");
-		//System.out.println(org.apache.commons.lang3.ArrayUtils.toString(npt));
-
 		return npt;
 	}
 	
 	/**
 	 * Replaces Node's states by the ones given in the array.
+	 * <br>
 	 * This action resets the probability table to uniform.
+	 * 
 	 * @param states new Node's states
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
@@ -585,6 +615,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Replaces Node's states by the ones given in the JSON array.
+	 * 
+	 * <br>
 	 * This action resets the probability table to uniform.
 	 * @param states new Node's states
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
@@ -661,8 +693,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Changes the Node into a simulated node subject to conditions.
+	 * <br>
 	 * Only ContinuousInterval and IntegerInterval nodes can be simulated.
+	 * <br>
 	 * This action replaces States with dynamic states.
+	 * 
 	 * @param simulated whether the node should be simulated or not
 	 * @throws NodeException if Node type can not be simulated
 	 * @return true if the Node has been changed or false if it already was simulated
@@ -683,7 +718,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Returns true of the Node is simulated and false otherwise
+	 * Returns true of the Node is simulated and false otherwise.
+	 * 
 	 * @return true of the Node is simulated and false otherwise
 	 */
 	public boolean isSimulated(){
@@ -694,7 +730,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Returns toStringExtra()
+	 * Returns toStringExtra().
+	 * 
 	 * @return toStringExtra()
 	 */
 	@Override
@@ -703,7 +740,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Returns `network`.`node` String representing this Node
+	 * Returns `network`.`node` String representing this Node.
+	 * 
 	 * @return detailed String representing this Node
 	 */
 	public String toStringExtra(){
@@ -711,7 +749,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Returns the Network containing this Node
+	 * Returns the Network containing this Node.
+	 * 
 	 * @return the Network containing this Node
 	 */
 	public Network getNetwork() {
@@ -719,7 +758,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Returns the underlying ExtendedNode
+	 * Returns the underlying ExtendedNode.
+	 * 
 	 * @return the underlying ExtendedNode
 	 */
 	protected ExtendedNode getLogicNode() {
@@ -727,7 +767,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Gets the ID of this Node
+	 * Gets the ID of this Node.
+	 * 
 	 * @return the ID of this Node
 	 */
 	@Override
@@ -736,8 +777,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Changes the ID of this Node to the provided ID, if the new ID is not already taken
-	 * Will lock IDContainer.class while doing so
+	 * Changes the ID of this Node to the provided ID, if the new ID is not already taken.
+	 * <br>
+	 * Will lock IDContainer.class while doing so.
+	 * 
 	 * @param id the new ID
 	 * @throws NodeException if fails to change ID
 	 */
@@ -754,7 +797,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Sets the name of this Node
+	 * Sets the name of this Node.
+	 * 
 	 * @param name new name
 	 */
 	public void setName(String name){
@@ -762,7 +806,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Gets the name of this node
+	 * Gets the name of this node.
+	 * 
 	 * @return the name of this node
 	 */
 	public String getName(){
@@ -770,7 +815,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Sets the description of this Node
+	 * Sets the description of this Node.
+	 * 
 	 * @param description new description
 	 */
 	public void setDescription(String description){
@@ -779,6 +825,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Gets the description of this node
+	 * 
 	 * @return the description of this node
 	 */
 	public String getDescription(){
@@ -786,7 +833,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Compares this Node object to another based on its underlying logic network and node IDs
+	 * Compares this Node object to another based on its underlying logic network and node IDs.
+	 * 
 	 * @param o another Node object
 	 * @return String comparison of toStringExtra() of both Nodes
 	 */
@@ -796,7 +844,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Checks equality of a given object to this Node. Returns true if logic nodes of both objects are the same
+	 * Checks equality of a given object to this Node. Returns true if logic nodes of both objects are the same.
+	 * 
 	 * @param obj The object to compare this Node against
 	 * @return true if the given object represents the same Node as this Node, false otherwise
 	 */
@@ -811,6 +860,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 
 	/**
 	 * Returns a hash code value for this object.
+	 * 
 	 * @return a hash code value for this object.
 	 */
 	@Override
@@ -820,8 +870,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Removes a link between this Node and the linkedNode, if such link exists.
+	 * <br>
 	 * Will check incoming and outgoing Links
+	 * <br>
 	 * Both Nodes will no longer refer to each other
+	 * 
 	 * @param linkedNode the Node to break Link with
 	 * @return false if there was no Link; or true if the Link was removed
 	 */
@@ -831,7 +884,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Gets fully-qualified name for ExtendedNode concrete implementation matching the provided Node type from Ref.NODE_TYPE
+	 * Gets fully-qualified name for ExtendedNode concrete implementation matching the provided Node type from Ref.NODE_TYPE.
+	 * 
 	 * @param type Node type
 	 * @return fully-qualified ExtendedNode subclass name
 	 * @throws NodeException if no matching ExtendedNode implementation found
@@ -865,7 +919,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Creates a JSON representing this Node, ready for file storage
+	 * Creates a JSON representing this Node, ready for file storage.
+	 * 
 	 * @return JSONObject representing this Node
 	 */
 	@Override
@@ -881,7 +936,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Replaces Node states with 3 default interval states
+	 * Replaces Node states with 3 default interval states.
+	 * 
 	 * @param node 
 	 */
 	private static void setDefaultIntervalStates(Node node){
