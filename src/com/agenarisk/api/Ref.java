@@ -136,4 +136,13 @@ public final class Ref {
 	
 	public static final String STATES = "states";
 	public static final String STATE = "state";
+	
+	public static final String META = "meta";
+	public static final String NOTES = "notes";
+	public static final String NOTE = "note";
+	public static final String NOTE_NAME = "name";
+	public static final String NOTE_TEXT = "text";
+	
+	public static final String GRAPHICS = "graphics";
+	
 }
