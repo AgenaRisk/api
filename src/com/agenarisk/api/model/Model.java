@@ -33,6 +33,12 @@ public class Model implements IDContainer<ModelException>, Storable {
 	private final Map<String, Network> networks = Collections.synchronizedMap(new HashMap<>());
 	
 	/**
+	 * ID-Scenario map of this Model
+	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
+	 */
+	private final Map<String, Scenario> scenarios = Collections.synchronizedMap(new HashMap());
+	
+	/**
 	 * The underlying logical Model
 	 */
 	private final uk.co.agena.minerva.model.Model logicModel;
@@ -153,6 +159,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 			return networks;
 		}
 		
+		if (Scenario.class.equals(idClassType)){
+			return scenarios;
+		}
+		
 		throw new ModelException("Invalid class type provided: "+idClassType);
 	}
 
@@ -238,4 +248,39 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 	}
 
+	/**
+	 * Creates a new Scenario and adds it to this Model
+	 * @param id unique ID of the Scenario
+	 * @return the Scenario instance added to this Model
+	 * @throws ModelException if a Scenario with this ID already exists
+	 */
+	public Scenario createScenario(String id) throws ModelException {
+		synchronized (IDContainer.class){
+			if (scenarios.containsKey(id)){
+				throw new ModelException("Scenario with id `" + id + "` already exists");
+			}
+			scenarios.put(id, null);
+		}
+		
+		Scenario scenario;
+		
+		try {
+			scenario = Scenario.createScenario(this, id);
+			scenarios.put(id, scenario);
+		}
+		catch (AgenaRiskRuntimeException ex){
+			scenarios.remove(id);
+			throw new ModelException("Failed to add Scenario `" + id + "`", ex);
+		}
+		
+		return scenario;
+	}
+		
+	/**
+	 * Returns a copy of ID-Network map. Once generated, membership of this map is not maintained.
+	 * @return copy of ID-Network map
+	 */
+	public Map<String, Scenario> getScenarios() {
+		return new TreeMap<>(scenarios);
+	}
 }
