@@ -432,4 +432,12 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	public void setDescription(String description){
 		getLogicNetwork().getName().setLongDescription(description);
 	}
+	
+	/**
+	 * Gets the description of this Network
+	 * @return the description of this Network
+	 */
+	public String getDescription(){
+		return getLogicNetwork().getName().getLongDescription();
+	}
 }
