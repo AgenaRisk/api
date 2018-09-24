@@ -10,6 +10,7 @@ import com.agenarisk.api.model.interfaces.Storable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.MessagePassingLinkException;
 import uk.co.agena.minerva.model.PropagationException;
@@ -189,7 +190,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, Network> getNetworks() {
-		return new HashMap<>(networks);
+		return new TreeMap<>(networks);
 	}
 
 	/**
