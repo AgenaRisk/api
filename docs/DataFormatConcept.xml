@@ -572,15 +572,17 @@
 				<!--Scenario name-->
 			</name>
 			
-			<active>
-				<!--Boolean-->
-			</active>
-			
 			<graphics>
 				
-				<display>
-					<!--Corresponds to Display on Risk Graphs-->
-				</display>
+				<displayObservations>
+					<!--Boolean-->
+					<!--Corresponds to Risk Scenarios Active checkbox-->
+				</displayObservations>
+				
+				<displayOnGraph>
+					<!--Boolean-->
+					<!--Corresponds to Risk Scenarios Display on Risk Graphs checkbox-->
+				</displayOnGraph>
 			</graphics>
 			
 			<observations>
