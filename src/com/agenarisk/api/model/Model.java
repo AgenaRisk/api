@@ -5,6 +5,7 @@ import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.FileIOException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.model.interfaces.IDContainer;
+import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import uk.co.agena.minerva.util.io.FileHandlingException;
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, scenarios etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1
  * @author Eugene Dementiev
  */
-public class Model implements IDContainer<ModelException, Network>, Storable {
+public class Model implements IDContainer<ModelException>, Storable {
 	
 	/**
 	 * ID-Network map of this Model
@@ -146,8 +147,12 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 	 */
 	@Override
 	@Deprecated
-	public Map<String, Network> getIdMap() {
-		return networks;
+	public Map<String,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws ModelException {
+		if (Network.class.equals(idClassType)){
+			return networks;
+		}
+		
+		throw new ModelException("Invalid class type provided: "+idClassType);
 	}
 
 	/**

@@ -27,7 +27,7 @@ import com.agenarisk.api.Ref;
  * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1
  * @author Eugene Dementiev
  */
-public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException, Node>, Storable {
+public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException>, Storable {
 	
 	/**
 	 * Model that contains this Network
@@ -359,8 +359,11 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	@Override
 	@Deprecated
-	public Map<String, Node> getIdMap() {
-		return nodes;
+	public Map<String,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws NetworkException {
+		if (Node.class.equals(idClassType)){
+			return nodes;
+		}
+		throw new NetworkException("Invalid class type provided: "+idClassType);
 	}
 
 	/**
