@@ -145,4 +145,17 @@ public final class Ref {
 	
 	public static final String GRAPHICS = "graphics";
 	
+	public static final String RISK_TABLE = "riskTable";
+	public static final String RISK_TABLE_ENTRY = "riskTableEntry";
+	
+	public static final String TEXTS = "texts";
+	public static final String TEXT_ENTRY = "text";
+	public static final String TEXT_CONTENT = "content";
+	
+	public static final String PICTURES = "pictures";
+	public static final String PICTURE = "picture";
+	public static final String PICTURE_DATA = "data";
+	
+	public static final String MODEL_AUDIT = "audit";
+	public static final String MODEL_SETTINGS = "settings";
 }
