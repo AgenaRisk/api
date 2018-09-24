@@ -25,7 +25,6 @@
 			<description>
 				<!--Corresponds to Description in ARD and uk.co.agena.minerva.util.model.NameDescription.longDescription in ARC-->
 				<!--CDATA-->
-				<!--Optional-->
 			</description>
 
 			<nodes>
@@ -47,7 +46,6 @@
 					<description>
 						<!--Corresponds to Description in ARD and uk.co.agena.minerva.util.model.NameDescription.longDescription in ARC-->
 						<!--CDATA-->
-						<!--Optional-->
 					</description>
 					
 					<configuration>
