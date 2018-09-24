@@ -568,9 +568,10 @@
 		<scenario>
 			<!--Tag omitted during XML-to-JSON conversion-->
 			
-			<name>
-				<!--Scenario name-->
-			</name>
+			<id>
+				<!--Scenario ID-->
+				<!--Corresponds to Scenario name in ARD and uk.co.agena.minerva.util.model.NameDescription.shortDescription in ARC-->
+			</id>
 			
 			<graphics>
 				
