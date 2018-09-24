@@ -69,6 +69,16 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	private final ExtendedNode logicNode;
 	
 	/**
+	 * This stores meta tag for the Node, and should be set on model load
+	 */
+	private JSONObject meta;
+	
+	/**
+	 * This stores graphics for the Node, and should be set on model load
+	 */
+	private JSONObject graphics;
+	
+	/**
 	 * Constructor for the Node class. Creates a Node object without affecting the logic in any way
 	 * @param network the Network that will contain this Node
 	 * @param logicNode the Node's corresponding logic Node
@@ -391,6 +401,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				// Should not happen
 				throw new AgenaRiskRuntimeException("Failed to access states array", ex);
 			}
+		}
+		
+		if (json.has(Ref.META)){
+			node.meta = json.optJSONObject(Ref.META);
+		}
+		
+		if (json.has(Ref.GRAPHICS)){
+			node.graphics = json.optJSONObject(Ref.GRAPHICS);
 		}
 		
 		return node;
@@ -852,6 +870,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	@Override
 	public JSONObject toJSONObject() {
+//		if (json.has(Ref.META)){
+//			node.meta = json.optJSONObject(Ref.META);
+//		}
+//		
+//		if (json.has(Ref.GRAPHICS)){
+//			node.graphics = json.optJSONObject(Ref.GRAPHICS);
+//		}
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 	
