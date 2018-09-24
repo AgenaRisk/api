@@ -296,7 +296,23 @@ public class CrossNetworkLink extends Link implements Storable {
 	protected MessagePassingLink getLogicLink() {
 		return logicLink;
 	}
+	
+	/**
+	 * Returns the type of this cross-network link
+	 * @return link type
+	 */
+	public Ref.LINK_TYPE getType(){
+		return type;
+	}
 
+	/**
+	 * Returns the state to pass with this cross-network link
+	 * @return the state to pass with this cross-network link or null if not passing a state
+	 */
+	public String getStateToPass() {
+		return stateToPass;
+	}
+	
 	/**
 	 * Creates a JSON representing this Link, ready for file storage
 	 * @return JSONObject representing this Link
