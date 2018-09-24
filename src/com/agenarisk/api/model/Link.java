@@ -2,9 +2,11 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.LinkException;
+import com.agenarisk.api.model.interfaces.Storable;
 import com.singularsys.jep.JepException;
 import java.util.List;
 import java.util.Objects;
+import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.corebn.CoreBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
@@ -13,12 +15,17 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
  * Link represents a link between two nodes
  * @author Eugene Dementiev
  */
-public class Link implements Comparable<Link> {
+public class Link implements Comparable<Link>, Storable {
 	
 	/**
 	 * Source and target Nodes
 	 */
 	private final Node fromNode, toNode;
+	
+	/**
+	 * This stores graphics for the object, and should be set on model load, and then saved on model save
+	 */
+	private JSONObject graphics;
 	
 	/**
 	 * Creates the Link object. Only for use by Link class and its subclasses.
@@ -164,5 +171,22 @@ public class Link implements Comparable<Link> {
 	@Override
 	public int hashCode() {
 		return System.identityHashCode(this);
+	}
+	
+	/**
+	 * Stores Link's graphics
+	 * @param graphics 
+	 */
+	protected void setGraphics(JSONObject graphics) {
+		this.graphics = graphics;
+	}
+
+	/**
+	 * Creates a JSON representing this Link, ready for file storage
+	 * @return JSONObject representing this Link
+	 */
+	@Override
+	public JSONObject toJSONObject() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

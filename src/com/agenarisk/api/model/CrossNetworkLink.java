@@ -22,6 +22,8 @@ import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.helpers.MathsHelper;
 import com.agenarisk.api.Ref;
+import com.agenarisk.api.model.interfaces.Storable;
+import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.Variable;
 import uk.co.agena.minerva.util.nptgenerator.Arithmetic;
@@ -32,7 +34,7 @@ import uk.co.agena.minerva.util.nptgenerator.Normal;
  * It is a special case of a general Link due to the underlying requirements of AgenaRisk logic
  * @author Eugene Dementiev
  */
-public class CrossNetworkLink extends Link {
+public class CrossNetworkLink extends Link implements Storable {
 	
 	/**
 	 * The underlying logical link in AgenaRisk Extended classes
@@ -294,7 +296,14 @@ public class CrossNetworkLink extends Link {
 	protected MessagePassingLink getLogicLink() {
 		return logicLink;
 	}
-	
-	
+
+	/**
+	 * Creates a JSON representing this Link, ready for file storage
+	 * @return JSONObject representing this Link
+	 */
+	@Override
+	public JSONObject toJSONObject() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 	
 }

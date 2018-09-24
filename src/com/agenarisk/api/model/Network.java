@@ -40,6 +40,12 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	private final ExtendedBN logicNetwork;
 	
 	/**
+	 * Should be set on model load, and then saved on model save
+	 */
+	private JSONObject graphics, riskTable, texts, pictures;
+	
+	
+	/**
 	 * ID-Node map of this Network
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
@@ -54,6 +60,36 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	protected static Network createNetwork(Model model, String id, String name) {
 		return new Network(model, id, name);
+	}
+	
+	/**
+	 * Factory method to be called by a Model object that is trying to add a Network to itself
+	 * @param model the Model to add a Network to
+	 * @param json JSONObject representing the network, including structure, tables, graphics etc
+	 * @return the created Network
+	 */
+	protected static Network createNetwork(Model model, JSONObject json) {
+		String id = "";
+		String name = "";
+		Network network = new Network(model, id, name);
+		
+		if (json.has(Ref.GRAPHICS)){
+			network.graphics = json.optJSONObject(Ref.GRAPHICS);
+		}
+		
+		if (json.has(Ref.RISK_TABLE)){
+			network.riskTable = json.optJSONObject(Ref.RISK_TABLE);
+		}
+		
+		if (json.has(Ref.TEXTS)){
+			network.texts = json.optJSONObject(Ref.TEXTS);
+		}
+		
+		if (json.has(Ref.PICTURES)){
+			network.pictures = json.optJSONObject(Ref.PICTURES);
+		}
+		
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
 	/**

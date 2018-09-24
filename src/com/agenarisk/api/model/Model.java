@@ -36,6 +36,11 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 	private final uk.co.agena.minerva.model.Model logicModel;
 	
 	/**
+	 * Should be set on model load, and then saved on model save
+	 */
+	private JSONObject graphics, texts, pictures, meta, audit;
+	
+	/**
 	 * Constructor for Model class
 	 * The Model is created without Scenarios or Networks
 	 * To be used by Model factory method
@@ -72,6 +77,9 @@ public class Model implements IDContainer<ModelException, Network>, Storable {
 	 * @return Model object
 	 */
 	public static Model createModel(JSONObject json){
+		
+		// Retrieve extra fields from JSON
+		
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
