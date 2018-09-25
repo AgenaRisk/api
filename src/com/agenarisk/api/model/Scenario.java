@@ -3,9 +3,12 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.ScenarioException;
 import com.agenarisk.api.model.interfaces.Identifiable;
+import com.agenarisk.api.model.scenario.DataSet;
 import com.agenarisk.api.model.scenario.Observation;
+import java.util.List;
 import java.util.Map;
 import org.apache.sling.commons.json.JSONArray;
+import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.BooleanEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
@@ -257,6 +260,36 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * @return null if there is no observation or either HardObservation or SoftObservation
 	 */
 	public Observation getObservation(Node node) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Returns the current data set of marginals for the given Node.
+	 * 
+	 * @param node the Node for which marginals should be returned
+	 * @return Data set of current marginals
+	 * @throws ScenarioException if there are no marginals in this Scenario for this Node or the Node and Scenario belog to different Models
+	 */
+	public DataSet getMarginals(Node node) throws ScenarioException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Gets all marginals for all Nodes for this Scenario.
+	 * 
+	 * @return list of all marginals for all Nodes for this Scenario
+	 */
+	public List<DataSet> getMarginals() {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Rebuilds marginals for this Scenario from a given JSON
+	 * 
+	 * @param json marginals data in JSON format
+	 * @throws ScenarioException if JSON data is invalid
+	 */
+	public void loadMarginals(JSONObject json) throws ScenarioException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 }
