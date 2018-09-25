@@ -1,0 +1,6 @@
+com.agenarisk.api
+com.agenarisk.api.exception
+com.agenarisk.api.model
+com.agenarisk.api.model.interfaces
+com.agenarisk.api.model.scenario
+com.agenarisk.api.util
