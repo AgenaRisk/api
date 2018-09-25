@@ -632,7 +632,7 @@
 				<!--Converted into an array of objects in JSON-->
 				<!--Corresponds to uk.co.agena.minerva.util.model.Model.getMarginalDataStore().getMarginalDataItemListForNode(ExtendeBN, ExtendedNode).getMarginalDataItemAtIndex(scenarioIndex)-->
 				
-				<marginal>
+				<dataset>
 					<!--Tag omitted during XML-to-JSON conversion-->
 					<!--Corresponds to uk.​co.​agena.​minerva.​model.MarginalDataItem-->
 					
@@ -644,7 +644,7 @@
 						<!--Node ID-->
 					</node>
 					
-					<dataset>
+					<datapoints>
 						<!--Corresponds to uk.co.agena.minerva.util.model.DataSet-->
 						
 						<datapoint>
@@ -663,8 +663,8 @@
 							</value>
 						</datapoint>
 						...
-					</dataset>
-				</marginal>
+					</datapoints>
+				</dataset>
 				...
 			</marginals>
 			
