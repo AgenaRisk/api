@@ -3,6 +3,16 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.ScenarioException;
 import com.agenarisk.api.model.interfaces.Identifiable;
+import java.util.Map;
+import org.apache.sling.commons.json.JSONArray;
+import uk.co.agena.minerva.model.extendedbn.BooleanEN;
+import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
+import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
+import uk.co.agena.minerva.model.extendedbn.ExtendedState;
+import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
+import uk.co.agena.minerva.model.extendedbn.LabelledEN;
+import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.model.NameDescription;
 
 /**
@@ -97,5 +107,122 @@ public class Scenario implements Identifiable<ScenarioException>{
 		}
 		
 		getLogicScenario().setName(new NameDescription(id, id));
+	}
+	
+	/**
+	 * Sets a hard observation for a Node.
+	 * 
+	 * @param <T> the type of observation (expecting a String when setting a particular state or a Double when setting a numeric value)
+	 * @param node the Node to set observation for
+	 * @param value the observation value
+	 * @throws ScenarioException if any of the following applies:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model;
+	 * <br>
+	 * ∙ State does not exist
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 */
+	public <T> void setObservationHard(Node node, T value) throws ScenarioException {
+		ExtendedBN ebn = node.getNetwork().getLogicNetwork();
+		ExtendedNode en = node.getLogicNode();
+		
+		if (en instanceof LabelledEN || en instanceof RankedEN || en instanceof DiscreteRealEN){
+			// Observation is same as one of the states
+			
+			if (value instanceof String){
+				// Find matching state
+				ExtendedState state = null;
+				try {
+					state = en.getExtendedStateWithShortDesc((String)value);
+					getLogicScenario().addHardEvidenceObservation(ebn.getId(), en.getId(), state.getId());
+				}
+				catch (ExtendedStateNotFoundException ex){
+					throw new ScenarioException("State `" + value + "` does not exist in node " + node.toStringExtra(), ex);
+				}
+			}
+			
+			if (en instanceof BooleanEN && value instanceof Boolean){
+			}
+			
+		}
+		
+		throw new UnsupportedOperationException("Not implemented");
+		
+	}
+	
+	/**
+	 * Sets a soft observation for the node, assigning a given weights to given states.
+	 * <br>
+	 * Note that weights will be normalised to sum up to 1.
+	 * 
+	 * @param node the Node to set observation for
+	 * @param states Array of states
+	 * @param weights Array of weights
+	 * @throws ScenarioException if any of the following applies:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model;
+	 * <br>
+	 * ∙ Any of the states do not exist
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 * <br>
+	 * ∙ Unequal size of arrays
+	 */
+	public void setObservationSoft(Node node, String[] states, Double[] weights) throws ScenarioException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Sets a soft observation for the node, assigning a given weights to given states.
+	 * <br>
+	 * Note that weights will be normalised to sum up to 1.
+	 * 
+	 * @param node the Node to set observation for
+	 * @param weights the map of states and weights
+	 * @throws ScenarioException if any of the following applies:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model;
+	 * <br>
+	 * ∙ Any of the states do not exist
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 */
+	public void setObservationSoft(Node node, Map<String, Double> weights) throws ScenarioException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Sets observations according to the given JSON.
+	 * 
+	 * @param observations JSON with observations
+	 * @throws ScenarioException if any of the following applies:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model;
+	 * <br>
+	 * ∙ Any of the states do not exist
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 * <br>
+	 * ∙ Missing or invalid attributes
+	 */
+	public void setObservations(JSONArray observations) throws ScenarioException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Clears an observation from a Node if it exists.
+	 * 
+	 * @param node the Node to clear the observation from
+	 */
+	public void clearObservation(Node node) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Clears all observations from this Scenario for all Networks and Nodes
+	 */
+	public void clearObservations() {
+		throw new UnsupportedOperationException("Not implemented");
 	}
 }
