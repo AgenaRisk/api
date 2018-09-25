@@ -3,6 +3,7 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.ScenarioException;
 import com.agenarisk.api.model.interfaces.Identifiable;
+import com.agenarisk.api.model.scenario.Observation;
 import java.util.Map;
 import org.apache.sling.commons.json.JSONArray;
 import uk.co.agena.minerva.model.extendedbn.BooleanEN;
@@ -111,6 +112,8 @@ public class Scenario implements Identifiable<ScenarioException>{
 	
 	/**
 	 * Sets a hard observation for a Node.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
 	 * 
 	 * @param <T> the type of observation (expecting a String when setting a particular state or a Double when setting a numeric value)
 	 * @param node the Node to set observation for
@@ -155,6 +158,8 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * Sets a soft observation for the node, assigning a given weights to given states.
 	 * <br>
 	 * Note that weights will be normalised to sum up to 1.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
 	 * 
 	 * @param node the Node to set observation for
 	 * @param states Array of states
@@ -177,6 +182,10 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * Sets a soft observation for the node, assigning a given weights to given states.
 	 * <br>
 	 * Note that weights will be normalised to sum up to 1.
+	 * <br>
+	 * Only the states with some weight must be provided. The rest will be assumed to have zero weight.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
 	 * 
 	 * @param node the Node to set observation for
 	 * @param weights the map of states and weights
@@ -194,6 +203,8 @@ public class Scenario implements Identifiable<ScenarioException>{
 	
 	/**
 	 * Sets observations according to the given JSON.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
 	 * 
 	 * @param observations JSON with observations
 	 * @throws ScenarioException if any of the following applies:
@@ -223,6 +234,29 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * Clears all observations from this Scenario for all Networks and Nodes
 	 */
 	public void clearObservations() {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Checks whether the Node has an observation set.
+	 * @param node the Node to check for observations
+	 * @return true if there is an observation for the Node in this Scenario
+	 */
+	public boolean hasObservation(Node node){
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Returns a view of the observation for the given node if there is one.
+	 * <br>
+	 * Note that this is just a view of the observation and any changes to it will not affect anything beyond this particular view.
+	 * <br>
+	 * To change an observation, use setObservation() method.
+	 * 
+	 * @param node the observed Node
+	 * @return null if there is no observation or either HardObservation or SoftObservation
+	 */
+	public Observation getObservation(Node node) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 }
