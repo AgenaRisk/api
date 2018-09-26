@@ -239,6 +239,20 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
+	 * Creates links from the given JSON.
+	 * <br>
+	 * Does nothing if json is null or empty.
+	 * 
+	 * @param model the model to create Links in
+	 * @param json configuration of the Links
+	 * @throws JSONException if JSON structure is invalid or inconsistent
+	 * @throws NodeException if a Link fails to be created
+	 */
+	public static void linkNodes(Model model, JSONArray json) throws JSONException, NodeException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
 	 * Creates a simple Link between two nodes in the same Network.
 	 * 
 	 * @param fromNode Node to link from
