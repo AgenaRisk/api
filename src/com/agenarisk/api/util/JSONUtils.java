@@ -1,5 +1,6 @@
 package com.agenarisk.api.util;
 
+import com.agenarisk.api.exception.ModelException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import uk.co.agena.minerva.util.io.FileHandler;
+import uk.co.agena.minerva.util.io.FileHandlingException;
 
 /**
  * Provides convenience functionality for working with JSONObject and JSONArray classes.
@@ -64,5 +67,38 @@ public class JSONUtils {
 			}
 		}
 		return list;
+	}
+	
+	/**
+	 * Loads Model configuration from an XML file and converts it into suitable JSONObject
+	 * @param path XML file path
+	 * @return Model configuration in valid JSONObject format
+	 * @throws ModelException if failed to read from file
+	 * @throws JSONException if XML structure is invalid or inconsistent
+	 */
+	public static JSONObject loadModelXML(String path) throws ModelException, JSONException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Loads Model configuration from a JSON file
+	 * @param path JSON file path
+	 * @return Model configuration in JSONObject format
+	 * @throws ModelException if failed to read from file
+	 * @throws JSONException if JSON structure is invalid or inconsistent
+	 */
+	public static JSONObject loadModelJSON(String path) throws ModelException, JSONException {
+		String jsonString;
+		JSONObject json;
+
+		try {
+			jsonString = FileHandler.readFileAsString(path);
+			json = new JSONObject(jsonString);
+		}
+		catch (FileHandlingException ex){
+			throw new ModelException("Failed to read data from file", ex);
+		}
+		
+		return json;
 	}
 }
