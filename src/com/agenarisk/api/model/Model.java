@@ -1,16 +1,21 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.Ref;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.FileIOException;
 import com.agenarisk.api.exception.ModelException;
+import com.agenarisk.api.exception.NodeException;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
+import com.agenarisk.api.util.JSONUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import org.apache.sling.commons.json.JSONArray;
+import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.MessagePassingLinkException;
 import uk.co.agena.minerva.model.PropagationException;
@@ -47,7 +52,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	/**
 	 * Should be set on model load, and then saved on model save
 	 */
-	private JSONObject graphics, texts, pictures, meta, audit;
+	private JSONArray texts, pictures;
+	private JSONObject graphics, meta, audit;
 	
 	/**
 	 * Constructor for Model class.
@@ -74,7 +80,39 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
+	 * Loads a Model from a JSON at the given file path.
+	 * 
+	 * @param path file path to JSON-encoded Model
+	 * @return loaded Model
+	 * @throws ModelException if failed to read the file or if JSON was corrupt or missing required attributes
+	 */
+	public static Model loadModel(String path) throws ModelException {
+		Environment.logIfDebug("Loading model from: " + path);
+		
+		JSONObject json;
+		try {
+			json = JSONUtils.loadModelJSON(path);
+		}
+		catch (JSONException ex){
+			throw new ModelException("Invalid model file format", ex);
+		}
+		
+		Model model;
+		try {
+			model = Model.createModel(json);
+		}
+		catch (JSONException ex){
+			throw new ModelException(JSONUtils.createMissingAttrMessage(ex));
+		}
+				
+		Environment.logIfDebug("Model loaded");
+		
+		return model;
+	}
+	
+	/**
 	 * Factory method to create an empty instance of a Model class.
+	 * 
 	 * @return new instance of a Model
 	 */
 	public static Model createModel(){
@@ -87,11 +125,43 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Creates all member components.
 	 * 
 	 * @param json JSONObject representing this model, including structure, tables, graphics etc
-	 * @return Model object
+	 * @return Model created Model
+	 * @throws ModelException if JSON structure is invalid or inconsistent
 	 */
-	public static Model createModel(JSONObject json){
+	public static Model createModel(JSONObject json) throws ModelException, JSONException {
+		
+		Model model = createModel();
+		
+		JSONObject jsonModel = json.getJSONObject(Ref.MODEL);
+		
+		// Create networks
+		JSONArray jsonNetworks = jsonModel.getJSONArray(Ref.NETWORKS);
+		for(int i = 0; i < jsonNetworks.length(); i++){
+			model.createNetwork(jsonNetworks.getJSONObject(i));
+		}
+
+		// Create cross Network links
+		try {
+			Node.linkNodes(model, jsonModel.optJSONArray(Ref.LINKS));
+		}
+		catch (JSONException | NodeException ex){
+			throw new ModelException("Failed to create Links", ex);
+		}
+		
+		// Apply settings
+		
+		// Apply Scenarios
+		
+		// Load Notes
+		if (jsonModel.has(Ref.META)){
+			// Load notes
+		}
 		
 		// Retrieve extra fields from JSON
+		model.texts = jsonModel.optJSONArray(Ref.TEXTS);
+		model.pictures = jsonModel.optJSONArray(Ref.PICTURES);
+		model.audit = jsonModel.optJSONObject(Ref.MODEL_AUDIT);
+		model.graphics = jsonModel.optJSONObject(Ref.GRAPHICS);
 		
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
