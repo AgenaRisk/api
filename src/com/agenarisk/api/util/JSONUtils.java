@@ -70,7 +70,8 @@ public class JSONUtils {
 	}
 	
 	/**
-	 * Loads Model configuration from an XML file and converts it into suitable JSONObject
+	 * Loads Model configuration from an XML file and converts it into suitable JSONObject.
+	 * 
 	 * @param path XML file path
 	 * @return Model configuration in valid JSONObject format
 	 * @throws ModelException if failed to read from file
@@ -81,7 +82,8 @@ public class JSONUtils {
 	}
 	
 	/**
-	 * Loads Model configuration from a JSON file
+	 * Loads Model configuration from a JSON file.
+	 * 
 	 * @param path JSON file path
 	 * @return Model configuration in JSONObject format
 	 * @throws ModelException if failed to read from file
