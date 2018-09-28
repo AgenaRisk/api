@@ -17,13 +17,13 @@ public class ResultEntryInterval extends ResultEntry {
 	/**
 	 * Constructor for ResultEntryInterval.
 	 * 
-	 * @param marginal Marginal containing the data set
+	 * @param calculationResult Marginal containing the data set
 	 * @param lowerBound lower bound of the range
 	 * @param upperBound upper bound of the range
 	 * @param value probability mass value
 	 */
-	public ResultEntryInterval(CalculationResult marginal, double lowerBound, double upperBound, double value) {
-		super(marginal, createLabel(lowerBound, upperBound), value);
+	public ResultEntryInterval(CalculationResult calculationResult, double lowerBound, double upperBound, double value) {
+		super(calculationResult, createLabel(lowerBound, upperBound), value);
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
 	}

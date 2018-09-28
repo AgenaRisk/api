@@ -13,6 +13,8 @@ import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
  * CalculationResult class represents a view of the Node's calculation results.
  * <br>
  * It is valid at the time of retrieval and is not maintained.
+ * <br>
+ * This partially corresponds to uk.co.agena.minerva.util.model.DataSet in AgenaRisk Java API v1.
  * 
  * @author Eugene Dementiev
  */
@@ -34,7 +36,7 @@ public class CalculationResult {
 	private final boolean continuous;
 	
 	/**
-	 * Collection of data points that make up the marginals for this Node
+	 * Collection of data points that make up the results for this Node
 	 */
 	private final List<ResultEntry> datapoints = new ArrayList<>();
 	
@@ -55,13 +57,13 @@ public class CalculationResult {
 	/**
 	 * Creates a CalculationResult instance from JSON.
 	 * <br>
-	 * This should typically be used when loading marginals from file.
+	 * This should typically be used when loading results from file.
 	 * 
 	 * @param json JSONObject containing data for this CalculationResult
 	 * @return constructed CalculationResult
 	 * @throws DataSetException if JSON contains invalid data
 	 */
-	protected static CalculationResult createMarginals(JSONObject json) throws DataSetException {
+	protected static CalculationResult createCalculationResult(JSONObject json) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
@@ -73,7 +75,7 @@ public class CalculationResult {
 	 * @param mdi MarginalDataItem containing data for this CalculationResult
 	 * @return constructed CalculationResult
 	 */
-	protected static CalculationResult createMarginals(MarginalDataItem mdi) {
+	protected static CalculationResult createCalculationResult(MarginalDataItem mdi) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -176,5 +178,4 @@ public class CalculationResult {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
-
 }

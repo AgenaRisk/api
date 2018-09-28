@@ -263,32 +263,32 @@ public class DataSet implements Identifiable<DataSetException>{
 	}
 	
 	/**
-	 * Returns the current data set of marginals for the given Node.
+	 * Returns the CalculationResult for the given Node.
 	 * 
-	 * @param node the Node for which marginals should be returned
-	 * @return Data set of current marginals
-	 * @throws DataSetException if there are no marginals in this DataSet for this Node or the Node and DataSet belong to different Models
+	 * @param node the Node for which CalculationResult should be returned
+	 * @return CalculationResult for the given Node
+	 * @throws DataSetException if there are no results in this DataSet for this Node or the Node and DataSet belong to different Models
 	 */
 	public CalculationResult getCalculationResult(Node node) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
 	/**
-	 * Gets all marginals for all Nodes for this DataSet.
+	 * Gets all CalculationResults for all Nodes for this DataSet.
 	 * 
-	 * @return list of all marginals for all Nodes for this DataSet
+	 * @return list of all CalculationResults for all Nodes for this DataSet
 	 */
 	public List<CalculationResult> getCalculationResults() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
 	/**
-	 * Rebuilds marginals for this DataSet from a given JSON
+	 * Rebuilds CalculationResults for this DataSet from a given JSON.
 	 * 
-	 * @param json marginals data in JSON format
+	 * @param json CalculationResults in JSON format
 	 * @throws DataSetException if JSON data is invalid
 	 */
-	public void loadMarginals(JSONObject json) throws DataSetException {
+	protected void loadCalculationResults(JSONObject json) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 }
