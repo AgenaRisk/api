@@ -3,11 +3,11 @@ package com.agenarisk.api.model.dataset;
 import com.agenarisk.api.model.CalculationResult;
 
 /**
- * ResultEntry represents a state or range with probability mass allocated to it.
+ * ResultValue represents a state or range with probability mass allocated to it.
  * 
  * @author Eugene Dementiev
  */
-public class ResultEntry {
+public class ResultValue {
 
 	/**
 	 * The CalculationResult containing the data set
@@ -25,13 +25,13 @@ public class ResultEntry {
 	private final double value;
 
 	/**
-	 * Constructor for ResultEntry.
+	 * Constructor for ResultValue.
 	 * 
 	 * @param result CalculationResult containing the entries
 	 * @param label entry label (state or range)
 	 * @param value probability mass value
 	 */
-	public ResultEntry(CalculationResult result, String label, double value) {
+	public ResultValue(CalculationResult result, String label, double value) {
 		this.result = result;
 		this.label = label;
 		this.value = value;

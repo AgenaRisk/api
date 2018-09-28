@@ -1,7 +1,7 @@
 package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.DataSetException;
-import com.agenarisk.api.model.dataset.ResultEntry;
+import com.agenarisk.api.model.dataset.ResultValue;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.sling.commons.json.JSONObject;
@@ -38,7 +38,7 @@ public class CalculationResult {
 	/**
 	 * Collection of data points that make up the results for this Node
 	 */
-	private final List<ResultEntry> resultValues = new ArrayList<>();
+	private final List<ResultValue> resultValues = new ArrayList<>();
 	
 	/**
 	 * Constructor for the CalculationResult class.
@@ -102,7 +102,7 @@ public class CalculationResult {
 	 * 
 	 * @return data points
 	 */
-	public List<ResultEntry> getResultEntrys() {
+	public List<ResultValue> getResultValues() {
 		return resultValues;
 	}
 
@@ -194,14 +194,6 @@ public class CalculationResult {
 	 */
 	public boolean isContinuous() {
 		return continuous;
-	}
-
-	/**
-	 * Returns a list of all result values in this CalculationResult
-	 * @return list of all result values in this CalculationResult
-	 */
-	public List<ResultEntry> getResultValues() {
-		return resultValues;
 	}
 	
 }

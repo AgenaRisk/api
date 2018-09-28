@@ -3,11 +3,11 @@ package com.agenarisk.api.model.dataset;
 import com.agenarisk.api.model.CalculationResult;
 
 /**
- * ResultEntryInterval represents a range with a lower and upper boundaries with a probability mass allocated to it.
+ * ResultInterval represents a range with a lower and upper boundaries with a probability mass allocated to it.
  * 
  * @author Eugene Dementiev
  */
-public class ResultEntryInterval extends ResultEntry {
+public class ResultInterval extends ResultValue {
 
 	/**
 	 * Lower and upper boundaries of the range
@@ -15,14 +15,14 @@ public class ResultEntryInterval extends ResultEntry {
 	private final double lowerBound, upperBound;
 
 	/**
-	 * Constructor for ResultEntryInterval.
+	 * Constructor for ResultInterval.
 	 * 
 	 * @param calculationResult Marginal containing the data set
 	 * @param lowerBound lower bound of the range
 	 * @param upperBound upper bound of the range
 	 * @param value probability mass value
 	 */
-	public ResultEntryInterval(CalculationResult calculationResult, double lowerBound, double upperBound, double value) {
+	public ResultInterval(CalculationResult calculationResult, double lowerBound, double upperBound, double value) {
 		super(calculationResult, createLabel(lowerBound, upperBound), value);
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
