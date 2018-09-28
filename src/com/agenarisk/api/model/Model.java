@@ -26,7 +26,7 @@ import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 
 /**
- * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, scenarios etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
+ * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
  * 
  * @author Eugene Dementiev
  */
@@ -39,10 +39,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 	private final Map<String, Network> networks = Collections.synchronizedMap(new HashMap<>());
 	
 	/**
-	 * ID-Scenario map of this Model
+	 * ID-DataSet map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<String, Scenario> scenarios = Collections.synchronizedMap(new HashMap());
+	private final Map<String, DataSet> datasets = Collections.synchronizedMap(new HashMap());
 	
 	/**
 	 * The underlying logical Model
@@ -58,7 +58,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	/**
 	 * Constructor for Model class.
 	 * <br>
-	 * The Model is created without Scenarios or Networks.
+	 * The Model is created without DataSets or Networks.
 	 * <br>
 	 * To be used by Model factory method.
 	 */
@@ -150,7 +150,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		// Apply settings
 		
-		// Apply Scenarios
+		// Load and apply DataSets
 		
 		// Load Notes
 		if (jsonModel.has(Ref.META)){
@@ -240,8 +240,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 			return networks;
 		}
 		
-		if (Scenario.class.equals(idClassType)){
-			return scenarios;
+		if (DataSet.class.equals(idClassType)){
+			return datasets;
 		}
 		
 		throw new ModelException("Invalid class type provided: "+idClassType);
@@ -296,7 +296,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Triggers propagation in this model for all Networks and Scenarios.
+	 * Triggers propagation in this model for all Networks and DataSets.
 	 * 
 	 * @throws CalculationException if calculation failed
 	 */
@@ -335,32 +335,32 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 
 	/**
-	 * Creates a new Scenario and adds it to this Model.
+	 * Creates a new DataSet and adds it to this Model.
 	 * 
-	 * @param id unique ID of the Scenario
-	 * @return the Scenario instance added to this Model
-	 * @throws ModelException if a Scenario with this ID already exists
+	 * @param id unique ID of the DataSet
+	 * @return the DataSet instance added to this Model
+	 * @throws ModelException if a DataSet with this ID already exists
 	 */
-	public Scenario createScenario(String id) throws ModelException {
+	public DataSet createDataSet(String id) throws ModelException {
 		synchronized (IDContainer.class){
-			if (scenarios.containsKey(id)){
-				throw new ModelException("Scenario with id `" + id + "` already exists");
+			if (datasets.containsKey(id)){
+				throw new ModelException("DataSet with id `" + id + "` already exists");
 			}
-			scenarios.put(id, null);
+			datasets.put(id, null);
 		}
 		
-		Scenario scenario;
+		DataSet dataset;
 		
 		try {
-			scenario = Scenario.createScenario(this, id);
-			scenarios.put(id, scenario);
+			dataset = DataSet.createDataSet(this, id);
+			datasets.put(id, dataset);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			scenarios.remove(id);
-			throw new ModelException("Failed to add Scenario `" + id + "`", ex);
+			datasets.remove(id);
+			throw new ModelException("Failed to add DataSet `" + id + "`", ex);
 		}
 		
-		return scenario;
+		return dataset;
 	}
 		
 	/**
@@ -368,7 +368,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @return copy of ID-Network map
 	 */
-	public Map<String, Scenario> getScenarios() {
-		return new TreeMap<>(scenarios);
+	public Map<String, DataSet> getDataSets() {
+		return new TreeMap<>(datasets);
 	}
 }

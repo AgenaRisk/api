@@ -1,11 +1,13 @@
-package com.agenarisk.api.model.scenario;
+package com.agenarisk.api.model.dataset;
+
+import com.agenarisk.api.model.CalculationResult;
 
 /**
- * DataPointInterval represents a range with a lower and upper boundaries with a probability mass allocated to it.
+ * ResultEntryInterval represents a range with a lower and upper boundaries with a probability mass allocated to it.
  * 
  * @author Eugene Dementiev
  */
-public class DataPointInterval extends DataPoint {
+public class ResultEntryInterval extends ResultEntry {
 
 	/**
 	 * Lower and upper boundaries of the range
@@ -13,14 +15,14 @@ public class DataPointInterval extends DataPoint {
 	private final double lowerBound, upperBound;
 
 	/**
-	 * Constructor for DataPointInterval.
+	 * Constructor for ResultEntryInterval.
 	 * 
 	 * @param marginal Marginal containing the data set
 	 * @param lowerBound lower bound of the range
 	 * @param upperBound upper bound of the range
 	 * @param value probability mass value
 	 */
-	public DataPointInterval(DataSet marginal, double lowerBound, double upperBound, double value) {
+	public ResultEntryInterval(CalculationResult marginal, double lowerBound, double upperBound, double value) {
 		super(marginal, createLabel(lowerBound, upperBound), value);
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;

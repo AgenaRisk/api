@@ -1,10 +1,9 @@
 package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.ModelException;
-import com.agenarisk.api.exception.ScenarioException;
+import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.model.interfaces.Identifiable;
-import com.agenarisk.api.model.scenario.DataSet;
-import com.agenarisk.api.model.scenario.Observation;
+import com.agenarisk.api.model.dataset.Observation;
 import java.util.List;
 import java.util.Map;
 import org.apache.sling.commons.json.JSONArray;
@@ -20,14 +19,14 @@ import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.model.NameDescription;
 
 /**
- * Scenario class represents an equivalent to a Scenario in AgenaRisk Desktop or Scenario in AgenaRisk Java API v1.
+ * DataSet class represents an equivalent to a Scenario in AgenaRisk Desktop or Scenario in AgenaRisk Java API v1.
  * 
  * @author Eugene Dementiev
  */
-public class Scenario implements Identifiable<ScenarioException>{
+public class DataSet implements Identifiable<DataSetException>{
 
 	/**
-	 * Model this Scenario belongs to
+	 * Model this DataSet belongs to
 	 */
 	private final Model model;
 	
@@ -37,31 +36,31 @@ public class Scenario implements Identifiable<ScenarioException>{
 	private final uk.co.agena.minerva.model.scenario.Scenario logicScenario;
 
 	/**
-	 * Private constructor for Scenario class.
+	 * Private constructor for DataSet class.
 	 * <br>
-	 * Should only be used by Scenario static factory methods.
+	 * Should only be used by DataSet static factory methods.
 	 * 
-	 * @param model the Model this Scenario belongs to
+	 * @param model the Model this DataSet belongs to
 	 * @param logicScenario the corresponding uk.co.agena.minerva.model.scenario.Scenario
 	 */
-	private Scenario(Model model, uk.co.agena.minerva.model.scenario.Scenario logicScenario) {
+	private DataSet(Model model, uk.co.agena.minerva.model.scenario.Scenario logicScenario) {
 		this.model = model;
 		this.logicScenario = logicScenario;
 	}
 	
 	/**
-	 * Factory method to create a Scenario and add it to the given Model.
+	 * Factory method to create a DataSet and add it to the given Model.
 	 * <br>
 	 * To be used by the Model class.
 	 * 
-	 * @param model Model to create and add Scenario to
-	 * @param id unique ID/name of the Scenario
-	 * @return created Scenario
+	 * @param model Model to create and add DataSet to
+	 * @param id unique ID/name of the DataSet
+	 * @return created DataSet
 	 */
-	protected static Scenario createScenario(Model model, String id){
+	protected static DataSet createDataSet(Model model, String id){
 		uk.co.agena.minerva.model.scenario.Scenario logicScenario = model.getLogicModel().addScenario(id);
-		Scenario scenario = new Scenario(model, logicScenario);
-		return scenario;
+		DataSet dataset = new DataSet(model, logicScenario);
+		return dataset;
 	}
 	
 	/**
@@ -74,18 +73,18 @@ public class Scenario implements Identifiable<ScenarioException>{
 	}
 	
 	/**
-	 * Returns the Model that this Scenario belongs to.
+	 * Returns the Model that this DataSet belongs to.
 	 * 
-	 * @return the Model that this Scenario belongs to
+	 * @return the Model that this DataSet belongs to
 	 */
 	public final Model getModel() {
 		return model;
 	}
 
 	/**
-	 * Gets the ID of this Scenario.
+	 * Gets the ID of this DataSet.
 	 * 
-	 * @return the ID of this Scenario
+	 * @return the ID of this DataSet
 	 */
 	@Override
 	public final String getId() {
@@ -98,16 +97,16 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * Will lock IDContainer.class while doing so.
 	 * 
 	 * @param id the new ID
-	 * @throws ScenarioException if fails to change ID
+	 * @throws DataSetException if fails to change ID
 	 */
 	@Override
-	public final void setId(String id) throws ScenarioException {
+	public final void setId(String id) throws DataSetException {
 		
 		try {
 			getModel().changeContainedId(this, id);
 		}
 		catch (ModelException ex){
-			throw new ScenarioException("Failed to change ID of Network `" + getId() + "`", ex);
+			throw new DataSetException("Failed to change ID of Network `" + getId() + "`", ex);
 		}
 		
 		getLogicScenario().setName(new NameDescription(id, id));
@@ -121,7 +120,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * @param <T> the type of observation (expecting a String when setting a particular state or a Double when setting a numeric value)
 	 * @param node the Node to set observation for
 	 * @param value the observation value
-	 * @throws ScenarioException if any of the following applies:
+	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
 	 * <br>
@@ -129,7 +128,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * <br>
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
-	public <T> void setObservationHard(Node node, T value) throws ScenarioException {
+	public <T> void setObservationHard(Node node, T value) throws DataSetException {
 		ExtendedBN ebn = node.getNetwork().getLogicNetwork();
 		ExtendedNode en = node.getLogicNode();
 		
@@ -144,7 +143,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 					getLogicScenario().addHardEvidenceObservation(ebn.getId(), en.getId(), state.getId());
 				}
 				catch (ExtendedStateNotFoundException ex){
-					throw new ScenarioException("State `" + value + "` does not exist in node " + node.toStringExtra(), ex);
+					throw new DataSetException("State `" + value + "` does not exist in node " + node.toStringExtra(), ex);
 				}
 			}
 			
@@ -167,7 +166,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * @param node the Node to set observation for
 	 * @param states Array of states
 	 * @param weights Array of weights
-	 * @throws ScenarioException if any of the following applies:
+	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
 	 * <br>
@@ -177,7 +176,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * <br>
 	 * ∙ Unequal size of arrays
 	 */
-	public void setObservationSoft(Node node, String[] states, Double[] weights) throws ScenarioException {
+	public void setObservationSoft(Node node, String[] states, Double[] weights) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
@@ -192,7 +191,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * 
 	 * @param node the Node to set observation for
 	 * @param weights the map of states and weights
-	 * @throws ScenarioException if any of the following applies:
+	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
 	 * <br>
@@ -200,7 +199,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * <br>
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
-	public void setObservationSoft(Node node, Map<String, Double> weights) throws ScenarioException {
+	public void setObservationSoft(Node node, Map<String, Double> weights) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
@@ -210,7 +209,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * Any existing observations are removed and replaced with this one.
 	 * 
 	 * @param observations JSON with observations
-	 * @throws ScenarioException if any of the following applies:
+	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
 	 * <br>
@@ -220,7 +219,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * <br>
 	 * ∙ Missing or invalid attributes
 	 */
-	public void setObservations(JSONArray observations) throws ScenarioException {
+	public void setObservations(JSONArray observations) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
@@ -234,7 +233,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	}
 	
 	/**
-	 * Clears all observations from this Scenario for all Networks and Nodes
+	 * Clears all observations from this DataSet for all Networks and Nodes
 	 */
 	public void clearObservations() {
 		throw new UnsupportedOperationException("Not implemented");
@@ -243,7 +242,7 @@ public class Scenario implements Identifiable<ScenarioException>{
 	/**
 	 * Checks whether the Node has an observation set.
 	 * @param node the Node to check for observations
-	 * @return true if there is an observation for the Node in this Scenario
+	 * @return true if there is an observation for the Node in this DataSet
 	 */
 	public boolean hasObservation(Node node){
 		throw new UnsupportedOperationException("Not implemented");
@@ -268,28 +267,28 @@ public class Scenario implements Identifiable<ScenarioException>{
 	 * 
 	 * @param node the Node for which marginals should be returned
 	 * @return Data set of current marginals
-	 * @throws ScenarioException if there are no marginals in this Scenario for this Node or the Node and Scenario belog to different Models
+	 * @throws DataSetException if there are no marginals in this DataSet for this Node or the Node and DataSet belong to different Models
 	 */
-	public DataSet getMarginals(Node node) throws ScenarioException {
+	public CalculationResult getCalculationResult(Node node) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
 	/**
-	 * Gets all marginals for all Nodes for this Scenario.
+	 * Gets all marginals for all Nodes for this DataSet.
 	 * 
-	 * @return list of all marginals for all Nodes for this Scenario
+	 * @return list of all marginals for all Nodes for this DataSet
 	 */
-	public List<DataSet> getMarginals() {
+	public List<CalculationResult> getCalculationResults() {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
 	/**
-	 * Rebuilds marginals for this Scenario from a given JSON
+	 * Rebuilds marginals for this DataSet from a given JSON
 	 * 
 	 * @param json marginals data in JSON format
-	 * @throws ScenarioException if JSON data is invalid
+	 * @throws DataSetException if JSON data is invalid
 	 */
-	public void loadMarginals(JSONObject json) throws ScenarioException {
+	public void loadMarginals(JSONObject json) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 }

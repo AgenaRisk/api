@@ -1,7 +1,7 @@
-package com.agenarisk.api.model.scenario;
+package com.agenarisk.api.model.dataset;
 
 import com.agenarisk.api.model.Node;
-import com.agenarisk.api.model.Scenario;
+import com.agenarisk.api.model.DataSet;
 
 /**
  * This represents a hard observation with a single observed value or state.
@@ -19,11 +19,11 @@ public class HardObservation <T> extends Observation {
 	 * Constructor for this HardObservation.
 	 * 
 	 * @param node observed Node
-	 * @param scenario Scenario that contains this Observation
+	 * @param dataset DataSet that contains this Observation
 	 * @param value value of the observation
 	 */
-	public HardObservation(Node node, Scenario scenario, T value) {
-		super(scenario, node);
+	public HardObservation(Node node, DataSet dataset, T value) {
+		super(dataset, node);
 		this.value = value;
 	}
 

@@ -1,7 +1,7 @@
-package com.agenarisk.api.model.scenario;
+package com.agenarisk.api.model.dataset;
 
 import com.agenarisk.api.model.Node;
-import com.agenarisk.api.model.Scenario;
+import com.agenarisk.api.model.DataSet;
 import java.util.Map;
 
 /**
@@ -20,11 +20,11 @@ public class SoftObservation extends Observation {
 	 * Constructor for this SoftObservation.
 	 * 
 	 * @param node observed Node
-	 * @param scenario Scenario that contains this Observation
+	 * @param dataset DataSet that contains this Observation
 	 * @param weights state-weight map
 	 */
-	public SoftObservation(Node node, Scenario scenario, Map<String, Double> weights) {
-		super(scenario, node);
+	public SoftObservation(Node node, DataSet dataset, Map<String, Double> weights) {
+		super(dataset, node);
 		this.weights = weights;
 	}
 

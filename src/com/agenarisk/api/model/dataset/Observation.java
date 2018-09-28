@@ -1,7 +1,7 @@
-package com.agenarisk.api.model.scenario;
+package com.agenarisk.api.model.dataset;
 
 import com.agenarisk.api.model.Node;
-import com.agenarisk.api.model.Scenario;
+import com.agenarisk.api.model.DataSet;
 
 /**
  * Observation class is a view of an observation, valid at the time of resolution and not maintained.
@@ -11,9 +11,9 @@ import com.agenarisk.api.model.Scenario;
 public abstract class Observation {
 
 	/**
-	 * Scenario that contains this Observation
+	 * DataSet that contains this Observation
 	 */
-	private final Scenario scenario;
+	private final DataSet dataset;
 	
 	/**
 	 * Observed Node
@@ -23,20 +23,20 @@ public abstract class Observation {
 	/**
 	 * Constructor for the observation.
 	 * 
-	 * @param scenario Scenario that contains this Observation
+	 * @param dataset DataSet that contains this Observation
 	 * @param node observed Node
 	 */
-	public Observation(Scenario scenario, Node node) {
+	public Observation(DataSet dataset, Node node) {
 		this.node = node;
-		this.scenario = scenario;
+		this.dataset = dataset;
 	}
 	
 	/**
-	 * Returns Scenario that contains this Observation
-	 * @return Scenario that contains this Observation
+	 * Returns DataSet that contains this Observation
+	 * @return DataSet that contains this Observation
 	 */
-	public Scenario getScenario() {
-		return scenario;
+	public DataSet getDataSet() {
+		return dataset;
 	}
 
 	/**

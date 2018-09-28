@@ -1,99 +1,106 @@
-package com.agenarisk.api.model.scenario;
+package com.agenarisk.api.model;
 
-import com.agenarisk.api.exception.ScenarioException;
-import com.agenarisk.api.model.Node;
-import com.agenarisk.api.model.Scenario;
+import com.agenarisk.api.exception.DataSetException;
+import com.agenarisk.api.model.dataset.ResultEntry;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.MarginalDataItem;
+import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
+import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 
 /**
- * DataSet class represents a view of the Node's marginals.
+ * CalculationResult class represents a view of the Node's calculation results.
  * <br>
  * It is valid at the time of retrieval and is not maintained.
  * 
  * @author Eugene Dementiev
  */
-public class DataSet {
+public class CalculationResult {
 
 	/**
-	 * Scenario to which the DataSet belongs to
+	 * DataSet to which the Result belongs to
 	 */
-	private final Scenario scenario;
+	private final DataSet dataset;
 	
 	/**
-	 * The DataSet's Node
+	 * The Result's Node
 	 */
 	private final Node node;
 	
 	/**
-	 * Collection of data points that make up the marginals for this Node
+	 * Whether the result is for a continuous variable
 	 */
-	private final List<DataPoint> datapoints = new ArrayList<>();
+	private final boolean continuous;
 	
 	/**
-	 * Constructor for the DataSet class.
+	 * Collection of data points that make up the marginals for this Node
+	 */
+	private final List<ResultEntry> datapoints = new ArrayList<>();
+	
+	/**
+	 * Constructor for the CalculationResult class.
 	 * <br>
 	 * Should be used by static factory methods.
 	 * 
-	 * @param scenario Scenario to which the DataSet belongs to
-	 * @param node the DataSet's Node
+	 * @param dataset DataSet to which the CalculationResult belongs to
+	 * @param node the CalculationResult's Node
 	 */
-	private DataSet(Scenario scenario, Node node){
-		this.scenario = scenario;
+	private CalculationResult(DataSet dataset, Node node){
+		this.dataset = dataset;
 		this.node = node;
+		this.continuous = node.getLogicNode() instanceof IntegerIntervalEN || node.getLogicNode() instanceof ContinuousIntervalEN;
 	}
 	
 	/**
-	 * Creates a DataSet instance from JSON.
+	 * Creates a CalculationResult instance from JSON.
 	 * <br>
 	 * This should typically be used when loading marginals from file.
 	 * 
-	 * @param json JSONObject containing data for this DataSet
-	 * @return constructed DataSet
-	 * @throws ScenarioException if JSON contains invalid data
+	 * @param json JSONObject containing data for this CalculationResult
+	 * @return constructed CalculationResult
+	 * @throws DataSetException if JSON contains invalid data
 	 */
-	protected static DataSet createMarginals(JSONObject json) throws ScenarioException {
+	protected static CalculationResult createMarginals(JSONObject json) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
 	/**
-	 * Creates a DataSet instance from MarginalDataItem in AgenaRisk Core.
+	 * Creates a CalculationResult instance from MarginalDataItem in AgenaRisk Core.
 	 * <br>
 	 * This should typically be used when the model is calculated.
 	 * 
-	 * @param mdi MarginalDataItem containing data for this DataSet
-	 * @return constructed DataSet
+	 * @param mdi MarginalDataItem containing data for this CalculationResult
+	 * @return constructed CalculationResult
 	 */
-	protected static DataSet createMarginals(MarginalDataItem mdi) {
+	protected static CalculationResult createMarginals(MarginalDataItem mdi) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	/**
-	 * Returns the Scenario to which the DataSet belongs to.
+	 * Returns the DataSet to which the CalculationResult belongs to.
 	 * 
-	 * @return the Scenario to which the DataSet belongs to
+	 * @return the DataSet to which the CalculationResult belongs to
 	 */
-	public Scenario getScenario() {
-		return scenario;
+	public DataSet getDataSet() {
+		return dataset;
 	}
 
 	/**
-	 * Returns the DataSet's Node.
+	 * Returns the CalculationResult's Node.
 	 * 
-	 * @return the DataSet's Node 
+	 * @return the CalculationResult's Node 
 	 */
 	public Node getNode() {
 		return node;
 	}
 
 	/**
-	 * Returns the data points that make up DataSet for this Node.
+	 * Returns the data points that make up CalculationResult for this Node.
 	 * 
 	 * @return data points
 	 */
-	public List<DataPoint> getDataPoints() {
+	public List<ResultEntry> getResultEntrys() {
 		return datapoints;
 	}
 
@@ -169,5 +176,5 @@ public class DataSet {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
-	
+
 }
