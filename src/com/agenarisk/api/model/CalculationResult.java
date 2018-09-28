@@ -38,7 +38,7 @@ public class CalculationResult {
 	/**
 	 * Collection of data points that make up the results for this Node
 	 */
-	private final List<ResultEntry> datapoints = new ArrayList<>();
+	private final List<ResultEntry> resultValues = new ArrayList<>();
 	
 	/**
 	 * Constructor for the CalculationResult class.
@@ -103,7 +103,7 @@ public class CalculationResult {
 	 * @return data points
 	 */
 	public List<ResultEntry> getResultEntrys() {
-		return datapoints;
+		return resultValues;
 	}
 
 	/**
@@ -176,6 +176,32 @@ public class CalculationResult {
 	 */
 	public double getUpperPercentile() {
 		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	/**
+	 * Gets the DataSet containing this result.
+	 * 
+	 * @return DataSet containing this result
+	 */
+	public DataSet getDataset() {
+		return dataset;
+	}
+
+	/**
+	 * Returns if the calculation result is for a continuous variable.
+	 * 
+	 * @return true if the calculation result is for a continuous variable
+	 */
+	public boolean isContinuous() {
+		return continuous;
+	}
+
+	/**
+	 * Returns a list of all result values in this CalculationResult
+	 * @return list of all result values in this CalculationResult
+	 */
+	public List<ResultEntry> getResultValues() {
+		return resultValues;
 	}
 	
 }
