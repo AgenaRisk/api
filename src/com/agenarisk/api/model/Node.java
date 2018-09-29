@@ -1,5 +1,6 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.model.interfaces.Named;
 import com.agenarisk.api.model.interfaces.Networked;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.LinkException;
@@ -46,7 +47,7 @@ import uk.co.agena.minerva.util.nptgenerator.ExpressionParser;
  * 
  * @author Eugene Dementiev
  */
-public class Node implements Networked<Node>, Comparable<Node>, Identifiable<NodeException>, Storable {
+public class Node implements Networked<Node>, Comparable<Node>, Identifiable<NodeException>, Storable, Named {
 	
 	/**
 	 * The Network containing this Node

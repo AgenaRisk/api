@@ -1,5 +1,6 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.model.interfaces.Named;
 import com.agenarisk.api.model.interfaces.Networked;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.ModelException;
@@ -28,7 +29,7 @@ import com.agenarisk.api.Ref;
  * 
  * @author Eugene Dementiev
  */
-public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException>, Storable {
+public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException>, Storable, Named {
 	
 	/**
 	 * Model that contains this Network
@@ -478,4 +479,5 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	public String getDescription(){
 		return getLogicNetwork().getName().getLongDescription();
 	}
+	
 }
