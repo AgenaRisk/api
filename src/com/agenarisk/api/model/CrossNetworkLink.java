@@ -21,7 +21,6 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.helpers.MathsHelper;
-import com.agenarisk.api.Ref;
 import com.agenarisk.api.model.interfaces.Storable;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -39,6 +38,20 @@ import uk.co.agena.minerva.util.nptgenerator.Normal;
 public class CrossNetworkLink extends Link implements Storable {
 	
 	/**
+	 * Possible types of data that the Link will pass
+	 */
+	public static enum Type {
+		Marginals,
+		Mean,
+		Median,
+		Variance,
+		StandardDeviation,
+		LowerPercentile,
+		UpperPercentile,
+		State
+	}
+	
+	/**
 	 * The underlying logical link in AgenaRisk Extended classes
 	 */
 	private MessagePassingLink logicLink;
@@ -46,7 +59,7 @@ public class CrossNetworkLink extends Link implements Storable {
 	/**
 	 * The type of the CrossNetworkLink
 	 */
-	private Ref.LINK_TYPE type = null;
+	private Type type = null;
 	
 	/**
 	 * The state to pass (if any)
@@ -65,7 +78,7 @@ public class CrossNetworkLink extends Link implements Storable {
 	 * @param type the type of CrossNetworkLink
 	 * @param stateToPass state to pass (if any)
 	 */
-	private CrossNetworkLink(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) {
+	private CrossNetworkLink(Node fromNode, Node toNode, Type type, String stateToPass) {
 		super(fromNode, toNode);
 		this.type = type;
 		this.stateToPass = stateToPass;
@@ -85,7 +98,7 @@ public class CrossNetworkLink extends Link implements Storable {
 	 * @return CrossNetworkLink created
 	 * @throws LinkException if source and target are in the same Network; no CrossNetworkLink type specified; type passes state, but state not specified; type does not pass a state but state specified
 	 */
-	protected static CrossNetworkLink createCrossNetworkLink(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) throws LinkException{
+	protected static CrossNetworkLink createCrossNetworkLink(Node fromNode, Node toNode, Type type, String stateToPass) throws LinkException{
 		if (Objects.equals(fromNode.getNetwork(), toNode.getNetwork())){
 			throw new LinkException("Trying to link nodes in same network by a cross network link");
 		}
@@ -94,11 +107,11 @@ public class CrossNetworkLink extends Link implements Storable {
 			throw new LinkException("Cross network link type not specified");
 		}
 		
-		if (type.equals(Ref.LINK_TYPE.State) && stateToPass == null){
+		if (type.equals(Type.State) && stateToPass == null){
 			throw new LinkException("State to pass not provided");
 		}
 		
-		if (stateToPass != null && !type.equals(Ref.LINK_TYPE.State)){
+		if (stateToPass != null && !type.equals(Type.State)){
 			throw new LinkException("Link type `"+type.toString()+"` does not pass a state");
 		}
 		
@@ -136,7 +149,7 @@ public class CrossNetworkLink extends Link implements Storable {
 		}
 		en1.setConnectableOutputNode(true);
 		
-		if (Ref.LINK_TYPE.Marginals.equals(type)){
+		if (Type.Marginals.equals(type)){
 			// Passing state marginals
 			if (en2 instanceof LabelledEN || en2 instanceof RankedEN){
 				// If target is labelled node, just copy states from source to target
@@ -164,7 +177,7 @@ public class CrossNetworkLink extends Link implements Storable {
 
 			logicLink = new MessagePassingLink(ebn2.getId(), ebn1.getId(), en2.getId(), en1.getId());
 		}
-		else if (Ref.LINK_TYPE.State.equals(type)){
+		else if (Type.State.equals(type)){
 			// Translating a state
 			String stateName = stateToPass;
 
@@ -314,7 +327,7 @@ public class CrossNetworkLink extends Link implements Storable {
 	 * 
 	 * @return link type
 	 */
-	public Ref.LINK_TYPE getType(){
+	public Type getType(){
 		return type;
 	}
 

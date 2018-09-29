@@ -273,7 +273,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return created Link
 	 * @throws LinkException if Link already exists, or a cross network link is being created with invalid arguments
 	 */
-	public static Link linkNodes(Node fromNode, Node toNode, Ref.LINK_TYPE type) throws LinkException {
+	public static Link linkNodes(Node fromNode, Node toNode, CrossNetworkLink.Type type) throws LinkException {
 		return linkNodes(fromNode, toNode, type, null);
 	}
 	
@@ -289,7 +289,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return created Link
 	 * @throws LinkException if Link already exists, or a cross network link is being created with invalid arguments
 	 */
-	public static Link linkNodes(Node fromNode, Node toNode, Ref.LINK_TYPE type, String stateToPass) throws LinkException {
+	public static Link linkNodes(Node fromNode, Node toNode, CrossNetworkLink.Type type, String stateToPass) throws LinkException {
 		// Sync on class to prevent multiple links established by multiple threads
 		synchronized(Network.class){
 			
