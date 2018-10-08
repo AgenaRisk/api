@@ -371,4 +371,72 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public Map<String, DataSet> getDataSets() {
 		return new TreeMap<>(datasets);
 	}
+	
+	/**
+	 * Creates a CrossNetworkLink of given Type.
+	 * <br>
+	 * Type can not be CrossNetworkLink.Type.State, use createCrossNetworkLink(Node, Node, String) instead.
+	 * 
+	 * @param source source Node of the link
+	 * @param target target Node of the link
+	 * @param type type of the message for the link to pass
+	 * 
+	 * @throws ModelException if both Nodes are in the same Network; invalid Type given, or source Node already has incoming links
+	 */
+	public void createLink(Node source, Node target, CrossNetworkLink.Type type) throws ModelException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Creates a CrossNetworkLink of given Type.
+	 * <br>
+ 	 * Type can not be CrossNetworkLink.Type.State, use createCrossNetworkLink(Node, Node, String) instead.
+	 *
+	 * @param sourceNetworkId ID of source Network of the link
+	 * @param sourceNodeId ID of source Node of the link
+	 * @param targetNetworkId ID of target Network of the link
+	 * @param targetNodeId ID of target Node of the link
+	 * @param type type of the message for the link to pass
+	 * 
+	 * @throws ModelException if both Nodes are in the same Network; invalid Type given, or source Node already has incoming links
+	 * @throws NullPointerException if Network with this ID does not exist
+	 */
+	public void createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, CrossNetworkLink.Type type) throws ModelException {
+		Node source = getNetwork(sourceNetworkId).getNode(sourceNodeId);
+		Node target = getNetwork(targetNetworkId).getNode(targetNodeId);
+		Model.this.createLink(source, target, type);
+	}
+	
+	/**
+	 * Creates a CrossNetworkLink of type CrossNetworkLink.Type.State that passes the given state from source Node to target Node.
+	 * 
+	 * @param source source Node of the link
+	 * @param target target Node of the link
+	 * @param state the state from source Node for the link to pass to target Node
+	 * 
+	 * @throws ModelException if both Nodes are in the same Network; invalid state given, or source Node already has incoming links
+	 */
+	public void createLink(Node source, Node target, State state) throws ModelException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Creates a CrossNetworkLink of type CrossNetworkLink.Type.State that passes the given state from source Node to target Node.
+	 * 
+	 * @param sourceNetworkId ID of source Network of the link
+	 * @param sourceNodeId ID of source Node of the link
+	 * @param targetNetworkId ID of target Network of the link
+	 * @param targetNodeId ID of target Node of the link
+	 * @param state the label of the state from source Node for the link to pass to target Node
+	 * 
+	 * @throws ModelException if both Nodes are in the same Network; invalid state given, or source Node already has incoming links
+	 * @throws NullPointerException if Network with this ID does not exist
+	 */
+	public void createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, String state) throws ModelException {
+		Node source = getNetwork(sourceNetworkId).getNode(sourceNodeId);
+		Node target = getNetwork(targetNetworkId).getNode(targetNodeId);
+		
+		Model.this.createLink(source, target, source.getState(state));
+	}
+	
 }
