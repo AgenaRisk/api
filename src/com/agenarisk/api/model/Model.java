@@ -427,16 +427,16 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @param sourceNodeId ID of source Node of the link
 	 * @param targetNetworkId ID of target Network of the link
 	 * @param targetNodeId ID of target Node of the link
-	 * @param state the label of the state from source Node for the link to pass to target Node
+	 * @param stateLabel the label of the state from source Node for the link to pass to target Node
 	 * 
 	 * @throws ModelException if both Nodes are in the same Network; invalid state given, or source Node already has incoming links
 	 * @throws NullPointerException if Network with this ID does not exist
 	 */
-	public void createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, String state) throws ModelException {
+	public void createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, String stateLabel) throws ModelException {
 		Node source = getNetwork(sourceNetworkId).getNode(sourceNodeId);
 		Node target = getNetwork(targetNetworkId).getNode(targetNodeId);
 		
-		Model.this.createLink(source, target, source.getState(state));
+		Model.this.createLink(source, target, source.getState(stateLabel));
 	}
 	
 }
