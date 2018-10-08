@@ -468,7 +468,7 @@
 			</type>
 			
 			<passState>
-				<!--Provided if link.type is "State"; value is the name of the state to pass-->
+				<!--Required if link.type is "State"; value is the label of the state to pass-->
 			</passState>
 			
 			<graphics>
