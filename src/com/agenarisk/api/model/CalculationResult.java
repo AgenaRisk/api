@@ -60,6 +60,7 @@ public class CalculationResult {
 	 * This should typically be used when loading results from file.
 	 * 
 	 * @param json JSONObject containing data for this CalculationResult
+	 * 
 	 * @return constructed CalculationResult
 	 * @throws DataSetException if JSON contains invalid data
 	 */
@@ -73,6 +74,7 @@ public class CalculationResult {
 	 * This should typically be used when the model is calculated.
 	 * 
 	 * @param mdi MarginalDataItem containing data for this CalculationResult
+	 * 
 	 * @return constructed CalculationResult
 	 */
 	protected static CalculationResult createCalculationResult(MarginalDataItem mdi) {
