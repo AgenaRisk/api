@@ -26,6 +26,7 @@ public class JSONUtils {
 	 * The second dimension represents a map entry, where first element is its String key, and the second is the value.
 	 * 
 	 * @param array Basic 2D Object array representation of the map
+	 * 
 	 * @return JSONObject representation of the given array
 	 */
 	public static JSONObject toJSONObject(Object[][] array){
@@ -36,6 +37,7 @@ public class JSONUtils {
 	 * This is a helper function to create a message for a JSONException that is formatted as suitable for display to a user.
 	 * 
 	 * @param ex Exception that has the message to convert
+	 * 
 	 * @return user-friendly error message
 	 */
 	public static String createMissingAttrMessage(JSONException ex){
@@ -56,6 +58,7 @@ public class JSONUtils {
 	 * @param <T> type of objects expected to be in the list
 	 * @param jarray JSONArray array
 	 * @param classType Class of items to be in the list
+	 * 
 	 * @return List containing items from the JSONArray
 	 */
 	public static <T> List<T> toList(JSONArray jarray, Class<T> classType) {
@@ -73,6 +76,7 @@ public class JSONUtils {
 	 * Loads Model configuration from an XML file and converts it into suitable JSONObject.
 	 * 
 	 * @param path XML file path
+	 * 
 	 * @return Model configuration in valid JSONObject format
 	 * @throws ModelException if failed to read from file
 	 * @throws JSONException if XML structure is invalid or inconsistent
@@ -85,6 +89,7 @@ public class JSONUtils {
 	 * Loads Model configuration from a JSON file.
 	 * 
 	 * @param path JSON file path
+	 * 
 	 * @return Model configuration in JSONObject format
 	 * @throws ModelException if failed to read from file
 	 * @throws JSONException if JSON structure is invalid or inconsistent
