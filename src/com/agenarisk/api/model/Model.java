@@ -404,7 +404,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public void createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, CrossNetworkLink.Type type) throws ModelException {
 		Node source = getNetwork(sourceNetworkId).getNode(sourceNodeId);
 		Node target = getNetwork(targetNetworkId).getNode(targetNodeId);
-		Model.this.createLink(source, target, type);
+		createLink(source, target, type);
 	}
 	
 	/**
@@ -436,7 +436,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		Node source = getNetwork(sourceNetworkId).getNode(sourceNodeId);
 		Node target = getNetwork(targetNetworkId).getNode(targetNodeId);
 		
-		Model.this.createLink(source, target, source.getState(stateLabel));
+		createLink(source, target, source.getState(stateLabel));
 	}
 	
 }
