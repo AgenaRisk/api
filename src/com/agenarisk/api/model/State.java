@@ -29,60 +29,20 @@ public class State {
 	/**
 	 * Constructor for State class.
 	 * <br>
-	 * If Node's underlying logic node is a numeric interval, then will try to parse label as a number or a range.
-	 * <br>
-	 * Will not create an underlying logic state if one already exists with this label.
+	 * Does not create underlying logic state.
 	 * 
 	 * @param node State's Node
 	 * @param label State's label (or string representation of corresponding range in format :lower - upper)
-	 * 
-	 * @throws StateException range's upper bound is smaller than its lower bound
 	 */
-	private State(Node node, String label) throws StateException{
+	private State(Node node, ExtendedState logicState) {
 		this.node = node;
-		
-		ExtendedNode en = node.getLogicNode();
-		ExtendedState es = en.getExtendedStateWithName(label);
-		if (es != null){
-			logicState = es;
-		}
-		else {
-			logicState = new ExtendedState();
-			
-			logicState.setName(new NameDescription(label, label));
-			
-			if (en instanceof ContinuousIntervalEN || en instanceof IntegerIntervalEN) {
-				
-				boolean rangeState = false;
-				String[] rangeParts = null;
-
-				if(label.contains(" - ")){
-					rangeState = true;
-					rangeParts = label.split(" - ");
-				}
-
-				if (rangeState){
-					try {
-						Range r = new Range(Double.valueOf(rangeParts[0]), Double.valueOf(rangeParts[1]));
-						logicState.setRange(r);
-						logicState.setNumericalValue(r.midPoint());
-					}
-					catch (MinervaRangeException ex){
-						throw new StateException("State represents an invalid range", ex);
-					}
-				}
-				else {
-					logicState.setNumericalValue(Double.valueOf(label));
-				}
-			}
-			
-			en.addExtendedState(logicState, true);
-
-		}
+		this.logicState = logicState;
 	}
 	
 	/**
-	 * Creates a State object for the given Node with the given Label.
+	 * Creates a State instance for the given Node with the given Label.
+	 * <br>
+	 * Will not create an underlying logic state if one already exists with this label for the associated logic node.
 	 * 
 	 * @param node State's Node
 	 * @param label State's label (or string representation of corresponding range in format :lower - upper)
@@ -90,16 +50,81 @@ public class State {
 	 * @return State instance
 	 * @throws StateException if numeric values in the label could not be parsed or range's upper bound is smaller than its lower bound
 	 */
-	protected static State createState(Node node, String label) throws StateException{
-		State state;
-		try {
-			state = new State(node, label);
-		}
-		catch (NumberFormatException ex){
-			throw new StateException("Can't parse numeric state values", ex);
+	protected static State createState(Node node, String label) throws StateException {
+		
+		ExtendedNode en = node.getLogicNode();
+		
+		ExtendedState es = en.getExtendedStateWithName(label);
+		if (es == null) {
+			try {
+				es = createLogicState(en, label);
+			}
+			catch (NumberFormatException ex){
+				throw new StateException("Can't parse numeric state values", ex);
+			}
 		}
 		
+		State state = new State(node, es);
+		
 		return state;
+	}
+	
+	/**
+	 * Creates a logic state ExtendedState for the given logic node ExtendedNode with given label
+	 * <br>
+	 * If logic node is a numeric interval, then will try to parse label as a number or a range.
+	 * 
+	 * @param en State's Node
+	 * @param label State's label (or string representation of corresponding range in format :lower - upper)
+	 * 
+	 * @return created ExtendedState instance
+	 * @throws StateException if range's upper bound is smaller than its lower bound
+	 */
+	private static ExtendedState createLogicState(ExtendedNode en, String label) throws StateException {
+		ExtendedState es = new ExtendedState();
+			
+		es.setName(new NameDescription(label, label));
+
+		if (en instanceof ContinuousIntervalEN || en instanceof IntegerIntervalEN) {
+
+			boolean rangeState = false;
+			String[] rangeParts = null;
+
+			if(label.contains(" - ")){
+				rangeState = true;
+				rangeParts = label.split(" - ");
+			}
+
+			if (rangeState){
+				try {
+					Range r = new Range(Double.valueOf(rangeParts[0]), Double.valueOf(rangeParts[1]));
+					es.setRange(r);
+					es.setNumericalValue(r.midPoint());
+				}
+				catch (MinervaRangeException ex){
+					throw new StateException("State represents an invalid range", ex);
+				}
+			}
+			else {
+				es.setNumericalValue(Double.valueOf(label));
+			}
+		}
+
+		en.addExtendedState(es, true);
+		
+		return es;
+	}
+	
+	/**
+	 * Find a state by given label in the given Node's underlying logic node.
+	 * 
+	 * @param node Node to get the state from
+	 * @param label label of the required state
+	 * 
+	 * @return state with given label or null if such state does not exist
+	 */
+	protected static State getState(Node node, String label) {
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	/**
@@ -116,7 +141,7 @@ public class State {
 	 * 
 	 * @return state's Node
 	 */
-	protected Node getNode() {
+	public Node getNode() {
 		return node;
 	}
 
