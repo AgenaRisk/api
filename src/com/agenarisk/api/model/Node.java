@@ -970,4 +970,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			throw new AgenaRiskRuntimeException("Failed to initialise interval states for node " + node.toStringExtra(), ex);
 		}
 	}
+	
+	/**
+	 * Find a state by given label in this Node's underlying logic node.
+	 * 
+	 * @param label label of the required state
+	 * 
+	 * @return state with given label or null if such state does not exist
+	 */
+	public State getState(String label) {
+		return State.getState(this, label);
+	}
 }
