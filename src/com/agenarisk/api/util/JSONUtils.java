@@ -73,7 +73,7 @@ public class JSONUtils {
 	}
 	
 	/**
-	 * Converts an array of mixed objects into a 2D array.
+	 * Converts an array of mixed objects into a 2D JSONArray.
 	 * <br>
 	 * The array resides under the `parentKey` in grandParent JSONObject.
 	 * <br>
