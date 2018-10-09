@@ -30,7 +30,7 @@ public class JSONUtils {
 	 * @return JSONObject representation of the given array
 	 */
 	public static JSONObject toJSONObject(Object[][] array){
-		return new JSONObject(Arrays.stream(array).collect(Collectors.toMap(kv -> (String) kv[0], kv -> kv[1])));
+		return new JSONObject(Arrays.stream(array).collect(Collectors.toMap(kv -> kv[0].toString(), kv -> kv[1])));
 	}
 	
 	/**
