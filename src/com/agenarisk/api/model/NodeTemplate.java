@@ -17,14 +17,14 @@ import org.apache.sling.commons.json.JSONObject;
 public class NodeTemplate {
 	
 	private static final JSONObject TEMPLATE = JSONUtils.toJSONObject(new Object[][]{
-		{Node.Field.id.toString(), "ID"},
-		{Node.Field.name.toString(), "NAME"},
-		{NodeConfiguration.Field.configuration.toString(), JSONUtils.toJSONObject(new Object[][]{
-			{NodeConfiguration.Field.type.toString(), "NODE_TYPE"},
-			{NodeConfiguration.States.states.toString(), new JSONArray()},
-			{NodeConfiguration.Table.table.toString(), JSONUtils.toJSONObject(new Object[][]{
-				{NodeConfiguration.Table.type.toString(), "TABLE_TYPE"},
-				{NodeConfiguration.Table.probabilities.toString(), new JSONArray()}
+		{Node.Field.id, "ID"},
+		{Node.Field.name, "NAME"},
+		{NodeConfiguration.Field.configuration, JSONUtils.toJSONObject(new Object[][]{
+			{NodeConfiguration.Field.type, "NODE_TYPE"},
+			{NodeConfiguration.States.states, new JSONArray()},
+			{NodeConfiguration.Table.table, JSONUtils.toJSONObject(new Object[][]{
+				{NodeConfiguration.Table.type, "TABLE_TYPE"},
+				{NodeConfiguration.Table.probabilities, new JSONArray()}
 			})}
 		})}
 	});
