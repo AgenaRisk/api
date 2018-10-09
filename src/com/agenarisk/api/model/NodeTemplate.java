@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import com.agenarisk.api.Ref;
+import com.agenarisk.api.util.Ref;
 
 /**
  *
