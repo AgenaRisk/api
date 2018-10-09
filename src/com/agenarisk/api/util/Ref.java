@@ -1,4 +1,4 @@
-package com.agenarisk.api;
+package com.agenarisk.api.util;
 
 /**
  * This class is a reference dictionary for XML, JSON and relevant values for objects in AgenaRisk API v2
@@ -7,6 +7,9 @@ package com.agenarisk.api;
  * @author Eugene Dementiev
  */
 public final class Ref {
+	
+	
+	
 	/**
 	 * Represents uk.​co.​agena.​minerva.​model.Model
 	 */
