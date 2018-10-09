@@ -7,9 +7,6 @@ package com.agenarisk.api.util;
  * @author Eugene Dementiev
  */
 public final class Ref {
-	
-	
-	
 	/**
 	 * Represents uk.​co.​agena.​minerva.​model.Model
 	 */
