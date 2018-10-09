@@ -1,11 +1,16 @@
 package com.agenarisk.api.model;
 
-import com.agenarisk.api.Ref;
+import com.agenarisk.api.util.Ref;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.FileIOException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NodeException;
+import com.agenarisk.api.io.stub.Audit;
+import com.agenarisk.api.io.stub.Graphics;
+import com.agenarisk.api.io.stub.Meta;
+import com.agenarisk.api.io.stub.Picture;
+import com.agenarisk.api.io.stub.Text;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
@@ -31,6 +36,13 @@ import uk.co.agena.minerva.util.io.FileHandlingException;
  * @author Eugene Dementiev
  */
 public class Model implements IDContainer<ModelException>, Storable {
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		model
+	}
 	
 	/**
 	 * ID-Network map of this Model
@@ -132,17 +144,17 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		Model model = createModel();
 		
-		JSONObject jsonModel = json.getJSONObject(Ref.MODEL);
+		JSONObject jsonModel = json.getJSONObject(Field.model.toString());
 		
 		// Create networks
-		JSONArray jsonNetworks = jsonModel.getJSONArray(Ref.NETWORKS);
+		JSONArray jsonNetworks = jsonModel.getJSONArray(Network.Field.networks.toString());
 		for(int i = 0; i < jsonNetworks.length(); i++){
 			model.createNetwork(jsonNetworks.getJSONObject(i));
 		}
 
 		// Create cross Network links
 		try {
-			Node.linkNodes(model, jsonModel.optJSONArray(Ref.LINKS));
+			Node.linkNodes(model, jsonModel.optJSONArray(Link.Field.links.toString()));
 		}
 		catch (JSONException | NodeException ex){
 			throw new ModelException("Failed to create Links", ex);
@@ -153,15 +165,15 @@ public class Model implements IDContainer<ModelException>, Storable {
 		// Load and apply DataSets
 		
 		// Load Notes
-		if (jsonModel.has(Ref.META)){
+		if (jsonModel.has(Meta.Field.meta.toString())){
 			// Load notes
 		}
 		
 		// Retrieve extra fields from JSON
-		model.texts = jsonModel.optJSONArray(Ref.TEXTS);
-		model.pictures = jsonModel.optJSONArray(Ref.PICTURES);
-		model.audit = jsonModel.optJSONObject(Ref.MODEL_AUDIT);
-		model.graphics = jsonModel.optJSONObject(Ref.GRAPHICS);
+		model.texts = jsonModel.optJSONArray(Text.Field.texts.toString());
+		model.pictures = jsonModel.optJSONArray(Picture.Field.pictures.toString());
+		model.audit = jsonModel.optJSONObject(Audit.Field.audit.toString());
+		model.graphics = jsonModel.optJSONObject(Graphics.Field.graphics.toString());
 		
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

@@ -19,6 +19,16 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 public class Link implements Comparable<Link>, Storable {
 	
 	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		links,
+		link,
+		parent,
+		child
+	}
+	
+	/**
 	 * Source and target Nodes
 	 */
 	private final Node fromNode, toNode;

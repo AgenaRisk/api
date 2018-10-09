@@ -33,8 +33,10 @@ import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
-import com.agenarisk.api.Ref;
 import com.agenarisk.api.exception.NetworkException;
+import com.agenarisk.api.io.stub.Graphics;
+import com.agenarisk.api.io.stub.Meta;
+import com.agenarisk.api.io.stub.NodeConfiguration;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -48,6 +50,29 @@ import uk.co.agena.minerva.util.nptgenerator.ExpressionParser;
  * @author Eugene Dementiev
  */
 public class Node implements Networked<Node>, Comparable<Node>, Identifiable<NodeException>, Storable, Named {
+	
+	/**
+	 * These are Node types that correspond to AgenaRisk Desktop node types
+	 */
+	public static enum Type {
+		Boolean,
+		Labelled,
+		Ranked,
+		DiscreteReal,
+		ContinuousInterval,
+		IntegerInterval
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		nodes,
+		node,
+		id,
+		name,
+		description
+	}
 	
 	/**
 	 * The Network containing this Node
@@ -384,14 +409,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		String id;
 		String name;
 		JSONObject jsonConfiguration; 
-		Ref.NODE_TYPE type;
+		Type type;
 		
 		try {
-			id = json.getString(Ref.ID);
-			name = json.getString(Ref.NAME);
-			jsonConfiguration = json.getJSONObject(Ref.CONFIGURATION);
-			String typeString = jsonConfiguration.getString(Ref.TYPE);
-			type = Ref.NODE_TYPE.valueOf(typeString);
+			id = json.getString(Field.id.toString());
+			name = json.getString(Field.name.toString());
+			jsonConfiguration = json.getJSONObject(NodeConfiguration.Field.configuration.toString());
+			String typeString = jsonConfiguration.getString(NodeConfiguration.Field.type.toString());
+			type = Type.valueOf(typeString);
 		}
 		catch (JSONException ex){
 			throw new NodeException(JSONUtils.createMissingAttrMessage(ex), ex);
@@ -411,9 +436,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		Node node = new Node(network, en);
 		
 		boolean simulated = false;
-		if (jsonConfiguration.has(Ref.SIMULATED)){
+		if (jsonConfiguration.has(NodeConfiguration.Field.simulated.toString())){
 			try {
-				simulated = jsonConfiguration.getBoolean(Ref.SIMULATED);
+				simulated = jsonConfiguration.getBoolean(NodeConfiguration.Field.simulated.toString());
 			}
 			catch (JSONException ex){
 				throw new NodeException("Invalid simulation attribute value", ex);
@@ -428,7 +453,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		else {
 			try {
-				node.setStates(jsonConfiguration.getJSONArray(Ref.STATES));
+				node.setStates(jsonConfiguration.getJSONArray(NodeConfiguration.States.states.toString()));
 			}
 			catch (JSONException ex){
 				// Should not happen
@@ -438,12 +463,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		// Retrieve and store properties that are not used in the API but should persist through load/save
 		
-		if (json.has(Ref.META)){
-			node.meta = json.optJSONObject(Ref.META);
+		if (json.has(Meta.Field.meta.toString())){
+			node.meta = json.optJSONObject(Meta.Field.meta.toString());
 		}
 		
-		if (json.has(Ref.GRAPHICS)){
-			node.graphics = json.optJSONObject(Ref.GRAPHICS);
+		if (json.has(Graphics.Field.graphics.toString())){
+			node.graphics = json.optJSONObject(Graphics.Field.graphics.toString());
 		}
 		
 		return node;
@@ -483,16 +508,16 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		List<String> parentIDs = getParents().stream().map(node -> node.getId()).collect(Collectors.toList());
 		try {
-			String tableType = jsonTable.getString(Ref.TYPE);
+			String tableType = jsonTable.getString(NodeConfiguration.Table.type.toString());
 
-			if (tableType.equalsIgnoreCase(Ref.TABLE_TYPE.Manual.toString())){
+			if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Manual.toString())){
 				
 				if (this.isSimulated()){
 					throw new NodeException("Can't set a manual NPT for a simulated node");
 				}
 				
 				try {
-					double[][] npt = extractNPTColumns(jsonTable.getJSONArray(Ref.PROBABILITIES));
+					double[][] npt = extractNPTColumns(jsonTable.getJSONArray(NodeConfiguration.Table.probabilities.toString()));
 					List<ExtendedNode> parentNodes = getParents().stream().map(node -> node.getLogicNode()).collect(Collectors.toList());
 					getLogicNode().setNPT(npt, parentNodes);
 				}
@@ -503,8 +528,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					throw new NodeException("NPT may not be a square matrix", ex);
 				}
 			}
-			else if (tableType.equalsIgnoreCase(Ref.TABLE_TYPE.Expression.toString())){
-				String expression = jsonTable.getJSONArray(Ref.EXPRESSIONS).getString(0);
+			else if (tableType.equalsIgnoreCase(NodeConfiguration.Table.expression.toString())){
+				String expression = jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()).getString(0);
 				ExtendedNodeFunction enf;
 				try {
 					enf = ExpressionParser.parseFunctionFromString(expression, parentIDs);
@@ -514,9 +539,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				}
 				getLogicNode().setExpression(enf);
 			}
-			else if (tableType.equalsIgnoreCase(Ref.TABLE_TYPE.Partitioned.toString())){
+			else if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Partitioned.toString())){
 				// Get parents used for partitioning (can be only a subset of all parents)
-				List<String> partitionParentIDs = JSONUtils.toList(jsonTable.getJSONArray(Ref.PARTITIONS), String.class);
+				List<String> partitionParentIDs = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.partitions.toString()), String.class);
 				List<ExtendedNode> partitionParentNodes = new ArrayList<>();
 				partitionParentIDs.stream().forEach(parentID -> {
 					ExtendedNode parent = getNetwork().getLogicNetwork().getExtendedNodeWithUniqueIdentifier(parentID);
@@ -529,7 +554,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 
 				// Create functions
 				List<ExtendedNodeFunction> enfs = new ArrayList<>();
-				List<String> expressions = JSONUtils.toList(jsonTable.getJSONArray(Ref.EXPRESSIONS), String.class);
+				List<String> expressions = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()), String.class);
 
 				for(String expression: expressions){
 					ExtendedNodeFunction enf;
@@ -557,7 +582,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Sets Node function to the one provided.
 	 * <br>
-	 * Resets Node table partitioning and sets Table type to Ref.TABLE_TYPE.Expression.
+	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
 	 * 
 	 * @param function function to set
 	 * @throws NodeException if function is invalid
@@ -569,7 +594,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Sets Node functions to the ones provided.
 	 * <br>
-	 * Also sets Table type to Ref.TABLE_TYPE.Partitioned.
+	 * Also sets Table type to NodeConfiguration.TableType.Partitioned.
 	 * <br>
 	 * If the node only has one non-simulated parent, this parent will be automatically used to partition this node.
 	 * 
@@ -899,13 +924,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Gets fully-qualified name for ExtendedNode concrete implementation matching the provided Node type from Ref.NODE_TYPE.
+	 * Gets fully-qualified name for ExtendedNode concrete implementation matching the provided Node type from Note.Type.
 	 * 
 	 * @param type Node type
 	 * @return fully-qualified ExtendedNode subclass name
 	 * @throws NodeException if no matching ExtendedNode implementation found
 	 */
-	protected static String resolveNodeClassName(Ref.NODE_TYPE type) throws NodeException{
+	protected static String resolveNodeClassName(Type type) throws NodeException{
 		String nodeClassName;
 		switch (type) {
 			case Boolean:

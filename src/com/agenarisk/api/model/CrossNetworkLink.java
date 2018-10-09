@@ -38,6 +38,18 @@ import uk.co.agena.minerva.util.nptgenerator.Normal;
 public class CrossNetworkLink extends Link implements Storable {
 	
 	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		sourceNetwork,
+		targetNetwork,
+		sourceNode,
+		targetNode,
+		type,
+		passState
+	}
+	
+	/**
 	 * Possible types of data that the Link will pass
 	 */
 	public static enum Type {

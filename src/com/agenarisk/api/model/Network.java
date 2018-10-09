@@ -6,6 +6,10 @@ import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.exception.NodeException;
+import com.agenarisk.api.io.stub.Graphics;
+import com.agenarisk.api.io.stub.Picture;
+import com.agenarisk.api.io.stub.RiskTable;
+import com.agenarisk.api.io.stub.Text;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
@@ -22,7 +26,6 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
-import com.agenarisk.api.Ref;
 
 /**
  * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1.
@@ -30,6 +33,17 @@ import com.agenarisk.api.Ref;
  * @author Eugene Dementiev
  */
 public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException>, Storable, Named {
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		networks,
+		network,
+		id,
+		name,
+		description
+	}
 	
 	/**
 	 * Model that contains this Network
@@ -78,20 +92,20 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		String name = "";
 		Network network = new Network(model, id, name);
 		
-		if (json.has(Ref.GRAPHICS)){
-			network.graphics = json.optJSONObject(Ref.GRAPHICS);
+		if (json.has(Graphics.Field.graphics.toString())){
+			network.graphics = json.optJSONObject(Graphics.Field.graphics.toString());
 		}
 		
-		if (json.has(Ref.RISK_TABLE)){
-			network.riskTable = json.optJSONObject(Ref.RISK_TABLE);
+		if (json.has(RiskTable.Field.riskTable.toString())){
+			network.riskTable = json.optJSONObject(RiskTable.Field.riskTable.toString());
 		}
 		
-		if (json.has(Ref.TEXTS)){
-			network.texts = json.optJSONObject(Ref.TEXTS);
+		if (json.has(Text.Field.texts.toString())){
+			network.texts = json.optJSONObject(Text.Field.texts.toString());
 		}
 		
-		if (json.has(Ref.PICTURES)){
-			network.pictures = json.optJSONObject(Ref.PICTURES);
+		if (json.has(Picture.Field.pictures.toString())){
+			network.pictures = json.optJSONObject(Picture.Field.pictures.toString());
 		}
 		
 		throw new UnsupportedOperationException("Not supported yet.");
@@ -128,7 +142,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @return the created Node
 	 * @throws NetworkException if Node creation failed
 	 */
-	public Node createNode(String id, String name, Ref.NODE_TYPE type) throws NetworkException {
+	public Node createNode(String id, String name, Node.Type type) throws NetworkException {
 		throw new NetworkException("Not implemented");
 	}
 	
@@ -140,7 +154,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @return the created Node
 	 * @throws NetworkException if Node creation failed
 	 */
-	public Node createNode(String id, Ref.NODE_TYPE type) throws NetworkException {
+	public Node createNode(String id, Node.Type type) throws NetworkException {
 		return createNode(id, id, type);
 	}
 	
@@ -156,7 +170,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		String id;
 		
 		try {
-			id = json.getString(Ref.ID);
+			id = json.getString(Node.Field.id.toString());
 		}
 		catch (JSONException ex){
 			throw new NetworkException(JSONUtils.createMissingAttrMessage(ex), ex);
