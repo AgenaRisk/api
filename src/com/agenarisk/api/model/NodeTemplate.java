@@ -1,7 +1,7 @@
 package com.agenarisk.api.model;
 
-import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.NodeException;
+import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.util.JSONUtils;
 import java.util.Arrays;
 import java.util.List;
@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import com.agenarisk.api.util.Ref;
 
 /**
  *
@@ -18,21 +17,21 @@ import com.agenarisk.api.util.Ref;
 public class NodeTemplate {
 	
 	private static final JSONObject TEMPLATE = JSONUtils.toJSONObject(new Object[][]{
-		{Ref.ID, "ID"},
-		{Ref.NAME, "NAME"},
-		{Ref.CONFIGURATION, JSONUtils.toJSONObject(new Object[][]{
-			{Ref.TYPE, "NODE_TYPE"},
-			{Ref.STATES, new JSONArray()},
-			{Ref.TABLE, JSONUtils.toJSONObject(new Object[][]{
-				{Ref.TYPE, "TABLE_TYPE"},
-				{Ref.PROBABILITIES, new JSONArray()}
+		{Node.Field.id.toString(), "ID"},
+		{Node.Field.name.toString(), "NAME"},
+		{NodeConfiguration.Field.configuration.toString(), JSONUtils.toJSONObject(new Object[][]{
+			{NodeConfiguration.Field.type.toString(), "NODE_TYPE"},
+			{NodeConfiguration.States.states.toString(), new JSONArray()},
+			{NodeConfiguration.Table.table.toString(), JSONUtils.toJSONObject(new Object[][]{
+				{NodeConfiguration.Table.type.toString(), "TABLE_TYPE"},
+				{NodeConfiguration.Table.probabilities.toString(), new JSONArray()}
 			})}
 		})}
 	});
 	
 	private JSONObject json;
 	
-	private NodeTemplate(Ref.NODE_TYPE type) {
+	private NodeTemplate(Node.Type type) {
 		try {
 			json = new JSONObject(TEMPLATE.toString());
 			setNodeType(type);
@@ -50,7 +49,7 @@ public class NodeTemplate {
 		}
 	}
 	
-	public static NodeTemplate createTemplate(Ref.NODE_TYPE type){
+	public static NodeTemplate createTemplate(Node.Type type){
 		return new NodeTemplate(type);
 	}
 	
@@ -59,22 +58,22 @@ public class NodeTemplate {
 	}
 	
 	public NodeTemplate setId(String id) throws JSONException {
-		json.put(Ref.ID, id);
+		json.put(Node.Field.id.toString(), id);
 		return this;
 	}
 	
 	public NodeTemplate setName(String name) throws JSONException {
-		json.put(Ref.NAME, name);
+		json.put(Node.Field.name.toString(), name);
 		return this;
 	}
 
-	public NodeTemplate setNodeType(Ref.NODE_TYPE nodeType) throws JSONException {
-		json.getJSONObject(Ref.CONFIGURATION).put(Ref.TYPE, nodeType.toString());
+	public NodeTemplate setNodeType(Node.Type nodeType) throws JSONException {
+		json.getJSONObject(NodeConfiguration.Field.configuration.toString()).put(NodeConfiguration.Field.type.toString(), nodeType);
 		return this;
 	}
 	
 	public NodeTemplate setStates(List<String> states) throws JSONException {
-		json.getJSONObject(Ref.CONFIGURATION).put(Ref.STATES, new JSONArray(states));
+		json.getJSONObject(NodeConfiguration.Field.configuration.toString()).put(NodeConfiguration.States.states.toString(), new JSONArray(states));
 		return this;
 	}
 	
@@ -83,22 +82,22 @@ public class NodeTemplate {
 		return this;
 	}
 	
-	public NodeTemplate setTableType(Ref.TABLE_TYPE tableType) throws JSONException {
-		json.getJSONObject(Ref.CONFIGURATION).getJSONObject(Ref.TABLE).put(Ref.TYPE, tableType.toString());
+	public NodeTemplate setTableType(NodeConfiguration.TableType tableType) throws JSONException {
+		json.getJSONObject(NodeConfiguration.Field.configuration.toString()).getJSONObject(NodeConfiguration.Table.table.toString()).put(NodeConfiguration.Table.type.toString(), tableType);
 		return this;
 	}
 	
 	public NodeTemplate setNPTRows(Double[][] rows) throws JSONException{
 		/*
-		{Ref.PROBABILITIES, new JSONArray(Arrays.asList(new JSONArray[]{
+		{NodeConfiguration.Table.probabilities, new JSONArray(Arrays.asList(new JSONArray[]{
 			new JSONArray(Arrays.asList(new Double[]{0.5})),
 			new JSONArray(Arrays.asList(new Double[]{0.5}))
 		}))}
 		*/
 		;
-		json.getJSONObject(Ref.CONFIGURATION)
-		.getJSONObject(Ref.TABLE)
-		.put(Ref.PROBABILITIES, new JSONArray(
+		json.getJSONObject(NodeConfiguration.Field.configuration.toString())
+		.getJSONObject(NodeConfiguration.Table.table.toString())
+		.put(NodeConfiguration.Table.probabilities.toString(), new JSONArray(
 			Arrays.asList(rows).stream().map(darray -> new JSONArray(Arrays.asList(darray))).collect(Collectors.toList())
 		));
 		
@@ -111,11 +110,11 @@ public class NodeTemplate {
 	
 	public static JSONObject generateTableFromRows(Double[][] rows) throws NodeException{
 		JSONObject jsonTable;
-		NodeTemplate nt = createTemplate(Ref.NODE_TYPE.Boolean);
+		NodeTemplate nt = createTemplate(Node.Type.Boolean);
 		try {
 			nt.setNPTRows(rows);
-			nt.setTableType(Ref.TABLE_TYPE.Manual);
-			jsonTable = nt.getJSON().getJSONObject(Ref.CONFIGURATION).getJSONObject(Ref.TABLE);
+			nt.setTableType(NodeConfiguration.TableType.Manual);
+			jsonTable = nt.getJSON().getJSONObject(NodeConfiguration.Field.configuration.toString()).getJSONObject(NodeConfiguration.Table.table.toString());
 		}
 		catch (JSONException ex){
 			throw new NodeException("Failed to generate a table JSON", ex);
@@ -135,13 +134,13 @@ public class NodeTemplate {
 		
 		System.exit(0);
 		
-		NodeTemplate nt = createTemplate(Ref.NODE_TYPE.Boolean);
+		NodeTemplate nt = createTemplate(Node.Type.Boolean);
 		
 		nt.setId("n1n1");
 		nt.setName("N1N1");
-		nt.setNodeType(Ref.NODE_TYPE.Boolean);
+		nt.setNodeType(Node.Type.Boolean);
 		nt.setStates(new String[]{"False", "True"});
-		nt.setTableType(Ref.TABLE_TYPE.Manual);
+		nt.setTableType(NodeConfiguration.TableType.Manual);
 		nt.setNPTRows(new Double[][]{
 			{0.1, 0.7},
 			{0.9, 0.3}
