@@ -1006,4 +1006,39 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	public State getState(String label) {
 		return State.getState(this, label);
 	}
+	
+	/**
+	 * Gets the Type of this Node.
+	 * 
+	 * @return Type of this Node
+	 */
+	public Type getType(){
+		ExtendedNode en = getLogicNode();
+		
+		if (en instanceof BooleanEN){
+			return Type.Boolean;
+		}
+		
+		if (en instanceof LabelledEN){
+			return Type.Labelled;
+		}
+		
+		if (en instanceof RankedEN){
+			return Type.Ranked;
+		}
+		
+		if (en instanceof DiscreteRealEN){
+			return Type.DiscreteReal;
+		}
+		
+		if (en instanceof ContinuousIntervalEN){
+			return Type.ContinuousInterval;
+		}
+		
+		if (en instanceof IntegerIntervalEN){
+			return Type.IntegerInterval;
+		}
+		
+		throw new AgenaRiskRuntimeException("Invalid node type");
+	}
 }
