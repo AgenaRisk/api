@@ -957,6 +957,41 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		return nodeClassName;
 	}
+	
+	/**
+	 * Resolves the Node Type based on the logical node.
+	 * 
+	 * @param en logical node to resolve Type from
+	 * 
+	 * @return resolved Node type
+	 */
+	public static Type resolveNodeType(ExtendedNode en){
+		if (en instanceof BooleanEN){
+			return Type.Boolean;
+		}
+		
+		if (en instanceof LabelledEN){
+			return Type.Labelled;
+		}
+		
+		if (en instanceof RankedEN){
+			return Type.Ranked;
+		}
+		
+		if (en instanceof DiscreteRealEN){
+			return Type.DiscreteReal;
+		}
+		
+		if (en instanceof ContinuousIntervalEN){
+			return Type.ContinuousInterval;
+		}
+		
+		if (en instanceof IntegerIntervalEN){
+			return Type.IntegerInterval;
+		}
+		
+		throw new AgenaRiskRuntimeException("Invalid node type");
+	}
 
 	/**
 	 * Creates a JSON representing this Node, ready for file storage.
@@ -1014,31 +1049,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	public Type getType(){
 		ExtendedNode en = getLogicNode();
-		
-		if (en instanceof BooleanEN){
-			return Type.Boolean;
-		}
-		
-		if (en instanceof LabelledEN){
-			return Type.Labelled;
-		}
-		
-		if (en instanceof RankedEN){
-			return Type.Ranked;
-		}
-		
-		if (en instanceof DiscreteRealEN){
-			return Type.DiscreteReal;
-		}
-		
-		if (en instanceof ContinuousIntervalEN){
-			return Type.ContinuousInterval;
-		}
-		
-		if (en instanceof IntegerIntervalEN){
-			return Type.IntegerInterval;
-		}
-		
-		throw new AgenaRiskRuntimeException("Invalid node type");
+		return resolveNodeType(en);
 	}
 }
