@@ -503,8 +503,12 @@
 		</tolerance>
 		
 		<sampleSize>
-			<!--Corresponds to Model Properties Simulation Settings sample size for ranked nodes in ARD and uk.co.agena.minerva.model.Model.sampleSize in ARC-->
+			<!--Corresponds to Model Properties Simulation Settings sample size in ARD and uk.co.agena.minerva.model.Model.sampleSize in ARC-->
 		</sampleSize>
+		
+		<sampleSizeRanked>
+			<!--Corresponds to Model Properties Simulation Settings ranked sample size for ranked nodes in ARD and uk.co.agena.minerva.model.Model.rankedSampleSize in ARC-->
+		</sampleSizeRanked>
 		
 		<discreteTails>
 			<!--Corresponds to Model Properties Simulation Settings discretize tails in ARD and uk.co.agena.minerva.model.Model.simulationTails in ARC-->

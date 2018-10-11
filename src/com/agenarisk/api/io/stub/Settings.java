@@ -16,6 +16,7 @@ public class Settings {
 		convergence,
 		tolerance,
 		sampleSize,
+		sampleSizeRanked,
 		discreteTails,
 		simulationLogging,
 		parameterLearningLogging
