@@ -566,11 +566,11 @@
 		</notes>
 	</meta>
 	
-	<datasets>
+	<dataSets>
 		<!--Converted into an array of objects in JSON-->
 		<!--Corresponds to uk.co.agena.minerva.model.scenario.ScenarioList.scenarios in ARC-->
 		
-		<dataset>
+		<dataSet>
 			<!--Tag omitted during XML-to-JSON conversion-->
 			<!--Corresponds Scenario in ARD and to uk.co.agena.minerva.model.scenario.Scenario in ARC-->
 			
@@ -674,9 +674,9 @@
 				...
 			</results>
 			
-		</dataset>
+		</dataSet>
 		...
-	</datasets>
+	</dataSets>
 	
 	<audit>
 		<!--PLACEHOLDER-->

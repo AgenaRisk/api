@@ -24,6 +24,15 @@ import uk.co.agena.minerva.util.model.NameDescription;
  * @author Eugene Dementiev
  */
 public class DataSet implements Identifiable<DataSetException>{
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		dataSets,
+		dataSet,
+		id
+	}
 
 	/**
 	 * Model this DataSet belongs to
