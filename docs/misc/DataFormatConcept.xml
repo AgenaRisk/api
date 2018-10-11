@@ -606,29 +606,25 @@
 						<!--Node ID-->
 					</node>
 					
-					<hard>
-						<!--Mutually exclusive with soft-->
-						<!--String or numeric observation-->
-					</hard>
-					
-					<soft>
-						<!--Mutually exclusive with hard-->
+					<entries>
 						<!--Converted into an array of objects in JSON-->
 						
-						<weight>
+						<entry>
 							<!--Tag omitted during XML-to-JSON conversion-->
-							<!--State-value pair-->
-
-							<state>
-								<!--State name-->
-							</state>
-
+							<!--Numeric or hard observations will only contain a single entry-->
+							<!--Observation is interpreted at runtime based on the type of the related node-->
+							
 							<value>
-								<!--Soft observation weight-->
+								<!--State name for discrete nodes or a number for continuous nodes-->
 							</value>
-						</weight>
+							
+							<weight>
+								<!--Probability weight assigned to this value in this observation-->
+								<!--When there is only one entry this value is ignored and 1 is implied-->
+							</weight>
+						</entry>
 						...
-					</soft>
+					</entries>
 					
 				</observation>
 				...
