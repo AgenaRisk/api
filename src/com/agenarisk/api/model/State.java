@@ -2,9 +2,11 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.StateException;
 import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
+import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
+import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.NameDescription;
@@ -168,13 +170,14 @@ public class State {
 	 * @return computed node label
 	 */
 	public static String computeLabel(ExtendedNode en, ExtendedState es){
-		String label; 
-		if (!(en instanceof RankedEN) && (en instanceof ContinuousIntervalEN || en instanceof IntegerIntervalEN) && es.getRange() != null){
-			label = es.getRange().getLowerBound() + " - " + es.getRange().getUpperBound();
-		}
-		else {
+		String label;
+		if (en instanceof RankedEN || en instanceof LabelledEN || en instanceof DiscreteRealEN || es.getRange() == null){
 			label = es.getName().getShortDescription();
 		}
+		else {
+			label = es.getRange().getLowerBound() + " - " + es.getRange().getUpperBound();
+		}
+
 		return label;
 	}
 
