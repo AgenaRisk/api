@@ -566,14 +566,16 @@
 		</notes>
 	</meta>
 	
-	<scenarios>
+	<datasets>
 		<!--Converted into an array of objects in JSON-->
+		<!--Corresponds to uk.co.agena.minerva.model.scenario.ScenarioList.scenarios in ARC-->
 		
-		<scenario>
+		<dataset>
 			<!--Tag omitted during XML-to-JSON conversion-->
+			<!--Corresponds Scenario in ARD and to uk.co.agena.minerva.model.scenario.Scenario in ARC-->
 			
 			<id>
-				<!--Scenario ID-->
+				<!--DataSet ID-->
 				<!--Corresponds to Scenario name in ARD and uk.co.agena.minerva.util.model.NameDescription.shortDescription in ARC-->
 			</id>
 			
@@ -632,11 +634,11 @@
 				...
 			</observations>
 			
-			<marginals>
+			<results>
 				<!--Converted into an array of objects in JSON-->
 				<!--Corresponds to uk.co.agena.minerva.util.model.Model.getMarginalDataStore().getMarginalDataItemListForNode(ExtendeBN, ExtendedNode).getMarginalDataItemAtIndex(scenarioIndex)-->
 				
-				<dataset>
+				<result>
 					<!--Tag omitted during XML-to-JSON conversion-->
 					<!--Corresponds to uk.​co.​agena.​minerva.​model.MarginalDataItem-->
 					
@@ -648,10 +650,10 @@
 						<!--Node ID-->
 					</node>
 					
-					<datapoints>
+					<resultValues>
 						<!--Corresponds to uk.co.agena.minerva.util.model.DataSet-->
 						
-						<datapoint>
+						<resultValue>
 							<!--Tag omitted during XML-to-JSON conversion-->
 							<!--Corresponds to uk.co.agena.minerva.util.model.DataPoint for discrete nodes-->
 							<!--Corresponds to uk.co.agena.minerva.util.model.IntervalDataPoint for interval nodes-->
@@ -665,16 +667,16 @@
 							<value>
 								<!--Corresponds to uk.co.agena.minerva.util.model.DataPoint.value-->
 							</value>
-						</datapoint>
+						</resultValue>
 						...
-					</datapoints>
-				</dataset>
+					</resultValues>
+				</result>
 				...
-			</marginals>
+			</results>
 			
-		</scenario>
+		</dataset>
 		...
-	</scenarios>
+	</datasets>
 	
 	<audit>
 		<!--PLACEHOLDER-->
