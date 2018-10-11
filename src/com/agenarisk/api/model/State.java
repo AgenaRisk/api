@@ -5,6 +5,7 @@ import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
+import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import uk.co.agena.minerva.util.model.Range;
@@ -152,6 +153,29 @@ public class State {
 	 */
 	protected ExtendedState getLogicState() {
 		return logicState;
+	}
+	
+	/**
+	 * Computes a label for a logical state.
+	 * <br/>
+	 * Returns a range if the node is not Ranked and the state has an associated range. The range is in format: <b>lower - upper</b>.
+	 * <br>
+	 * Otherwise returns state short name.
+	 * 
+	 * @param en node containing the state
+	 * @param es logical state
+	 * 
+	 * @return computed node label
+	 */
+	public static String computeLabel(ExtendedNode en, ExtendedState es){
+		String label; 
+		if (!(en instanceof RankedEN) && (en instanceof ContinuousIntervalEN || en instanceof IntegerIntervalEN) && es.getRange() != null){
+			label = es.getRange().getLowerBound() + " - " + es.getRange().getUpperBound();
+		}
+		else {
+			label = es.getName().getShortDescription();
+		}
+		return label;
 	}
 
 }
