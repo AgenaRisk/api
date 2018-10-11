@@ -3,7 +3,6 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.model.interfaces.Identifiable;
-import com.agenarisk.api.model.dataset.Observation;
 import java.util.List;
 import java.util.Map;
 import org.apache.sling.commons.json.JSONArray;
