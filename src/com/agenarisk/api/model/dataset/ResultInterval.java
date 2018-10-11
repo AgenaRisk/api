@@ -23,7 +23,7 @@ public class ResultInterval extends ResultValue {
 	 * @param value probability mass value
 	 */
 	public ResultInterval(CalculationResult calculationResult, double lowerBound, double upperBound, double value) {
-		super(calculationResult, createLabel(lowerBound, upperBound), value);
+		super(calculationResult, computeLabel(lowerBound, upperBound), value);
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
 	}
@@ -53,7 +53,7 @@ public class ResultInterval extends ResultValue {
 	 * @param upperBound upper bound of the range
 	 * @return min and max separated by a dash that is surrounded by spaces
 	 */
-	private static String createLabel(double lowerBound, double upperBound){
+	private static String computeLabel(double lowerBound, double upperBound){
 		double min = Math.min(lowerBound, upperBound);
 		double max = Math.max(lowerBound, upperBound);
 		return min + " - " + max;
