@@ -1,8 +1,6 @@
-package com.agenarisk.api.model.dataset;
+package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
-import com.agenarisk.api.model.Node;
-import com.agenarisk.api.model.DataSet;
 import java.util.Map;
 import java.util.TreeMap;
 
