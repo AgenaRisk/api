@@ -620,7 +620,7 @@
 							
 							<weight>
 								<!--Probability weight assigned to this value in this observation-->
-								<!--When there is only one entry this value is ignored and 1 is implied-->
+								<!--All weights will be normalised to 1-->
 							</weight>
 						</entry>
 						...
