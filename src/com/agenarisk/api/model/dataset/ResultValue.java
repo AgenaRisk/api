@@ -8,6 +8,16 @@ import com.agenarisk.api.model.CalculationResult;
  * @author Eugene Dementiev
  */
 public class ResultValue {
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		resultValues,
+		resultValue,
+		label,
+		value
+	}
 
 	/**
 	 * The CalculationResult containing the data set

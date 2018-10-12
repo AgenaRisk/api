@@ -19,6 +19,16 @@ import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
  * @author Eugene Dementiev
  */
 public class CalculationResult {
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		results,
+		result,
+		network,
+		node,
+	}
 
 	/**
 	 * DataSet to which the Result belongs to
