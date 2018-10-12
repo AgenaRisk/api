@@ -473,7 +473,15 @@
 			
 			<graphics>
 				<!--Graphical properties for displaying this Link in Risk Map-->
-				<!--DEFINED AS model.networks.network.links.link.graphics-->
+
+				<figure>
+					<!--Defined in common.graphics.figure-->
+					<!--The following attributes are ignored: shape, width, height, background-->
+				</figure>
+
+				<annotation>
+					<!--ID of the text item that is an annotation to this link-->
+				</annotation>
 			</graphics>
 		</link>
 		...
