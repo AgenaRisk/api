@@ -64,8 +64,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	/**
 	 * Should be set on model load, and then saved on model save
 	 */
-	private JSONArray texts, pictures;
-	private JSONObject graphics, meta, audit;
+	private JSONArray jsonTexts, jsonPictures;
+	private JSONObject jsonGraphics, jsonMeta, jsonAudit;
 	
 	/**
 	 * Constructor for Model class.
@@ -183,12 +183,12 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		// Retrieve extra fields from JSON that can be used outside of this API
-		model.texts = jsonModel.optJSONArray(Text.Field.texts.toString());
-		model.pictures = jsonModel.optJSONArray(Picture.Field.pictures.toString());
-		model.graphics = jsonModel.optJSONObject(Graphics.Field.graphics.toString());
-		model.meta = jsonModel.optJSONObject(Meta.Field.meta.toString());
+		model.jsonTexts = jsonModel.optJSONArray(Text.Field.texts.toString());
+		model.jsonPictures = jsonModel.optJSONArray(Picture.Field.pictures.toString());
+		model.jsonGraphics = jsonModel.optJSONObject(Graphics.Field.graphics.toString());
+		model.jsonMeta = jsonModel.optJSONObject(Meta.Field.meta.toString());
 
-		model.audit = jsonModel.optJSONObject(Audit.Field.audit.toString());
+		model.jsonAudit = jsonModel.optJSONObject(Audit.Field.audit.toString());
 		
 		// Load Notes
 		try {
@@ -207,11 +207,11 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
 	protected void loadMetaNotes() throws JSONException{
-		if (meta == null || meta.optJSONArray(Meta.Field.notes.toString()) == null){
+		if (jsonMeta == null || jsonMeta.optJSONArray(Meta.Field.notes.toString()) == null){
 			return;
 		}
 		
-		JSONArray jsonNotes = meta.optJSONArray(Meta.Field.notes.toString());
+		JSONArray jsonNotes = jsonMeta.optJSONArray(Meta.Field.notes.toString());
 
 		for (int i = 0; i < jsonNotes.length(); i++) {
 			JSONObject jsonNote = jsonNotes.getJSONObject(i);
@@ -221,7 +221,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		// Don't need to keep loaded notes in temp storage
-		meta.remove(Meta.Field.notes.toString());
+		jsonMeta.remove(Meta.Field.notes.toString());
 	}
 	
 	/**
