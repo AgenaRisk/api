@@ -182,19 +182,46 @@ public class Model implements IDContainer<ModelException>, Storable {
 			}
 		}
 		
-		// Load Notes
-		if (jsonModel.has(Meta.Field.meta.toString())){
-			// Load notes
-		}
-		
-		// Retrieve extra fields from JSON
+		// Retrieve extra fields from JSON that can be used outside of this API
 		model.texts = jsonModel.optJSONArray(Text.Field.texts.toString());
 		model.pictures = jsonModel.optJSONArray(Picture.Field.pictures.toString());
 		model.graphics = jsonModel.optJSONObject(Graphics.Field.graphics.toString());
-		
+		model.meta = jsonModel.optJSONObject(Meta.Field.meta.toString());
+
 		model.audit = jsonModel.optJSONObject(Audit.Field.audit.toString());
 		
+		// Load Notes
+		try {
+			model.loadMetaNotes();
+		}
+		catch (JSONException ex){
+			throw new ModelException("Failed loading model notes", ex);
+		}
+		
 		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
+	/**
+	 * Loads model notes from meta object.
+	 * 
+	 * @throws JSONException if JSON structure is invalid or inconsistent
+	 */
+	protected void loadMetaNotes() throws JSONException{
+		if (meta == null || meta.optJSONArray(Meta.Field.notes.toString()) == null){
+			return;
+		}
+		
+		JSONArray jsonNotes = meta.optJSONArray(Meta.Field.notes.toString());
+
+		for (int i = 0; i < jsonNotes.length(); i++) {
+			JSONObject jsonNote = jsonNotes.getJSONObject(i);
+			String name = jsonNote.getString(Meta.Field.name.toString());
+			String text = jsonNote.getString(Meta.Field.name.toString());
+			getLogicModel().getNotes().addNote(name, text);
+		}
+		
+		// Don't need to keep loaded notes in temp storage
+		meta.remove(Meta.Field.notes.toString());
 	}
 	
 	/**
