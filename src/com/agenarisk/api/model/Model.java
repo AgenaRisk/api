@@ -166,8 +166,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		// Apply settings
+		Settings.loadSettings(model, jsonModel);
 		
 		// Load and apply DataSets
+		
 		
 		// Load Notes
 		if (jsonModel.has(Meta.Field.meta.toString())){
