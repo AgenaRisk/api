@@ -88,14 +88,14 @@ public class JSONAdapter {
 	
 	protected static JSONObject modelSettingsToJSON(Model model) throws JSONException {
 		JSONObject jsonSettings = new JSONObject();
-		jsonSettings.put(Settings.Field.convergence.toString(), model.getSimulationEntropyConvergenceTolerance());
-		jsonSettings.put(Settings.Field.discreteTails.toString(), model.isSimulationTails());
 		jsonSettings.put(Settings.Field.iterations.toString(), model.getSimulationNoOfIterations());
-		jsonSettings.put(Settings.Field.parameterLearningLogging.toString(), model.isEMLogging());
+		jsonSettings.put(Settings.Field.convergence.toString(), model.getSimulationEntropyConvergenceTolerance());
+		jsonSettings.put(Settings.Field.tolerance.toString(), model.getSimulationEvidenceTolerancePercent());
 		jsonSettings.put(Settings.Field.sampleSize.toString(), model.getSampleSize());
 		jsonSettings.put(Settings.Field.sampleSizeRanked.toString(), model.getRankedSampleSize());
+		jsonSettings.put(Settings.Field.discreteTails.toString(), model.isSimulationTails());
 		jsonSettings.put(Settings.Field.simulationLogging.toString(), model.isSimulationLogging());
-		jsonSettings.put(Settings.Field.tolerance.toString(), model.getSimulationEvidenceTolerancePercent());
+		jsonSettings.put(Settings.Field.parameterLearningLogging.toString(), model.isEMLogging());
 		return jsonSettings;
 	}
 	
