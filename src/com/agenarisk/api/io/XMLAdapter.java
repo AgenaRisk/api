@@ -1,4 +1,4 @@
-package api.agenarisk.com.io;
+package com.agenarisk.api.io;
 
 import com.agenarisk.api.util.JSONUtils;
 import com.agenarisk.api.util.Ref;
@@ -35,10 +35,11 @@ public class XMLAdapter {
 	 * <li>model.networks.network</li>
 	 * <li>network.nodes.node</li>
 	 * <li>network.links.link</li>
-	 * <li>node.definition.states.state</li>
-	 * <li>node.definition.table.expressions.expression</li>
-	 * <li>node.definition.table.partitions.partition</li>
-	 * <li>node.definition.table.probabilities.row</li>
+	 * <li>node.meta.notes.note</li>
+	 * <li>node.configuration.states.state</li>
+	 * <li>node.configuration.table.expressions.expression</li>
+	 * <li>node.configuration.table.partitions.partition</li>
+	 * <li>node.configuration.table.probabilities.row</li>
 	 * <li>row.cell</li>
 	 * </ul>
 	 * <br>
