@@ -63,6 +63,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * 
 	 * @param model Model to create and add DataSet to
 	 * @param id unique ID/name of the DataSet
+	 * 
 	 * @return created DataSet
 	 */
 	protected static DataSet createDataSet(Model model, String id){
@@ -105,6 +106,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * Will lock IDContainer.class while doing so.
 	 * 
 	 * @param id the new ID
+	 * 
 	 * @throws DataSetException if fails to change ID
 	 */
 	@Override
@@ -128,6 +130,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @param <T> the type of observation (expecting a String when setting a particular state or a Double when setting a numeric value)
 	 * @param node the Node to set observation for
 	 * @param value the observation value
+	 * 
 	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
@@ -174,6 +177,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @param node the Node to set observation for
 	 * @param states Array of states
 	 * @param weights Array of weights
+	 * 
 	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
@@ -199,6 +203,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * 
 	 * @param node the Node to set observation for
 	 * @param weights the map of states and weights
+	 * 
 	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
@@ -217,6 +222,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * Any existing observations are removed and replaced with this one.
 	 * 
 	 * @param observations JSON with observations
+	 * 
 	 * @throws DataSetException if any of the following applies:
 	 * <br>
 	 * ∙ Node's Network does not belong to this Model;
@@ -250,6 +256,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	/**
 	 * Checks whether the Node has an observation set.
 	 * @param node the Node to check for observations
+	 * 
 	 * @return true if there is an observation for the Node in this DataSet
 	 */
 	public boolean hasObservation(Node node){
@@ -264,6 +271,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * To change an observation, use setObservation() method.
 	 * 
 	 * @param node the observed Node
+	 * 
 	 * @return null if there is no observation or either HardObservation or SoftObservation
 	 */
 	public Observation getObservation(Node node) {
@@ -274,6 +282,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * Returns the CalculationResult for the given Node.
 	 * 
 	 * @param node the Node for which CalculationResult should be returned
+	 * 
 	 * @return CalculationResult for the given Node
 	 * @throws DataSetException if there are no results in this DataSet for this Node or the Node and DataSet belong to different Models
 	 */
@@ -294,6 +303,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * Rebuilds CalculationResults for this DataSet from a given JSON.
 	 * 
 	 * @param json CalculationResults in JSON format
+	 * 
 	 * @throws DataSetException if JSON data is invalid
 	 */
 	protected void loadCalculationResults(JSONArray json) throws DataSetException {
