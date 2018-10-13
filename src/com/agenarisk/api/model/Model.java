@@ -1,6 +1,5 @@
 package com.agenarisk.api.model;
 
-import com.agenarisk.api.util.Ref;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.FileIOException;
@@ -138,7 +137,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @param json JSONObject representing this model, including structure, tables, graphics etc
 	 * @return Model created Model
-	 * @throws ModelException if JSON structure is invalid or inconsistent
+	 * @throws ModelException if failed to create any of the components
+	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
 	public static Model createModel(JSONObject json) throws ModelException, JSONException {
 		
@@ -149,7 +149,12 @@ public class Model implements IDContainer<ModelException>, Storable {
 		// Create networks
 		JSONArray jsonNetworks = jsonModel.getJSONArray(Network.Field.networks.toString());
 		for(int i = 0; i < jsonNetworks.length(); i++){
-			model.createNetwork(jsonNetworks.getJSONObject(i));
+			try {
+				model.createNetwork(jsonNetworks.getJSONObject(i));
+			}
+			catch (JSONException ex){
+				throw new ModelException("Failed to create Network", ex);
+			}
 		}
 
 		// Create cross Network links
