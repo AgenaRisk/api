@@ -95,6 +95,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Loads a Model from a JSON at the given file path.
 	 * 
 	 * @param path file path to JSON-encoded Model
+	 * 
 	 * @return loaded Model
 	 * @throws ModelException if failed to read the file or if JSON was corrupt or missing required attributes
 	 */
@@ -137,6 +138,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Creates all member components.
 	 * 
 	 * @param json JSONObject representing this model, including structure, tables, graphics etc
+	 * 
 	 * @return Model created Model
 	 * @throws ModelException if failed to create any of the components
 	 * @throws JSONException if JSON structure is invalid or inconsistent
@@ -230,6 +232,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Creates all member components.
 	 * 
 	 * @param json JSONObject representing the network, including structure, tables, graphics etc
+	 * 
 	 * @return Network object
 	 */
 	public Network createNetwork(JSONObject json) {
@@ -240,6 +243,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Creates a new empty Network and adds it to this Model.
 	 * 
 	 * @param id unique ID of the Network
+	 * 
 	 * @return the Network instance added to this Model
 	 * @throws ModelException if a Network with this ID already exists
 	 */
@@ -252,6 +256,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @param id unique ID of the Network
 	 * @param name non-unique name of the Network
+	 * 
 	 * @return the Network instance added to this Model
 	 * @throws ModelException if a Network with this ID already exists
 	 */
@@ -329,6 +334,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Looks up and returns a Network by its ID.
 	 * 
 	 * @param id the ID of the Network to return
+	 * 
 	 * @return the Network identified by ID or null, if no such Network exists in this Model
 	 */
 	public Network getNetwork(String id){
@@ -381,6 +387,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Saves the Model to a file path specified in the old CMP format.
 	 * 
 	 * @param path the file path to save to
+	 * 
 	 * @throws FileIOException if saving fails
 	 */
 	public void save(String path) throws FileIOException {
@@ -396,6 +403,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Creates a new DataSet and adds it to this Model.
 	 * 
 	 * @param id unique ID of the DataSet
+	 * 
 	 * @return the DataSet instance added to this Model
 	 * @throws ModelException if a DataSet with this ID already exists
 	 */
