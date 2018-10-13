@@ -1,4 +1,4 @@
-package com.agenarisk.api.io.stub;
+package com.agenarisk.api.model;
 
 /**
  * This is a stub class that only contains field values for input/output to XML and JSON format.

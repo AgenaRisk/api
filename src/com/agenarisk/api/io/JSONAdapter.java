@@ -5,7 +5,7 @@ import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
-import com.agenarisk.api.io.stub.Settings;
+import com.agenarisk.api.model.Settings;
 import com.agenarisk.api.model.CalculationResult;
 import com.agenarisk.api.model.CrossNetworkLink;
 import com.agenarisk.api.model.Link;
