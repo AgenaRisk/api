@@ -16,6 +16,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
+import uk.co.agena.minerva.model.scenario.Scenario;
 import uk.co.agena.minerva.util.model.NameDescription;
 
 /**
@@ -269,7 +270,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * <br>
 	 * Any existing observations are removed and replaced with this one.
 	 * 
-	 * @param observations JSON with observations
+	 * @param jsonObservations JSON with observations
 	 * 
 	 * @throws DataSetException if any of the following applies:
 	 * <br>
@@ -281,8 +282,16 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * <br>
 	 * ∙ Missing or invalid attributes
 	 */
-	public void setObservations(JSONArray observations) throws DataSetException {
-		throw new UnsupportedOperationException("Not implemented");
+	public void setObservations(JSONArray jsonObservations) throws DataSetException {
+		for (int i = 0; i < jsonObservations.length(); i++) {
+			JSONObject jsonObservation = jsonObservations.optJSONObject(i);
+			try {
+				Observation.setObservation(model, this, jsonObservation);
+			}
+			catch (JSONException ex){
+				throw new DataSetException("Failed to set an observation", ex);
+			}
+		}
 	}
 	
 	/**
@@ -356,5 +365,23 @@ public class DataSet implements Identifiable<DataSetException>{
 	 */
 	protected void loadCalculationResults(JSONArray json) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	/**
+	 * Gets the index of corresponding logic scenario in the underlying logical model structure
+	 * 
+	 * @return data set index
+	 */
+	protected int getDataSetIndex(){
+		String thiScenarioName = this.logicScenario.getName().getShortDescription();
+		int index = 0;
+		
+		for(Scenario scenario: (List<Scenario>)getModel().getLogicModel().getScenarioList().getScenarios()){
+			if (thiScenarioName.equalsIgnoreCase(scenario.getName().getShortDescription())){
+				break;
+			}
+			index++;
+		}
+		return index;
 	}
 }
