@@ -296,7 +296,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @param json CalculationResults in JSON format
 	 * @throws DataSetException if JSON data is invalid
 	 */
-	protected void loadCalculationResults(JSONObject json) throws DataSetException {
+	protected void loadCalculationResults(JSONArray json) throws DataSetException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 }
