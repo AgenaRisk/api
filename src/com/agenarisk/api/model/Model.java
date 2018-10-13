@@ -2,6 +2,7 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
+import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.exception.FileIOException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NodeException;
@@ -169,7 +170,17 @@ public class Model implements IDContainer<ModelException>, Storable {
 		Settings.loadSettings(model, jsonModel);
 		
 		// Load and apply DataSets
-		
+		if (jsonModel.has(DataSet.Field.dataSets.toString())){
+			JSONArray jsonDataSets = jsonModel.getJSONArray(DataSet.Field.dataSets.toString());
+			for(int i = 0; i < jsonDataSets.length(); i++){
+				try {
+					model.createDataSet(jsonDataSets.getJSONObject(i));
+				}
+				catch (JSONException ex){
+					throw new ModelException("Failed to create Network", ex);
+				}
+			}
+		}
 		
 		// Load Notes
 		if (jsonModel.has(Meta.Field.meta.toString())){
@@ -381,6 +392,48 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		return dataset;
+	}
+	
+	public DataSet createDataSet(JSONObject jsonDataSet) throws ModelException {
+		
+		DataSet dataSet;
+		try {
+			String id = DataSet.Field.id.toString();
+			dataSet = createDataSet(jsonDataSet.getString(id));
+		}
+		catch (JSONException ex){
+			throw new ModelException(JSONUtils.createMissingAttrMessage(ex), ex);
+		}
+		
+		// Set observations
+		if (jsonDataSet.has(Observation.Field.observations.toString())){
+			try {
+				JSONArray jsonObservations = jsonDataSet.getJSONArray(Observation.Field.observations.toString());
+				dataSet.setObservations(jsonObservations);
+			}
+			catch (DataSetException ex){
+				throw new ModelException("Failed to set observations", ex);
+			}
+			catch (JSONException ex){
+				throw new ModelException(JSONUtils.createMissingAttrMessage(ex), ex);
+			}
+		}
+		
+		// Load results
+		if (jsonDataSet.has(CalculationResult.Field.results.toString())){
+			try {
+				JSONArray jsonResults = jsonDataSet.getJSONArray(CalculationResult.Field.results.toString());
+				dataSet.loadCalculationResults(jsonResults);
+			}
+			catch (DataSetException ex){
+				throw new ModelException("Failed to set observations", ex);
+			}
+			catch (JSONException ex){
+				throw new ModelException(JSONUtils.createMissingAttrMessage(ex), ex);
+			}
+		}
+		
+		return dataSet;
 	}
 		
 	/**
