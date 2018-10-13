@@ -6,6 +6,7 @@ import com.agenarisk.api.model.interfaces.Identifiable;
 import java.util.List;
 import java.util.Map;
 import org.apache.sling.commons.json.JSONArray;
+import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.BooleanEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
@@ -70,6 +71,53 @@ public class DataSet implements Identifiable<DataSetException>{
 		uk.co.agena.minerva.model.scenario.Scenario logicScenario = model.getLogicModel().addScenario(id);
 		DataSet dataset = new DataSet(model, logicScenario);
 		return dataset;
+	}
+	
+	/**
+	 * Creates a DataSet for the Model from JSON data.
+	 * 
+	 * @param model the model to create a data set in
+	 * @param jsonDataSet the JSON data
+	 * 
+	 * @return created DataSet
+	 * 
+	 * @throws JSONException if JSON was corrupt or missing required attributes
+	 * @throws ModelException if a DataSet with this ID already exists
+	 * @throws DataSetException if failed to load observations or results data
+	 */
+	protected static DataSet createDataSet(Model model, JSONObject jsonDataSet) throws JSONException, ModelException, DataSetException {
+		DataSet dataSet;
+		try {
+			String id = DataSet.Field.id.toString();
+			dataSet = model.createDataSet(jsonDataSet.getString(id));
+		}
+		catch (JSONException ex){
+			throw new ModelException("Failed reading dataset data", ex);
+		}
+		
+		// Set observations
+		if (jsonDataSet.has(Observation.Field.observations.toString())){
+			try {
+				JSONArray jsonObservations = jsonDataSet.getJSONArray(Observation.Field.observations.toString());
+				dataSet.setObservations(jsonObservations);
+			}
+			catch (JSONException | DataSetException ex){
+				throw new ModelException("Failed to set observations", ex);
+			}
+		}
+		
+		// Load results
+		if (jsonDataSet.has(CalculationResult.Field.results.toString())){
+			try {
+				JSONArray jsonResults = jsonDataSet.getJSONArray(CalculationResult.Field.results.toString());
+				dataSet.loadCalculationResults(jsonResults);
+			}
+			catch (JSONException | DataSetException ex){
+				throw new ModelException("Failed to read results data", ex);
+			}
+		}
+		
+		return dataSet;
 	}
 	
 	/**

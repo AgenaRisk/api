@@ -429,39 +429,25 @@ public class Model implements IDContainer<ModelException>, Storable {
 		return dataset;
 	}
 	
+	/**
+	 * Creates a DataSet for this Model from JSON data.
+	 * 
+	 * @param jsonDataSet the JSON data
+	 * 
+	 * @return created DataSet
+	 * 
+	 * @throws ModelException if a DataSet with this ID already exists or if JSON was corrupt or missing required attributes
+	 */
 	public DataSet createDataSet(JSONObject jsonDataSet) throws ModelException {
 		
 		DataSet dataSet;
 		try {
-			String id = DataSet.Field.id.toString();
-			dataSet = createDataSet(jsonDataSet.getString(id));
+			dataSet = DataSet.createDataSet(this, jsonDataSet);
 		}
-		catch (JSONException ex){
-			throw new ModelException("Failed reading dataset data", ex);
+		catch (DataSetException | JSONException ex){
+			throw new ModelException("Failed to add DataSet", ex);
 		}
-		
-		// Set observations
-		if (jsonDataSet.has(Observation.Field.observations.toString())){
-			try {
-				JSONArray jsonObservations = jsonDataSet.getJSONArray(Observation.Field.observations.toString());
-				dataSet.setObservations(jsonObservations);
-			}
-			catch (JSONException | DataSetException ex){
-				throw new ModelException("Failed to set observations", ex);
-			}
-		}
-		
-		// Load results
-		if (jsonDataSet.has(CalculationResult.Field.results.toString())){
-			try {
-				JSONArray jsonResults = jsonDataSet.getJSONArray(CalculationResult.Field.results.toString());
-				dataSet.loadCalculationResults(jsonResults);
-			}
-			catch (JSONException | DataSetException ex){
-				throw new ModelException("Failed to read results data", ex);
-			}
-		}
-		
+
 		return dataSet;
 	}
 		
