@@ -179,8 +179,9 @@ public class Model implements IDContainer<ModelException>, Storable {
 		// Retrieve extra fields from JSON
 		model.texts = jsonModel.optJSONArray(Text.Field.texts.toString());
 		model.pictures = jsonModel.optJSONArray(Picture.Field.pictures.toString());
-		model.audit = jsonModel.optJSONObject(Audit.Field.audit.toString());
 		model.graphics = jsonModel.optJSONObject(Graphics.Field.graphics.toString());
+		
+		model.audit = jsonModel.optJSONObject(Audit.Field.audit.toString());
 		
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
