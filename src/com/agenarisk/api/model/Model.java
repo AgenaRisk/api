@@ -114,7 +114,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 			model = Model.createModel(json);
 		}
 		catch (JSONException ex){
-			throw new ModelException(JSONUtils.createMissingAttrMessage(ex));
+			throw new ModelException("Failed to read model data", ex);
 		}
 				
 		Environment.logIfDebug("Model loaded");
@@ -163,7 +163,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 			Node.linkNodes(model, jsonModel.optJSONArray(Link.Field.links.toString()));
 		}
 		catch (JSONException | NodeException ex){
-			throw new ModelException("Failed to create Links", ex);
+			throw new ModelException("Failed to link networks", ex);
 		}
 		
 		// Apply settings
@@ -402,7 +402,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 			dataSet = createDataSet(jsonDataSet.getString(id));
 		}
 		catch (JSONException ex){
-			throw new ModelException(JSONUtils.createMissingAttrMessage(ex), ex);
+			throw new ModelException("Failed reading dataset data", ex);
 		}
 		
 		// Set observations
@@ -411,11 +411,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 				JSONArray jsonObservations = jsonDataSet.getJSONArray(Observation.Field.observations.toString());
 				dataSet.setObservations(jsonObservations);
 			}
-			catch (DataSetException ex){
+			catch (JSONException | DataSetException ex){
 				throw new ModelException("Failed to set observations", ex);
-			}
-			catch (JSONException ex){
-				throw new ModelException(JSONUtils.createMissingAttrMessage(ex), ex);
 			}
 		}
 		
@@ -425,11 +422,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 				JSONArray jsonResults = jsonDataSet.getJSONArray(CalculationResult.Field.results.toString());
 				dataSet.loadCalculationResults(jsonResults);
 			}
-			catch (DataSetException ex){
-				throw new ModelException("Failed to set observations", ex);
-			}
-			catch (JSONException ex){
-				throw new ModelException(JSONUtils.createMissingAttrMessage(ex), ex);
+			catch (JSONException | DataSetException ex){
+				throw new ModelException("Failed to read results data", ex);
 			}
 		}
 		
