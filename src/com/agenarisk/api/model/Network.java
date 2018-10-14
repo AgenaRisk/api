@@ -84,28 +84,38 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * Factory method to be called by a Model object that is trying to add a Network to itself.
 	 * 
 	 * @param model the Model to add a Network to
-	 * @param json JSONObject representing the network, including structure, tables, graphics etc
+	 * @param jsonModel JSONObject representing the network, including structure, tables, graphics etc
+	 * 
 	 * @return the created Network
+	 * @throws JSONException
+	 * @throws NetworkException
 	 */
-	protected static Network createNetwork(Model model, JSONObject json) {
-		String id = "";
-		String name = "";
-		Network network = new Network(model, id, name);
+	protected static Network createNetwork(Model model, JSONObject jsonModel) throws JSONException, NetworkException {
+		String id = jsonModel.getString(Network.Field.id.toString());
+		String name = jsonModel.getString(Network.Field.name.toString());
 		
-		if (json.has(Graphics.Field.graphics.toString())){
-			network.graphics = json.optJSONObject(Graphics.Field.graphics.toString());
+		Network network;
+		try {
+			network = model.createNetwork(id, name);
+		}
+		catch (ModelException ex){
+			throw new NetworkException("Failed to add a network to model", ex);
 		}
 		
-		if (json.has(RiskTable.Field.riskTable.toString())){
-			network.riskTable = json.optJSONObject(RiskTable.Field.riskTable.toString());
+		if (jsonModel.has(Graphics.Field.graphics.toString())){
+			network.graphics = jsonModel.optJSONObject(Graphics.Field.graphics.toString());
 		}
 		
-		if (json.has(Text.Field.texts.toString())){
-			network.texts = json.optJSONObject(Text.Field.texts.toString());
+		if (jsonModel.has(RiskTable.Field.riskTable.toString())){
+			network.riskTable = jsonModel.optJSONObject(RiskTable.Field.riskTable.toString());
 		}
 		
-		if (json.has(Picture.Field.pictures.toString())){
-			network.pictures = json.optJSONObject(Picture.Field.pictures.toString());
+		if (jsonModel.has(Text.Field.texts.toString())){
+			network.texts = jsonModel.optJSONObject(Text.Field.texts.toString());
+		}
+		
+		if (jsonModel.has(Picture.Field.pictures.toString())){
+			network.pictures = jsonModel.optJSONObject(Picture.Field.pictures.toString());
 		}
 		
 		throw new UnsupportedOperationException("Not supported yet.");

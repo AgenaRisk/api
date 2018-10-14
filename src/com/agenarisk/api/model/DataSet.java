@@ -3,20 +3,26 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.model.interfaces.Identifiable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.BooleanEN;
+import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
+import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.model.scenario.Scenario;
+import uk.co.agena.minerva.model.scenario.ScenarioException;
 import uk.co.agena.minerva.util.model.NameDescription;
 
 /**
@@ -100,7 +106,10 @@ public class DataSet implements Identifiable<DataSetException>{
 		if (jsonDataSet.has(Observation.Field.observations.toString())){
 			try {
 				JSONArray jsonObservations = jsonDataSet.getJSONArray(Observation.Field.observations.toString());
-				dataSet.setObservations(jsonObservations);
+				for (int i = 0; i < jsonObservations.length(); i++) {
+					JSONObject jsonObservation = jsonObservations.optJSONObject(i);
+					dataSet.setObservation(jsonObservation);
+				}
 			}
 			catch (JSONException | DataSetException ex){
 				throw new ModelException("Failed to set observations", ex);
@@ -172,48 +181,128 @@ public class DataSet implements Identifiable<DataSetException>{
 	}
 	
 	/**
+	 * Sets a hard integer observation for a Node.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
+	 * 
+	 * @param node the Node to set observation for
+	 * @param value the observation value
+	 * 
+	 * @throws DataSetException if any:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 */
+	public void setObservationHard(Node node, int value) throws DataSetException {
+		setObservationHardGeneric(node, value);
+	}
+	
+	/**
+	 * Sets a hard real observation for a Node.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
+	 * 
+	 * @param node the Node to set observation for
+	 * @param value the observation value
+	 * 
+	 * @throws DataSetException if any:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 */
+	public void setObservationHard(Node node, double value) throws DataSetException {
+		setObservationHardGeneric(node, value);
+	}
+	
+	/**
 	 * Sets a hard observation for a Node.
 	 * <br>
 	 * Any existing observations are removed and replaced with this one.
 	 * 
-	 * @param <T> the type of observation (expecting a String when setting a particular state or a Double when setting a numeric value)
+	 * @param node the Node to set observation for
+	 * @param state observed state
+	 * 
+	 * @throws DataSetException if any:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 */
+	public void setObservationHard(Node node, String state) throws DataSetException {
+		setObservationHardGeneric(node, state);
+	}
+	
+	/**
+	 * Sets a hard observation for a Node.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
+	 * <br>
+	 * The type of observation must be:
+	 * <br>
+	 * ∙ String for Boolean, Labelled, Ranked and DiscreteReal nodes,
+	 * <br>
+	 * ∙ Integer for IntegerInterval
+	 * <br>
+	 * ∙ Double for ContinuousInterval
+	 * 
 	 * @param node the Node to set observation for
 	 * @param value the observation value
 	 * 
 	 * @throws DataSetException if any of the following applies:
 	 * <br>
-	 * ∙ Node's Network does not belong to this Model;
+	 * ∙ Node's Network does not belong to this Model
 	 * <br>
 	 * ∙ State does not exist
 	 * <br>
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
-	public <T> void setObservationHard(Node node, T value) throws DataSetException {
+	public void setObservationHardGeneric(Node node, Object value) throws DataSetException {
 		ExtendedBN ebn = node.getNetwork().getLogicNetwork();
 		ExtendedNode en = node.getLogicNode();
+		if (!node.getNetwork().getModel().equals(getModel())){
+			throw new DataSetException("Node and DataSet belong to different models");
+		}
+		
+		if (en instanceof BooleanEN && value instanceof Boolean){
+			// Convert Boolean to string
+			// May try to work out what is the name of the "True" state if not using standard states
+			value = String.valueOf(value);
+		}
+		
+		if (en instanceof DiscreteRealEN && value instanceof Double){
+			value = String.valueOf(value);
+		}
+		
+		if (en instanceof DiscreteRealEN && value instanceof Integer){
+			value = String.valueOf(Double.valueOf(value+""));
+		}
 		
 		if (en instanceof LabelledEN || en instanceof RankedEN || en instanceof DiscreteRealEN){
-			// Observation is same as one of the states
+			// Observation must be the same as one of the states
 			
 			if (value instanceof String){
 				// Find matching state
 				ExtendedState state = null;
 				try {
-					state = en.getExtendedStateWithShortDesc((String)value);
+					state = en.getExtendedStateWithShortDesc((String) value);
 					getLogicScenario().addHardEvidenceObservation(ebn.getId(), en.getId(), state.getId());
 				}
 				catch (ExtendedStateNotFoundException ex){
 					throw new DataSetException("State `" + value + "` does not exist in node " + node.toStringExtra(), ex);
 				}
 			}
-			
-			if (en instanceof BooleanEN && value instanceof Boolean){
-			}
-			
 		}
-		
-		throw new UnsupportedOperationException("Not implemented");
-		
+		else if (en instanceof ContinuousIntervalEN){
+			getLogicScenario().addRealObservation(ebn.getId(), en.getId(), (Double) value);
+		}
+		else if (en instanceof IntegerIntervalEN){
+			getLogicScenario().addIntegerObservation(ebn.getId(), en.getId(), (Integer) value);
+		}
+		else {
+			throw new DataSetException("Unsupported observation type");
+		}
 	}
 	
 	/**
@@ -238,7 +327,11 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * ∙ Unequal size of arrays
 	 */
 	public void setObservationSoft(Node node, String[] states, Double[] weights) throws DataSetException {
-		throw new UnsupportedOperationException("Not implemented");
+		if (states.length != weights.length){
+			throw new DataSetException("Arrays length not equal");
+		}
+		Map<String, Double> entries = IntStream.range(0, states.length).boxed().collect(Collectors.toMap(i -> states[i], i -> weights[i]));
+		setObservationSoft(node, entries);
 	}
 	
 	/**
@@ -262,7 +355,33 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
 	public void setObservationSoft(Node node, Map<String, Double> weights) throws DataSetException {
-		throw new UnsupportedOperationException("Not implemented");
+		if (!node.getNetwork().getModel().equals(getModel())){
+			throw new DataSetException("Node and DataSet belong to different models");
+		}
+		
+		int netId = node.getNetwork().getLogicNetwork().getId();
+		int nodeId = node.getLogicNode().getId();
+		
+		double[] probabilities = new double[weights.size()];
+		int[] stateIds = new int[weights.size()];
+		
+		int i = 0;
+		for(String stateName: weights.keySet()){
+			ExtendedState es = node.getLogicNode().getExtendedStateWithName(stateName);
+			if (es == null){
+				throw new DataSetException("State `" + stateName + "` not found");
+			}
+			stateIds[i] = es.getId();
+			probabilities[i] = weights.get(stateName);
+			i++;
+		}
+		
+		try {
+			getLogicScenario().addSoftEvidenceObservation(netId, nodeId, stateIds, probabilities);
+		}
+		catch(ScenarioException ex){
+			throw new DataSetException("Failed to add soft observation", ex);
+		}
 	}
 	
 	/**
@@ -270,7 +389,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * <br>
 	 * Any existing observations are removed and replaced with this one.
 	 * 
-	 * @param jsonObservations JSON with observations
+	 * @param jsonObservation JSON with observations
 	 * 
 	 * @throws DataSetException if any of the following applies:
 	 * <br>
@@ -279,19 +398,40 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * ∙ Any of the states do not exist
 	 * <br>
 	 * ∙ Value passed is an invalid observation for the given Node
-	 * <br>
-	 * ∙ Missing or invalid attributes
+	 * @throws JSONException if missing or invalid attributes
 	 */
-	public void setObservations(JSONArray jsonObservations) throws DataSetException {
-		for (int i = 0; i < jsonObservations.length(); i++) {
-			JSONObject jsonObservation = jsonObservations.optJSONObject(i);
-			try {
-				Observation.setObservation(model, this, jsonObservation);
-			}
-			catch (JSONException ex){
-				throw new DataSetException("Failed to set an observation", ex);
-			}
+	public void setObservation(JSONObject jsonObservation) throws DataSetException, JSONException {
+		String networkId = jsonObservation.getString(Observation.Field.network.toString());
+		String nodeId = jsonObservation.getString(Observation.Field.node.toString());
+		Node node;
+		
+		try {
+			node = model.getNetwork(networkId).getNode(nodeId);
 		}
+		catch(NullPointerException ex){
+			throw new DataSetException("Network or node not found", ex);
+		}
+		
+		JSONArray jsonEntries = jsonObservation.getJSONArray(Observation.Field.entries.toString());
+		
+		Map<String, Double> entries = new HashMap<>();
+		
+		for (int i = 0; i < jsonEntries.length(); i++) {
+			JSONObject jsonEntry = jsonEntries.getJSONObject(i);
+			Object value = jsonEntry.get(Observation.Field.value.toString());
+			Double weight = jsonEntry.getDouble(Observation.Field.weight.toString());
+			
+			if (jsonEntries.length() == 1){
+				// Hard observation
+				setObservationHardGeneric(node, value);
+				return;
+			}
+
+			entries.put(String.valueOf(value), weight);
+		}
+		
+		setObservationSoft(node, entries);
+
 	}
 	
 	/**
