@@ -5,6 +5,7 @@ import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
+import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.Settings;
 import com.agenarisk.api.model.CalculationResult;
 import com.agenarisk.api.model.CrossNetworkLink;
@@ -21,6 +22,7 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.ConstantStateMessagePassingLink;
 import uk.co.agena.minerva.model.ConstantSummaryMessagePassingLink;
+import uk.co.agena.minerva.model.MarginalDataItem;
 import uk.co.agena.minerva.model.MessagePassingLink;
 import uk.co.agena.minerva.model.MessagePassingLinks;
 import uk.co.agena.minerva.model.Model;
@@ -35,6 +37,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedNodeNotFoundException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
+import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.model.scenario.Observation;
 import uk.co.agena.minerva.model.scenario.Scenario;
@@ -168,8 +171,24 @@ public class JSONAdapter {
 				jsonResult.put(CalculationResult.Field.network.toString(), ebn.getConnID());
 				jsonResult.put(CalculationResult.Field.node.toString(), en.getConnNodeId());
 				
+				MarginalDataItem mdi = model.getMarginalDataStore().getMarginalDataItemListForNode(ebn, en).getMarginalDataItemAtIndex(scenarioIndex);
+				DataSet ds = mdi.getDataset();
+				
+				if (en instanceof NumericalEN){
+					JSONObject jsonSS = new JSONObject();
+					jsonSS.put(SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
+					jsonSS.put(SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
+					jsonSS.put(SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
+					jsonSS.put(SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
+					jsonSS.put(SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
+					jsonSS.put(SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
+					jsonSS.put(SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
+					jsonSS.put(SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
+					jsonSS.put(SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
+					jsonResult.put(SummaryStatistic.Field.summaryStatistics.toString(), jsonSS);
+				}
+				
 				JSONArray jsonResultValues = new JSONArray();
-				DataSet ds = model.getMarginalDataStore().getMarginalDataItemListForNode(ebn, en).getMarginalDataItemAtIndex(scenarioIndex).getDataset();
 				for(DataPoint dp: (List<DataPoint>) ds.getDataPoints()){
 					
 					JSONObject jsonResultValue = new JSONObject();
