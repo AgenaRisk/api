@@ -27,7 +27,7 @@ public class CalculationResult {
 		results,
 		result,
 		network,
-		node,
+		node
 	}
 
 	/**
