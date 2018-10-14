@@ -841,6 +841,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @param name new name
 	 */
+	@Override
 	public void setName(String name){
 		getLogicNode().getName().setShortDescription(name);
 	}
@@ -850,6 +851,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @return the name of this node
 	 */
+	@Override
 	public String getName(){
 		return getLogicNode().getName().getShortDescription();
 	}
@@ -859,6 +861,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @param description new description
 	 */
+	@Override
 	public void setDescription(String description){
 		getLogicNode().getName().setLongDescription(description);
 	}
@@ -868,6 +871,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @return the description of this node
 	 */
+	@Override
 	public String getDescription(){
 		return getLogicNode().getName().getLongDescription();
 	}

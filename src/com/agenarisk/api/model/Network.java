@@ -473,6 +473,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * 
 	 * @param name new name
 	 */
+	@Override
 	public void setName(String name){
 		getLogicNetwork().getName().setShortDescription(name);
 	}
@@ -482,6 +483,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * 
 	 * @return the name of this Network
 	 */
+	@Override
 	public String getName(){
 		return getLogicNetwork().getName().getShortDescription();
 	}
@@ -491,6 +493,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * 
 	 * @param description new description
 	 */
+	@Override
 	public void setDescription(String description){
 		getLogicNetwork().getName().setLongDescription(description);
 	}
@@ -500,6 +503,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * 
 	 * @return the description of this Network
 	 */
+	@Override
 	public String getDescription(){
 		return getLogicNetwork().getName().getLongDescription();
 	}
