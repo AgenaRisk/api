@@ -23,6 +23,7 @@ import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.helpers.MathsHelper;
 import com.agenarisk.api.model.interfaces.Storable;
 import org.apache.sling.commons.json.JSONObject;
+import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.Variable;
 import uk.co.agena.minerva.util.nptgenerator.Arithmetic;
@@ -163,7 +164,7 @@ public class CrossNetworkLink extends Link implements Storable {
 		
 		if (Type.Marginals.equals(type)){
 			// Passing state marginals
-			if (en2 instanceof LabelledEN || en2 instanceof RankedEN){
+			if (en2 instanceof LabelledEN || en2 instanceof DiscreteRealEN || en2 instanceof RankedEN){
 				// If target is labelled node, just copy states from source to target
 				List<ExtendedState> states = new ArrayList<>();
 				for(ExtendedState es: (List<ExtendedState>)en1.getExtendedStates()){
