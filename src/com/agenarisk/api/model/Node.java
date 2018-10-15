@@ -37,6 +37,7 @@ import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
+import java.util.concurrent.atomic.AtomicInteger;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -97,12 +98,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * This stores meta tag for the Node, and should be set on model load
 	 */
-	private JSONObject meta;
+	private JSONObject jsonMeta;
 	
 	/**
 	 * This stores graphics for the Node, and should be set on model load
 	 */
-	private JSONObject graphics;
+	private JSONObject jsonGraphics;
 	
 	/**
 	 * Constructor for the Node class. Creates a Node object without affecting the logic in any way.
@@ -110,9 +111,20 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @param network the Network that will contain this Node
 	 * @param logicNode the Node's corresponding logic Node
 	 */
-	private Node(Network network, ExtendedNode logicNode){
+	private Node(Network network, String id, String name, Type type) {
+		String nodeClassName = resolveNodeClassName(type);
+		
+		ExtendedNode en;
+		try {
+			en = network.getLogicNetwork().createNewExtendedNode(nodeClassName, new NameDescription(name, ""));
+			network.getLogicNetwork().updateConnNodeId(en, id);
+		}
+		catch (CoreBNNodeNotFoundException | ExtendedBNException ex){
+			throw new AgenaRiskRuntimeException("Failed to create a node for ID `"+id+"`", ex);
+		}
+
 		this.network = network;
-		this.logicNode = logicNode;
+		this.logicNode = en;
 	}
 	
 	/**
@@ -167,6 +179,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Removes the Link object from the linksOut list.
 	 * 
 	 * @param link the Link to remove
+	 * 
 	 * @return true if Link was added and false if the Link does not concern this Node
 	 * @deprecated For internal use only
 	 */
@@ -190,6 +203,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Removes the Link object from the linksOut list.
 	 * 
 	 * @param link the Link to remove
+	 * 
 	 * @return true if Link was removed and false if the Link does not concern this Node
 	 * @deprecated For internal use only
 	 */
@@ -215,7 +229,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * If child table is in Manual mode, this action will reset it to a uniform table.
 	 * 
 	 * @param child the child Node
+	 * 
 	 * @return created Link
+	 * 
 	 * @throws LinkException if Link already exists, or a cross network link is being created (use Node.linkNodes() for that instead)
 	 */
 	public synchronized Link linkTo(Node child) throws LinkException {
@@ -228,7 +244,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * If this Node's table is in Manual mode, this action will reset it to a uniform table.
 	 * 
 	 * @param parent the parent Node
+	 * 
 	 * @return created Link
+	 * 
 	 * @throws LinkException if Link already exists, or a cross network link is being created (use Node.linkNodes() for that instead)
 	 */
 	public synchronized Link linkFrom(Node parent) throws LinkException {
@@ -240,6 +258,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @param node1 Node 1
 	 * @param node2 Node 2
+	 * 
 	 * @return true if the link was destroyed, false if there was no link
 	 */
 	public static boolean unlinkNodes(Node node1, Node node2){
@@ -270,12 +289,50 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Does nothing if json is null or empty.
 	 * 
 	 * @param model the model to create Links in
-	 * @param json configuration of the Links
+	 * @param jsonLinks configuration of the Links
+	 * 
 	 * @throws JSONException if JSON structure is invalid or inconsistent
-	 * @throws NodeException if a Link fails to be created
+	 * @throws LinkException if a Link fails to be created
 	 */
-	public static void linkNodes(Model model, JSONArray json) throws JSONException, NodeException {
-		throw new UnsupportedOperationException("Not implemented");
+	public static void linkNodes(Model model, JSONArray jsonLinks) throws JSONException, LinkException {
+		if (jsonLinks == null){
+			return;
+		}
+		
+		for (int i = 0; i < jsonLinks.length(); i++) {
+			JSONObject jsonLink = jsonLinks.getJSONObject(i);
+			String net1Id = jsonLink.getString(CrossNetworkLink.Field.sourceNetwork.toString());
+			String node1Id = jsonLink.getString(CrossNetworkLink.Field.sourceNode.toString());
+			
+			String net2Id = jsonLink.getString(CrossNetworkLink.Field.targetNetwork.toString());
+			String node2Id = jsonLink.getString(CrossNetworkLink.Field.targetNode.toString());
+			
+			Node sourceNode;
+			Node targetNode;
+			try {
+				sourceNode = model.getNetwork(net1Id).getNode(node1Id);
+				sourceNode.getId();
+				targetNode = model.getNetwork(net2Id).getNode(node2Id);
+				targetNode.getId();
+			}
+			catch (NullPointerException ex){
+				throw new LinkException("Network or node not found", ex);
+			}
+			
+			String linkTypeString = jsonLink.getString(CrossNetworkLink.Field.type.toString());
+			CrossNetworkLink.Type linkType;
+			try {
+				linkType = CrossNetworkLink.Type.valueOf(linkTypeString);
+			}
+			catch (IllegalArgumentException ex){
+				throw new LinkException("Invalid link type `" + linkTypeString + "`", ex);
+			}
+			
+			String stateId = jsonLink.optString(CrossNetworkLink.Field.passState.toString(), null);
+						
+			Node.linkNodes(sourceNode, targetNode, linkType, stateId);
+			
+		}
 	}
 	
 	/**
@@ -283,7 +340,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @param fromNode Node to link from
 	 * @param toNode Node to link to
+	 * 
 	 * @return created Link
+	 * 
 	 * @throws LinkException if Link already exists, or a cross network link is being created
 	 */
 	public static Link linkNodes(Node fromNode, Node toNode) throws LinkException {
@@ -296,7 +355,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @param fromNode Node to link from
 	 * @param toNode Node to link to
 	 * @param type type of CrossNetworkLink if applicable
+	 * 
 	 * @return created Link
+	 * 
 	 * @throws LinkException if Link already exists, or a cross network link is being created with invalid arguments
 	 */
 	public static Link linkNodes(Node fromNode, Node toNode, CrossNetworkLink.Type type) throws LinkException {
@@ -306,13 +367,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Creates a Link between two nodes in same or different Networks.
 	 * <br>
-	 * The underlying NPT of the child node will be reset to some default value.
+	 * The underlying NPT of the child node <b>will be reset</b> to some default value.
 	 * 
 	 * @param fromNode Node to link from
 	 * @param toNode Node to link to
 	 * @param type type of CrossNetworkLink if applicable
 	 * @param stateToPass if type is State, this specifies the state to pass
+	 * 
 	 * @return created Link
+	 * 
 	 * @throws LinkException if Link already exists, or a cross network link is being created with invalid arguments
 	 */
 	public static Link linkNodes(Node fromNode, Node toNode, CrossNetworkLink.Type type, String stateToPass) throws LinkException {
@@ -346,6 +409,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				if (fromNode.getLogicNode().isConnectableInputNode() && !toNode.getLinksIn().isEmpty()){
 					// Output node can't also be input node
 					throw new LinkException("Node " + fromNode.toStringExtra() + " already appears to be configured for cross network incoming link");
+				}
+				
+				if (!Objects.equals(fromNode.getType(), toNode.getType())){
+					throw new LinkException("Cross network link can only be created between nodes of the same type (" + fromNode + " is " + fromNode.getType() + ", " + toNode + " is " + toNode.getType() + ")");
+				}
+				
+				if (fromNode.getLogicNode().getExtendedStates().size() != toNode.getLogicNode().getExtendedStates().size()){
+					throw new LinkException("Cross network link can only be created between nodes with the same number of states");
 				}
 				
 				link = CrossNetworkLink.createCrossNetworkLink(fromNode, toNode, type, stateToPass);
@@ -389,67 +460,66 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				throw ex;
 			}
 			
-			if(true)throw new UnsupportedOperationException("If the link was created, for same-network links we need to reapply child's NPT");
+//			if(true)throw new UnsupportedOperationException("If the link was created, for same-network links we need to reapply child's NPT");
 			
 			return link;
 		}
 	}
 	
 	/**
+	 * Factory method to be called by a Network object that is trying to add a Node to itself.
+	 * 
+	 * @param network the network to add a node to
+	 * @param id the ID of the node
+	 * @param name the name of the node
+	 * @param type type of the Node to create
+	 * 
+	 * @return the created Node
+	 */
+	protected static Node createNode(Network network, String id, String name, Type type) {
+		return new Node(network, id, name, type);
+	}
+	
+	/**
 	 * Factory method to create a Node for use by the Network class.
 	 * <br>
 	 * Creates the underlying logic objects.
+	 * <br>
+	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
 	 * 
 	 * @param network Network that the Node will be added to
-	 * @param json configuration of the Node
+	 * @param jsonNode configuration of the Node
+	 * 
 	 * @return created Node
-	 * @throws NodeException if JSON configuration is incomplete or invalid; or if there was an error in the logic
+	 * 
+	 * @see #setTable(JSONObject)
+	 * 
+	 * @throws NodeException if failed to create the node
+	 * @throws JSONException if JSON configuration is incomplete or invalid
 	 */
-	protected static Node createNode(Network network, JSONObject json) throws NodeException {
-		String id;
-		String name;
-		JSONObject jsonConfiguration; 
-		Type type;
+	protected static Node createNode(Network network, JSONObject jsonNode) throws NodeException, JSONException {
+		String id = jsonNode.getString(Field.id.toString());
+		String name = jsonNode.getString(Field.name.toString());
+		JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
+		String typeString = jsonConfiguration.getString(NodeConfiguration.Field.type.toString());
+		Type type = Type.valueOf(typeString);
 		
+		Node node;
 		try {
-			id = json.getString(Field.id.toString());
-			name = json.getString(Field.name.toString());
-			jsonConfiguration = json.getJSONObject(NodeConfiguration.Field.configuration.toString());
-			String typeString = jsonConfiguration.getString(NodeConfiguration.Field.type.toString());
-			type = Type.valueOf(typeString);
+			node = network.createNode(id, name, type);
 		}
-		catch (JSONException ex){
-			throw new NodeException(JSONUtils.createMissingAttrMessage(ex), ex);
+		catch (NetworkException ex){
+			throw new NodeException("Failed to add a node to network", ex);
 		}
 		
-		String nodeClassName = resolveNodeClassName(type);
+		ExtendedNode en = node.getLogicNode();
 		
-		ExtendedNode en;
-		try {
-			en = network.getLogicNetwork().createNewExtendedNode(nodeClassName, new NameDescription(name, name));
-			network.getLogicNetwork().updateConnNodeId(en, id);
-		}
-		catch (CoreBNNodeNotFoundException | ExtendedBNException ex){
-			throw new NodeException("Failed to create a node for ID `"+id+"`", ex);
-		}
-		
-		Node node = new Node(network, en);
-		
-		boolean simulated = false;
-		if (jsonConfiguration.has(NodeConfiguration.Field.simulated.toString())){
-			try {
-				simulated = jsonConfiguration.getBoolean(NodeConfiguration.Field.simulated.toString());
-			}
-			catch (JSONException ex){
-				throw new NodeException("Invalid simulation attribute value", ex);
-			}
-		}
+		boolean simulated = jsonConfiguration.optBoolean(NodeConfiguration.Field.simulated.toString(), false);
 		
 		if (simulated){
 			ContinuousEN cien = (ContinuousEN)en;
 			setDefaultIntervalStates(node);
 			cien.setSimulationNode(true);
-
 		}
 		else {
 			try {
@@ -461,52 +531,148 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			}
 		}
 		
-		// Retrieve and store properties that are not used in the API but should persist through load/save
-		
-		if (json.has(Meta.Field.meta.toString())){
-			node.meta = json.optJSONObject(Meta.Field.meta.toString());
+		// Create variables
+		JSONArray jsonVariables = jsonNode.optJSONArray(NodeConfiguration.Variables.variables.toString());
+		if (jsonVariables != null){
+			for(int i = 0; i < jsonVariables.length(); i++){
+				JSONObject jsonVariable = jsonVariables.getJSONObject(i);
+				String variableName = jsonVariable.getString(NodeConfiguration.Variables.name.toString());
+				Double variableValue = jsonVariable.getDouble(NodeConfiguration.Variables.value.toString());
+				try {
+					en.addExpressionVariable(variableName, variableValue, true);
+				}
+				catch (ExtendedBNException ex){
+					throw new NodeException("Duplicate variable names detected", ex);
+				}
+			}
 		}
 		
-		if (json.has(Graphics.Field.graphics.toString())){
-			node.graphics = json.optJSONObject(Graphics.Field.graphics.toString());
+		// Retrieve and store properties that are not used in the API but should persist through load/save
+		
+		if (jsonNode.has(Meta.Field.meta.toString())){
+			node.jsonMeta = jsonNode.optJSONObject(Meta.Field.meta.toString());
+		}
+		
+		if (jsonNode.has(Graphics.Field.graphics.toString())){
+			node.jsonGraphics = jsonNode.optJSONObject(Graphics.Field.graphics.toString());
+		}
+		
+		// Load Notes
+		try {
+			node.loadMetaNotes();
+		}
+		catch (JSONException ex){
+			throw new NodeException("Failed loading model notes", ex);
 		}
 		
 		return node;
 	}
 	
 	/**
+	 * Loads model notes from meta object.
+	 * 
+	 * @throws JSONException if JSON structure is invalid or inconsistent
+	 */
+	private void loadMetaNotes() throws JSONException{
+		if (jsonMeta == null || jsonMeta.optJSONArray(Meta.Field.notes.toString()) == null){
+			return;
+		}
+		
+		JSONArray jsonNotes = jsonMeta.optJSONArray(Meta.Field.notes.toString());
+
+		for (int i = 0; i < jsonNotes.length(); i++) {
+			JSONObject jsonNote = jsonNotes.getJSONObject(i);
+			String name = jsonNote.getString(Meta.Field.name.toString());
+			String text = jsonNote.getString(Meta.Field.name.toString());
+			getLogicNode().getNotes().addNote(name, text);
+		}
+		
+		// Don't need to keep loaded notes in temp storage
+		jsonMeta.remove(Meta.Field.notes.toString());
+	}
+	
+	/**
 	 * Sets the manual NPT according to columns provided.
 	 * 
 	 * @param columns 2D array where first dimension are the columns and second dimension are the cells
+	 * 
 	 * @throws NodeException if provided table size is wrong or Node does not allow manual NPT
 	 */
 	public void setTableColumns(double[][] columns) throws NodeException {
 		// Set manual table
-		throw new UnsupportedOperationException("Not implemented");
+		
+		for (int i = 0; i < columns.length; i++) {
+			for (int j = 0; j < columns[i].length; j++) {
+				if (columns[i].length != columns[0].length){
+					throw new NodeException("Table is not a square matrix");
+				}
+			}
+		}
+		
+		int sizeGiven = columns.length * columns[0].length;
+		
+		List<ExtendedNode> parentNodes = getParents().stream().map(node -> node.getLogicNode()).collect(Collectors.toList());
+		
+		AtomicInteger sizeExpected = new AtomicInteger(1);
+		parentNodes.stream().forEach(n -> sizeExpected.set(sizeExpected.get() * n.getExtendedStates().size()));
+		sizeExpected.set(sizeExpected.get() * getLogicNode().getExtendedStates().size());
+		
+		if (sizeExpected.get() != sizeGiven){
+			throw new NodeException("Table has a wrong number of cells (expecting: "+ sizeExpected + ", given: "+sizeGiven+")");
+		}
+		
+		try {
+			getLogicNode().setNPT(columns, parentNodes);
+		}
+		catch (ArrayIndexOutOfBoundsException ex){
+			throw new NodeException("Failed to set table, check parents", ex);
+		}
+		catch (ExtendedBNException ex){
+			throw new NodeException("Failed to set table", ex);
+		}
 	}
 	
 	/**
 	 * Sets the manual NPT according to rows provided.
 	 * 
 	 * @param rows 2D array where first dimension are the rows and second dimension are the cells
+	 * 
 	 * @throws NodeException if provided table size is wrong or Node does not allow manual NPT
 	 */
 	public void setTableRows(double[][] rows) throws NodeException {
-		throw new UnsupportedOperationException("Not implemented");
+		// Set manual table
+		// Transpose arrays
+		double[][] columns = new double[rows[0].length][rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			for (int j = 0; j < rows[i].length; j++) {
+				columns[j][i] = rows[i][j];
+			}
+		}
+		
+		setTableColumns(columns);
 	}
 	
 	/**
 	 * Replaces the Node's probability table with one specified in the given JSON.
+	 * <br>
+	 * This must be used after all parents states and incoming links had been created.
 	 * 
 	 * @param jsonTable configuration of the table in JSON format
-	 * @throws NodeException if table type does not match the rest of the table configuration, if table is not a square matrix or the number of cells does not match the number of partitions created by the combination of parent states
+	 * 
+	 * @throws NodeException if:
+	 * <br>
+	 * ∙ table type does not match the rest of the table configuration
+	 * <br>
+	 * ∙ table is not a square matrix
+	 * <br>
+	 * ∙ the number of cells does not match the number of partitions created by the combination of parent states
 	 */
 	public void setTable(JSONObject jsonTable) throws NodeException {
 		if (jsonTable.length() == 0){
 			return;
 		}
 		
-		List<String> parentIDs = getParents().stream().map(node -> node.getId()).collect(Collectors.toList());
+		List<String> parentIDs = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getId()).collect(Collectors.toList());
 		try {
 			String tableType = jsonTable.getString(NodeConfiguration.Table.type.toString());
 
@@ -518,7 +684,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				
 				try {
 					double[][] npt = extractNPTColumns(jsonTable.getJSONArray(NodeConfiguration.Table.probabilities.toString()));
-					List<ExtendedNode> parentNodes = getParents().stream().map(node -> node.getLogicNode()).collect(Collectors.toList());
+					List<ExtendedNode> parentNodes = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getLogicNode()).collect(Collectors.toList());
 					getLogicNode().setNPT(npt, parentNodes);
 				}
 				catch (ExtendedBNException ex){
@@ -585,6 +751,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
 	 * 
 	 * @param function function to set
+	 * 
 	 * @throws NodeException if function is invalid
 	 */
 	public void setTableFunction(String function) throws NodeException {
@@ -599,6 +766,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * If the node only has one non-simulated parent, this parent will be automatically used to partition this node.
 	 * 
 	 * @param functions functions to set
+	 * 
 	 * @throws NodeException if a function is invalid
 	 */
 	public void setTableFunctions(String[] functions) throws NodeException {
@@ -611,6 +779,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Order of partitions will be based on the order of nodes in the array and states within them.
 	 * 
 	 * @param partitionParents parents to partition by
+	 * 
 	 * @throws NodeException if one of the nodes in partitionParents is simulated or is not a parent of this Node
 	 */
 	public void partitionByParents(Node[] partitionParents) throws NodeException {
@@ -621,7 +790,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * NPT in JSON is given by rows, while ExtendedNode expects an array of columns, so we will need to invert it.
 	 * 
 	 * @param jsonNPT
+	 * 
 	 * @return 2D array where first dimension are the columns and second dimension are the cells
+	 * 
 	 * @throws JSONException 
 	 */
 	private static double[][] extractNPTColumns(JSONArray jsonNPT) throws JSONException {
@@ -647,6 +818,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * This action resets the probability table to uniform.
 	 * 
 	 * @param states new Node's states
+	 * 
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
 	public void setStates(String[] states) throws NodeException{
@@ -658,7 +830,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * <br>
 	 * This action resets the probability table to uniform.
+	 * 
 	 * @param states new Node's states
+	 * 
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
 	public void setStates(JSONArray states) throws NodeException{
@@ -739,7 +913,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * This action replaces States with dynamic states.
 	 * 
 	 * @param simulated whether the node should be simulated or not
+	 * 
 	 * @throws NodeException if Node type can not be simulated
+	 * 
 	 * @return true if the Node has been changed or false if it already was simulated
 	 */
 	public boolean setSimulated(boolean simulated) throws NodeException {
@@ -822,6 +998,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Will lock IDContainer.class while doing so.
 	 * 
 	 * @param id the new ID
+	 * 
 	 * @throws NodeException if fails to change ID
 	 */
 	@Override
@@ -880,6 +1057,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Compares this Node object to another based on its underlying logic network and node IDs.
 	 * 
 	 * @param o another Node object
+	 * 
 	 * @return String comparison of toStringExtra() of both Nodes
 	 */
 	@Override
@@ -891,6 +1069,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Checks equality of a given object to this Node. Returns true if logic nodes of both objects are the same.
 	 * 
 	 * @param obj The object to compare this Node against
+	 * 
 	 * @return true if the given object represents the same Node as this Node, false otherwise
 	 */
 	@Override
@@ -920,6 +1099,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Both Nodes will no longer refer to each other
 	 * 
 	 * @param linkedNode the Node to break Link with
+	 * 
 	 * @return false if there was no Link; or true if the Link was removed
 	 */
 	@Override
@@ -931,10 +1111,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Gets fully-qualified name for ExtendedNode concrete implementation matching the provided Node type from Note.Type.
 	 * 
 	 * @param type Node type
+	 * 
 	 * @return fully-qualified ExtendedNode subclass name
-	 * @throws NodeException if no matching ExtendedNode implementation found
 	 */
-	protected static String resolveNodeClassName(Type type) throws NodeException{
+	protected static String resolveNodeClassName(Type type) {
 		String nodeClassName;
 		switch (type) {
 			case Boolean:
@@ -956,7 +1136,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				nodeClassName = IntegerIntervalEN.class.getName();
 				break;
 			default:
-				throw new NodeException("Invalid node type provided");
+				throw new AgenaRiskRuntimeException("Invalid node type provided");
 		}
 		
 		return nodeClassName;

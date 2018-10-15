@@ -3,6 +3,7 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.model.interfaces.Named;
 import com.agenarisk.api.model.interfaces.Networked;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
+import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.exception.NodeException;
@@ -13,7 +14,6 @@ import com.agenarisk.api.io.stub.Text;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
-import com.agenarisk.api.util.JSONUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
@@ -74,55 +75,103 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @param model the Model to add a Network to
 	 * @param id the ID of the Network
 	 * @param name the name of the Network
+	 * 
 	 * @return the created Network
 	 */
 	protected static Network createNetwork(Model model, String id, String name) {
+		// Call private constructor
 		return new Network(model, id, name);
 	}
 	
 	/**
 	 * Factory method to be called by a Model object that is trying to add a Network to itself.
+	 * <br>
+	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>node.setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
 	 * 
 	 * @param model the Model to add a Network to
-	 * @param jsonModel JSONObject representing the network, including structure, tables, graphics etc
+	 * @param jsonNetwork JSONObject representing the network, including structure, tables, graphics etc
 	 * 
 	 * @return the created Network
-	 * @throws JSONException
-	 * @throws NetworkException
+	 * 
+	 * @see Node#setTable(JSONObject)
+	 * 
+	 * @throws JSONException if JSON configuration is incomplete or invalid
+	 * @throws NetworkException if failed to load a network or node or if an object not found
 	 */
-	protected static Network createNetwork(Model model, JSONObject jsonModel) throws JSONException, NetworkException {
-		String id = jsonModel.getString(Network.Field.id.toString());
-		String name = jsonModel.getString(Network.Field.name.toString());
+	protected static Network createNetwork(Model model, JSONObject jsonNetwork) throws JSONException, NetworkException {
+		String id = jsonNetwork.getString(Network.Field.id.toString());
+		String name = jsonNetwork.getString(Network.Field.name.toString());
 		
 		Network network;
 		try {
+			// Don't know if can add with this ID, ask model
 			network = model.createNetwork(id, name);
 		}
 		catch (ModelException ex){
 			throw new NetworkException("Failed to add a network to model", ex);
 		}
 		
-		if (jsonModel.has(Graphics.Field.graphics.toString())){
-			network.graphics = jsonModel.optJSONObject(Graphics.Field.graphics.toString());
+		// Create nodes
+		JSONArray jsonNodes = jsonNetwork.getJSONArray(Node.Field.nodes.toString());
+		if (jsonNodes != null){
+			for(int i = 0; i < jsonNodes.length(); i++){
+				network.createNode(jsonNodes.getJSONObject(i));
+			}
 		}
 		
-		if (jsonModel.has(RiskTable.Field.riskTable.toString())){
-			network.riskTable = jsonModel.optJSONObject(RiskTable.Field.riskTable.toString());
+		// Create links
+		JSONArray jsonLinks = jsonNetwork.getJSONArray(Link.Field.links.toString());
+		if (jsonLinks != null){
+			for(int i = 0; i < jsonLinks.length(); i++){
+				JSONObject jsonLink = jsonLinks.getJSONObject(i);
+				String parentId = jsonLink.optString(Link.Field.parent.toString());
+				String childId = jsonLink.optString(Link.Field.child.toString());
+
+				Node parent = network.getNode(parentId);
+				Node child = network.getNode(childId);
+
+				if (parent == null){
+					throw new NetworkException("Node `" + network.getId() + "`.`" + parentId + "` not found");
+				}
+
+				if (child == null){
+					throw new NetworkException("Node `" + network.getId() + "`.`" + childId + "` not found");
+				}
+
+				try {
+					parent.linkTo(child);
+				}
+				catch (LinkException ex){
+					throw new NetworkException("Failed to link nodes " + parent + " and " + child, ex);
+				}
+			}
 		}
 		
-		if (jsonModel.has(Text.Field.texts.toString())){
-			network.texts = jsonModel.optJSONObject(Text.Field.texts.toString());
+		// Load stored JSON objects
+		
+		if (jsonNetwork.has(Graphics.Field.graphics.toString())){
+			network.graphics = jsonNetwork.optJSONObject(Graphics.Field.graphics.toString());
 		}
 		
-		if (jsonModel.has(Picture.Field.pictures.toString())){
-			network.pictures = jsonModel.optJSONObject(Picture.Field.pictures.toString());
+		if (jsonNetwork.has(RiskTable.Field.riskTable.toString())){
+			network.riskTable = jsonNetwork.optJSONObject(RiskTable.Field.riskTable.toString());
 		}
 		
-		throw new UnsupportedOperationException("Not supported yet.");
+		if (jsonNetwork.has(Text.Field.texts.toString())){
+			network.texts = jsonNetwork.optJSONObject(Text.Field.texts.toString());
+		}
+		
+		if (jsonNetwork.has(Picture.Field.pictures.toString())){
+			network.pictures = jsonNetwork.optJSONObject(Picture.Field.pictures.toString());
+		}
+		
+		return network;
 	}
 	
 	/**
 	 * Constructor for Network class, to be used by createNetwork method.
+	 * <br>
+	 * Creates the logic network and sets its name and id
 	 * 
 	 * @param model the Model that this Network belongs to
 	 * @param id the ID of the Network
@@ -132,7 +181,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		this.model = model;
 		
 		try {
-			logicNetwork = model.getLogicModel().addExtendedBN(name, name);
+			logicNetwork = model.getLogicModel().addExtendedBN(name, "");
 			logicNetwork.setConnID(id);
 
 		}
@@ -149,43 +198,12 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @param id ID of the Node
 	 * @param name name of the Node
 	 * @param type type of the Node
+	 * 
 	 * @return the created Node
+	 * 
 	 * @throws NetworkException if Node creation failed
 	 */
 	public Node createNode(String id, String name, Node.Type type) throws NetworkException {
-		throw new NetworkException("Not implemented");
-	}
-	
-	/**
-	 * Creates a Node and adds it to this Network.
-	 * 
-	 * @param id ID of the Node
-	 * @param type type of the Node
-	 * @return the created Node
-	 * @throws NetworkException if Node creation failed
-	 */
-	public Node createNode(String id, Node.Type type) throws NetworkException {
-		return createNode(id, id, type);
-	}
-	
-	/**
-	 * Creates a Node from its JSONObject specification and adds it to this Network.
-	 * 
-	 * @param json JSONObject with full Node's configuration
-	 * @return the created Node
-	 * @throws NetworkException if Node creation failed (Node with given ID already exists; or JSON configuration is missing required attributes)
-	 */
-	public Node createNode(JSONObject json) throws NetworkException {
-		
-		String id;
-		
-		try {
-			id = json.getString(Node.Field.id.toString());
-		}
-		catch (JSONException ex){
-			throw new NetworkException(JSONUtils.createMissingAttrMessage(ex), ex);
-		}
-		
 		synchronized (IDContainer.class){
 			if (nodes.containsKey(id)){
 				throw new NetworkException("Node with id `" + id + "` already exists");
@@ -196,12 +214,52 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		Node node;
 		
 		try {
-			node = Node.createNode(this, json);
+			node = Node.createNode(this, id, name, type);
 			nodes.put(id, node);
 		}
-		catch (NodeException ex){
+		catch (AgenaRiskRuntimeException ex){
 			nodes.remove(id);
-			throw new NetworkException("Failed to add a node with id `" + id + "` to network `" + getId() + "`", ex);
+			throw new NetworkException("Failed to add node `" + id + "`", ex);
+		}
+		
+		return node;
+	}
+	
+	/**
+	 * Creates a Node and adds it to this Network.
+	 * 
+	 * @param id ID of the Node
+	 * @param type type of the Node
+	 * 
+	 * @return the created Node
+	 * 
+	 * @throws NetworkException if Node creation failed
+	 */
+	public Node createNode(String id, Node.Type type) throws NetworkException {
+		return createNode(id, id, type);
+	}
+	
+	/**
+	 * Creates a Node from its JSONObject specification and adds it to this Network.
+	 * <br>
+	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>node.setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * 
+	 * @param jsonNode JSONObject with full Node's configuration
+	 * 
+	 * @return the created Node
+	 * 
+	 * @see Node#setTable(JSONObject)
+	 * 
+	 * @throws NetworkException if Node creation failed (Node with given ID already exists; or JSON configuration is missing required attributes)
+	 */
+	public Node createNode(JSONObject jsonNode) throws NetworkException {
+		
+		Node node;
+		try {
+			node = Node.createNode(this, jsonNode);
+		}
+		catch (NodeException | JSONException ex){
+			throw new NetworkException("Failed to create Node", ex);
 		}
 		
 		return node;
@@ -224,6 +282,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * Will lock IDContainer.class while doing so.
 	 * 
 	 * @param id the new ID
+	 * 
 	 * @throws NetworkException if fails to change ID
 	 */
 	@Override
@@ -261,6 +320,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * Compares this Network object to another based on its underlying logic network IDs.
 	 * 
 	 * @param o another Network object
+	 * 
 	 * @return String comparison of toStringExtra() of both Networks
 	 */
 	@Override
@@ -273,6 +333,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * Checks equality of a given object to this Network. Returns true if logic networks of both objects are the same.
 	 * 
 	 * @param obj The object to compare this Network against
+	 * 
 	 * @return true if the given object represents the same Network as this Network, false otherwise
 	 */
 	@Override
@@ -367,6 +428,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * Removes all links (if any exist) between the two networks.
 	 * 
 	 * @param network the Network to sever connections with
+	 * 
 	 * @return false if Network objects are the same, true otherwise
 	 */
 	@Override
@@ -442,6 +504,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * Gets Node from the Network by its unique ID.
 	 * 
 	 * @param id the ID of the Node
+	 * 
 	 * @return the Node with the given ID or null if no such node exists in the Network
 	 */
 	public Node getNode(String id){
@@ -461,6 +524,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 
 	/**
 	 * Creates a JSON representing this Network, ready for file storage.
+	 * 
 	 * @return JSONObject representing this Network
 	 */
 	@Override

@@ -4,11 +4,14 @@ import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.exception.FileIOException;
+import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.ModelException;
+import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.exception.NodeException;
 import com.agenarisk.api.io.stub.Audit;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
+import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.Text;
 import com.agenarisk.api.model.interfaces.IDContainer;
@@ -97,6 +100,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @param path file path to JSON-encoded Model
 	 * 
 	 * @return loaded Model
+	 * 
 	 * @throws ModelException if failed to read the file or if JSON was corrupt or missing required attributes
 	 */
 	public static Model loadModel(String path) throws ModelException {
@@ -140,6 +144,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @param json JSONObject representing this model, including structure, tables, graphics etc
 	 * 
 	 * @return Model created Model
+	 * 
 	 * @throws ModelException if failed to create any of the components
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
@@ -148,41 +153,6 @@ public class Model implements IDContainer<ModelException>, Storable {
 		Model model = createModel();
 		
 		JSONObject jsonModel = json.getJSONObject(Field.model.toString());
-		
-		// Create networks
-		JSONArray jsonNetworks = jsonModel.getJSONArray(Network.Field.networks.toString());
-		for(int i = 0; i < jsonNetworks.length(); i++){
-			try {
-				model.createNetwork(jsonNetworks.getJSONObject(i));
-			}
-			catch (JSONException ex){
-				throw new ModelException("Failed to create Network", ex);
-			}
-		}
-
-		// Create cross Network links
-		try {
-			Node.linkNodes(model, jsonModel.optJSONArray(Link.Field.links.toString()));
-		}
-		catch (JSONException | NodeException ex){
-			throw new ModelException("Failed to link networks", ex);
-		}
-		
-		// Apply settings
-		Settings.loadSettings(model, jsonModel);
-		
-		// Load and apply DataSets
-		if (jsonModel.has(DataSet.Field.dataSets.toString())){
-			JSONArray jsonDataSets = jsonModel.getJSONArray(DataSet.Field.dataSets.toString());
-			for(int i = 0; i < jsonDataSets.length(); i++){
-				try {
-					model.createDataSet(jsonDataSets.getJSONObject(i));
-				}
-				catch (JSONException ex){
-					throw new ModelException("Failed to create Network", ex);
-				}
-			}
-		}
 		
 		// Retrieve extra fields from JSON that can be used outside of this API
 		model.jsonTexts = jsonModel.optJSONArray(Text.Field.texts.toString());
@@ -200,7 +170,65 @@ public class Model implements IDContainer<ModelException>, Storable {
 			throw new ModelException("Failed loading model notes", ex);
 		}
 		
-		throw new UnsupportedOperationException("Not supported yet.");
+		// Apply settings
+		Settings.loadSettings(model, jsonModel);
+		
+		// Create networks
+		JSONArray jsonNetworks = jsonModel.optJSONArray(Network.Field.networks.toString());
+		if (jsonNetworks == null){
+			return model;
+		}
+			
+		for(int i = 0; i < jsonNetworks.length(); i++){
+			// Call public method to create a network in model from JSON
+			model.createNetwork(jsonNetworks.getJSONObject(i));
+		}
+
+		// Create cross cross network links
+		try {
+			Node.linkNodes(model, jsonModel.optJSONArray(Link.Field.links.toString()));
+		}
+		catch (JSONException | LinkException ex){
+			throw new ModelException("Failed to link networks", ex);
+		}
+		
+		// Load node tables now that all nodes, states and links had been created
+		for(int i = 0; i < jsonNetworks.length(); i++){
+			JSONObject jsonNetwork = jsonNetworks.getJSONObject(i);
+			Network network = model.getNetwork(jsonNetwork.getString(Network.Field.id.toString()));
+			
+			JSONArray jsonNodes = jsonNetwork.getJSONArray(Node.Field.nodes.toString());
+			if (jsonNodes != null){
+				for(int j = 0; j < jsonNodes.length(); j++){
+					JSONObject jsonNode = jsonNodes.getJSONObject(j);
+					Node node = network.getNode(jsonNode.getString(Node.Field.id.toString()));
+					
+					JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
+					JSONObject jsonTable = jsonConfiguration.getJSONObject(NodeConfiguration.Table.table.toString());
+					try {
+						node.setTable(jsonTable);
+					}
+					catch (NodeException ex){
+						throw new ModelException("Failed to load table for node " + node, ex);
+					}
+				}
+			}
+		}
+		
+		// Load and apply DataSets
+		JSONArray jsonDataSets = jsonModel.optJSONArray(DataSet.Field.dataSets.toString());
+		if (jsonDataSets != null){
+			for(int i = 0; i < jsonDataSets.length(); i++){
+				try {
+					model.createDataSet(jsonDataSets.getJSONObject(i));
+				}
+				catch (JSONException ex){
+					throw new ModelException("Failed to create Network", ex);
+				}
+			}
+		}
+		
+		return model;
 	}
 	
 	/**
@@ -208,7 +236,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
-	protected void loadMetaNotes() throws JSONException{
+	private void loadMetaNotes() throws JSONException{
 		if (jsonMeta == null || jsonMeta.optJSONArray(Meta.Field.notes.toString()) == null){
 			return;
 		}
@@ -230,13 +258,28 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Creates a Network and adds it to this Model.
 	 * <br>
 	 * Creates all member components.
+	 * <br>
+	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>node.setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
 	 * 
-	 * @param json JSONObject representing the network, including structure, tables, graphics etc
+	 * @param jsonNetwork JSONObject representing the network, including structure, tables, graphics etc
 	 * 
 	 * @return Network object
+	 * 
+	 * @see Node#setTable(JSONObject)
+	 * 
+	 * @throws ModelException
 	 */
-	public Network createNetwork(JSONObject json) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public Network createNetwork(JSONObject jsonNetwork) throws ModelException {
+		Network network;
+		try {
+			// Call protected method that actually creates everything in the network
+			network = Network.createNetwork(this, jsonNetwork);
+		}
+		catch (NetworkException | JSONException ex){
+			throw new ModelException("Failed to create Network", ex);
+		}
+		
+		return network;
 	}
 	
 	/**
@@ -245,6 +288,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @param id unique ID of the Network
 	 * 
 	 * @return the Network instance added to this Model
+	 * 
 	 * @throws ModelException if a Network with this ID already exists
 	 */
 	public Network createNetwork(String id) throws ModelException {
@@ -258,6 +302,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @param name non-unique name of the Network
 	 * 
 	 * @return the Network instance added to this Model
+	 * 
 	 * @throws ModelException if a Network with this ID already exists
 	 */
 	public Network createNetwork(String id, String name) throws ModelException {
@@ -271,6 +316,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		Network network;
 		
 		try {
+			// Call protected factory method to create a network instance
 			network = Network.createNetwork(this, id, name);
 			networks.put(id, network);
 		}
@@ -405,6 +451,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @param id unique ID of the DataSet
 	 * 
 	 * @return the DataSet instance added to this Model
+	 * 
 	 * @throws ModelException if a DataSet with this ID already exists
 	 */
 	public DataSet createDataSet(String id) throws ModelException {
