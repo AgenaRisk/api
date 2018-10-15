@@ -125,7 +125,7 @@ public class CrossNetworkLink extends Link implements Storable {
 		}
 		
 		if (stateToPass != null && !type.equals(Type.State)){
-			throw new LinkException("Link type `"+type.toString()+"` does not pass a state");
+			throw new LinkException("Link type `"+type.toString()+"` does not pass a state `" + stateToPass + "`");
 		}
 		
 		CrossNetworkLink link = new CrossNetworkLink(fromNode, toNode, type, stateToPass);
