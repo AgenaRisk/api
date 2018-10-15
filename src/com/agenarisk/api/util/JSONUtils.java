@@ -215,6 +215,7 @@ public class JSONUtils {
 	public static JSONObject loadModelJSON(String path) throws ModelException, JSONException {
 		String jsonString;
 		JSONObject json;
+		path = path.replaceFirst("^[\"'](.*)[\"']$", "$1");
 
 		try {
 			jsonString = FileHandler.readFileAsString(path);
