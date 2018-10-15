@@ -300,10 +300,12 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 
 	/**
 	 * Returns the underlying logical ExtendedBN network.
+	 * <br>
+	 * Using logic objects directly is <b>unsafe</b> and is likely to break something.
 	 * 
 	 * @return the underlying logical ExtendedBN network
 	 */
-	protected final ExtendedBN getLogicNetwork() {
+	public final ExtendedBN getLogicNetwork() {
 		return logicNetwork;
 	}
 

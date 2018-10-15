@@ -966,6 +966,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 
 	/**
 	 * Returns the Network containing this Node.
+	 * <br>
+	 * Using logic objects directly is <b>unsafe</b> and is likely to break something.
 	 * 
 	 * @return the Network containing this Node
 	 */
@@ -978,7 +980,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @return the underlying ExtendedNode
 	 */
-	protected ExtendedNode getLogicNode() {
+	public ExtendedNode getLogicNode() {
 		return logicNode;
 	}
 

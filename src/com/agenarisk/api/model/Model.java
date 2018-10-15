@@ -398,10 +398,12 @@ public class Model implements IDContainer<ModelException>, Storable {
 
 	/**
 	 * Returns the underlying ExtendedBN.
+	 * <br>
+	 * Using logic objects directly is <b>unsafe</b> and is likely to break something.
 	 * 
 	 * @return the underlying ExtendedBN
 	 */
-	protected uk.co.agena.minerva.model.Model getLogicModel() {
+	public uk.co.agena.minerva.model.Model getLogicModel() {
 		return logicModel;
 	}
 	
