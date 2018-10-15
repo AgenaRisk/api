@@ -2,6 +2,8 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.DataSetException;
+import com.agenarisk.api.io.stub.SummaryStatistic;
+import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +13,9 @@ import java.util.stream.IntStream;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import uk.co.agena.minerva.model.MarginalDataItem;
+import uk.co.agena.minerva.model.MarginalDataItemList;
+import uk.co.agena.minerva.model.MarginalDataStore;
 import uk.co.agena.minerva.model.extendedbn.BooleanEN;
 import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
@@ -20,9 +25,13 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
 import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
+import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.model.scenario.Scenario;
 import uk.co.agena.minerva.model.scenario.ScenarioException;
+import uk.co.agena.minerva.util.model.DataPoint;
+import uk.co.agena.minerva.util.model.IntervalDataPoint;
+import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.NameDescription;
 
 /**
@@ -120,7 +129,10 @@ public class DataSet implements Identifiable<DataSetException>{
 		if (jsonDataSet.has(CalculationResult.Field.results.toString())){
 			try {
 				JSONArray jsonResults = jsonDataSet.getJSONArray(CalculationResult.Field.results.toString());
-				dataSet.loadCalculationResults(jsonResults);
+				for (int i = 0; i < jsonResults.length(); i++) {
+					JSONObject jsonResult = jsonResults.optJSONObject(i);
+					dataSet.loadCalculationResult(jsonResult);
+				}
 			}
 			catch (JSONException | DataSetException ex){
 				throw new ModelException("Failed to read results data", ex);
@@ -497,14 +509,108 @@ public class DataSet implements Identifiable<DataSetException>{
 	}
 	
 	/**
-	 * Rebuilds CalculationResults for this DataSet from a given JSON.
+	 * Loads calculation result data for this DataSet from a given JSON and creates corresponding objects in the underlying logic.
 	 * 
-	 * @param json CalculationResults in JSON format
+	 * @param jsonResult CalculationResult in JSON format
 	 * 
-	 * @throws DataSetException if JSON data is invalid
+	 * @throws DataSetException if any:
+	 * <br>
+	 * ∙ node, network or state not found
+	 * <br>
+	 * ∙ range lower bound more or equal then upper bound
+	 * @throws JSONException if JSON data is invalid
 	 */
-	protected void loadCalculationResults(JSONArray json) throws DataSetException {
-		throw new UnsupportedOperationException("Not implemented");
+	protected void loadCalculationResult(JSONObject jsonResult) throws DataSetException, JSONException {
+		String networkId = jsonResult.getString(CalculationResult.Field.network.toString());
+		String nodeId = jsonResult.getString(CalculationResult.Field.node.toString());
+		Node node;
+		
+		try {
+			node = model.getNetwork(networkId).getNode(nodeId);
+		}
+		catch(NullPointerException ex){
+			throw new DataSetException("Network or node not found", ex);
+		}
+		
+		int scenarioIndex = getDataSetIndex();
+		ExtendedBN ebn = node.getNetwork().getLogicNetwork();
+		ExtendedNode en = node.getLogicNode();
+		
+		MarginalDataStore mds = getModel().getLogicModel().getMarginalDataStore();
+		MarginalDataItemList mdil = mds.getMarginalDataItemListForNode(ebn, en);
+		if (mdil == null) {
+			mdil = new MarginalDataItemList(ebn, en);
+			mds.getNodeMarginalListMap().put(en, mdil);
+		}
+		
+		while (mdil.getMarginalDataItems().size() <= scenarioIndex){
+			mdil.getMarginalDataItems().add(null);
+		}
+		
+		MarginalDataItem mdi = mdil.getMarginalDataItemAtIndex(scenarioIndex);
+		if (mdi == null){
+			mdi = new MarginalDataItem(getId());
+			mdil.getMarginalDataItems().set(scenarioIndex, mdi);
+		}
+		
+		if (jsonResult.has(SummaryStatistic.Field.summaryStatistics.toString())){
+			JSONObject jsonSS = jsonResult.getJSONObject(SummaryStatistic.Field.summaryStatistics.toString());
+			double confidenceInterval = jsonSS.optDouble(SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
+			double mean = jsonSS.optDouble(SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
+			double median = jsonSS.optDouble(SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
+			double standardDeviation = jsonSS.optDouble(SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
+			double variance = jsonSS.optDouble(SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
+			double entropy = jsonSS.optDouble(SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
+			double percentile = jsonSS.optDouble(SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
+			double lowerPercentile = jsonSS.optDouble(SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
+			double upperPercentile = jsonSS.optDouble(SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
+			
+			mdi.setConfidenceInterval(confidenceInterval);
+			mdi.setMeanValue(mean);
+			mdi.setMedianValue(median);
+			mdi.setStandardDeviationValue(standardDeviation);
+			mdi.setVarianceValue(variance);
+			mdi.setEntropyValue(entropy);
+			mdi.setPercentileValue(percentile);
+			mdi.setLowerPercentile(lowerPercentile);
+			mdi.setUpperPercentile(upperPercentile);
+		}
+				
+		uk.co.agena.minerva.util.model.DataSet ds = mdi.getDataset();
+		ds.clearDataPoints();
+		
+		JSONArray jsonValues = jsonResult.getJSONArray(ResultValue.Field.resultValues.toString());
+		
+		for (int i = 0; i < jsonValues.length(); i++) {
+			JSONObject jsonEntry = jsonValues.getJSONObject(i);
+			String label = jsonEntry.getString(ResultValue.Field.label.toString());
+			Double value = jsonEntry.getDouble(ResultValue.Field.value.toString());
+			
+			if (en instanceof NumericalEN && label.contains(" - ")){
+				// Interval data point
+				String[] bounds = label.split(" - ");
+				Double lowerBound = Double.valueOf(bounds[0]);
+				Double upperBound = Double.valueOf(bounds[0]);
+				try {
+					IntervalDataPoint idp = new IntervalDataPoint(label, value, -1, lowerBound, upperBound);
+					ds.addDataPoint(idp);
+				}
+				catch (MinervaRangeException ex){
+					throw new DataSetException("Invalid range " + label, ex);
+				}
+			}
+			else {
+				try {
+					int esId = node.getLogicNode().getExtendedStateWithName(label).getId();
+					DataPoint dp = new DataPoint(label, value, esId);
+					ds.addDataPoint(dp);
+				}
+				catch (NullPointerException ex){
+					throw new DataSetException("State `" + label + "` not found", ex);
+				}
+			}
+
+		}
 	}
 	
 	/**
