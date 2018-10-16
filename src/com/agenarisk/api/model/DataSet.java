@@ -84,7 +84,10 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @return created DataSet
 	 */
 	protected static DataSet createDataSet(Model model, String id){
-		uk.co.agena.minerva.model.scenario.Scenario logicScenario = model.getLogicModel().addScenario(id);
+		// Have to add via meta data to make sure logic scenario shows up in ARD
+		uk.co.agena.minerva.model.scenario.Scenario logicScenario = new Scenario(new NameDescription(id, id));
+		model.getLogicModel().getMetaData().getRootMetaDataItem().addScenario(logicScenario, model.getLogicModel());
+		
 		DataSet dataset = new DataSet(model, logicScenario);
 		return dataset;
 	}
