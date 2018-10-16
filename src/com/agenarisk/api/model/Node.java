@@ -294,7 +294,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 * @throws LinkException if a Link fails to be created
 	 */
-	public static void linkNodes(Model model, JSONArray jsonLinks) throws JSONException, LinkException {
+	public static void linkNodes(Model model, JSONArray jsonLinks) throws JSONException, LinkException, NodeException {
 		if (jsonLinks == null){
 			return;
 		}
@@ -329,8 +329,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			}
 			
 			String stateId = jsonLink.optString(CrossNetworkLink.Field.passState.toString(), null);
-						
-			Node.linkNodes(sourceNode, targetNode, linkType, stateId);
+			
+			try {
+				Node.linkNodes(sourceNode, targetNode, linkType, stateId);
+			}
+			catch (LinkException ex){
+				throw new NodeException("Failed to create a link between nodes " + sourceNode + " and " + targetNode, ex);
+			}
 			
 		}
 	}

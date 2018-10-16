@@ -199,7 +199,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		try {
 			Node.linkNodes(model, jsonModel.optJSONArray(Link.Field.links.toString()));
 		}
-		catch (JSONException | LinkException ex){
+		catch (JSONException | LinkException | NodeException ex){
 			throw new ModelException("Failed to link networks", ex);
 		}
 		
