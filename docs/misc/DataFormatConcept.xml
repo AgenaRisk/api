@@ -436,6 +436,17 @@
 				<!--Defined in common.riskMapObjects.pictures-->
 			</pictures>
 			
+			<modificationLog>
+				<!--Log of modifications affecting the network since last recalculation-->
+				<!--Converted into an array of objects in JSON-->
+				
+				<entry>
+					<!--Description of the modification-->
+					<!--Tag omitted during XML-to-JSON conversion-->
+				</entry>
+				...
+			</modificationLog>
+			
 		</network>
 		...
 	</networks>
