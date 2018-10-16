@@ -149,6 +149,12 @@
 								</column>
 								...
 							</probabilities>
+							
+							<nptCompiled>
+								<!--Boolean-->
+								<!--True if underlying node's NPT is calculated (if all nodes are calculated, the network is considered calculated)-->
+							</nptCompiled>
+							
 						</table>
 						
 						<variables>

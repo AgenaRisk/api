@@ -40,7 +40,9 @@ public class NodeConfiguration {
 		probabilities,
 		row,
 		column,
-		cell
+		cell,
+		
+		nptCompiled
 	}
 	
 	/**

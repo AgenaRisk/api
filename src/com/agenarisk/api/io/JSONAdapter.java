@@ -551,6 +551,8 @@ public class JSONAdapter {
 			jsonTable.put(NodeConfiguration.Table.probabilities.toString(), jsonRows);
 		}
 		
+		// NPT status
+		jsonTable.put(NodeConfiguration.Table.nptCompiled.toString(), !en.isNptReCalcRequired());
 		
 		return jsonTable;
 	}

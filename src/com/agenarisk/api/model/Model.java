@@ -18,8 +18,10 @@ import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.JSONUtils;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.sling.commons.json.JSONArray;
@@ -201,6 +203,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 			throw new ModelException("Failed to link networks", ex);
 		}
 		
+		List<Map.Entry<Node, Boolean>> nptStatuses = new ArrayList<>();
 		// Load node tables now that all nodes, states and links had been created
 		for(int i = 0; i < jsonNetworks.length(); i++){
 			JSONObject jsonNetwork = jsonNetworks.getJSONObject(i);
@@ -220,6 +223,9 @@ public class Model implements IDContainer<ModelException>, Storable {
 					catch (NodeException ex){
 						throw new ModelException("Failed to load table for node " + node, ex);
 					}
+					
+					// Remember statuses of node NPTs
+					nptStatuses.add(new java.util.AbstractMap.SimpleEntry(node, jsonTable.optBoolean(NodeConfiguration.Table.nptCompiled.toString(), false)));
 				}
 			}
 		}
@@ -241,7 +247,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		for(int i = 0; i < jsonNetworks.length(); i++){
 			JSONObject jsonNetwork = jsonNetworks.getJSONObject(i);
 			Network network = model.getNetwork(jsonNetwork.getString(Network.Field.id.toString()));
-			network.getLogicNetwork().getModificationLog().clearLog();
+			network.getLogicNetwork().resetModificationLog();
 			
 			JSONArray jsonModificationLog = jsonNetwork.optJSONArray(Network.ModificationLog.modificationLog.toString());
 			if (jsonModificationLog != null){
@@ -249,12 +255,15 @@ public class Model implements IDContainer<ModelException>, Storable {
 					JSONObject jsonModification = jsonModificationLog.getJSONObject(j);
 					String action = jsonModification.optString(Network.ModificationLog.action.toString());
 					String description = jsonModification.optString(Network.ModificationLog.description.toString());
-					network.getLogicNetwork().getModificationLog().addLog(new NameDescription(action, description));
+					network.getLogicNetwork().addModificationLogItem(new NameDescription(action, description));
 				}
 			}
 			
 		}
 		
+		for(Map.Entry<Node, Boolean> pair: nptStatuses){
+			pair.getKey().getLogicNode().setNptReCalcRequired(!pair.getValue());
+		}
 		
 		return model;
 	}
