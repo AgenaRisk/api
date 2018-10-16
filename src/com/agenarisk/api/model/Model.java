@@ -33,6 +33,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedBNNotFoundException;
 import uk.co.agena.minerva.model.scenario.ScenarioNotFoundException;
 import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.io.FileHandlingException;
+import uk.co.agena.minerva.util.model.NameDescription;
 
 /**
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
@@ -235,6 +236,25 @@ public class Model implements IDContainer<ModelException>, Storable {
 				}
 			}
 		}
+		
+		// Load modification logs
+		for(int i = 0; i < jsonNetworks.length(); i++){
+			JSONObject jsonNetwork = jsonNetworks.getJSONObject(i);
+			Network network = model.getNetwork(jsonNetwork.getString(Network.Field.id.toString()));
+			network.getLogicNetwork().getModificationLog().clearLog();
+			
+			JSONArray jsonModificationLog = jsonNetwork.optJSONArray(Network.ModificationLog.modificationLog.toString());
+			if (jsonModificationLog != null){
+				for (int j = 0; j < jsonModificationLog.length(); j++) {
+					JSONObject jsonModification = jsonModificationLog.getJSONObject(j);
+					String action = jsonModification.optString(Network.ModificationLog.action.toString());
+					String description = jsonModification.optString(Network.ModificationLog.description.toString());
+					network.getLogicNetwork().getModificationLog().addLog(new NameDescription(action, description));
+				}
+			}
+			
+		}
+		
 		
 		return model;
 	}

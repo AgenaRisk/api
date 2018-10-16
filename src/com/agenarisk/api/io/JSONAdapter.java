@@ -46,6 +46,7 @@ import uk.co.agena.minerva.util.helpers.MathsHelper;
 import uk.co.agena.minerva.util.model.DataPoint;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
+import uk.co.agena.minerva.util.model.ModificationLog;
 import uk.co.agena.minerva.util.model.Note;
 import uk.co.agena.minerva.util.model.Variable;
 
@@ -388,6 +389,19 @@ public class JSONAdapter {
 		// Texts
 		
 		// Pictures
+		
+		// Modification log
+		if (ebn.getModificationLog() != null && ebn.getModificationLog().getModificationItems() != null){
+			JSONArray modificationLog = new JSONArray();
+			for(ModificationLog.ModificationLogItem mli: (List<ModificationLog.ModificationLogItem>) ebn.getModificationLog().getModificationItems()){
+				JSONObject entry = new JSONObject();
+				entry.put(Network.ModificationLog.action.toString(), mli.getDescription().getShortDescription());
+				entry.put(Network.ModificationLog.description.toString(), mli.getDescription().getLongDescription());
+				modificationLog.put(entry);
+			}
+			jsonNetwork.put(Network.ModificationLog.modificationLog.toString(), modificationLog);
+		}
+		
 		
 		return jsonNetwork;
 	}
