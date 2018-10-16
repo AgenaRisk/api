@@ -553,6 +553,8 @@ public class DataSet implements Identifiable<DataSetException>{
 		MarginalDataItem mdi = mdil.getMarginalDataItemAtIndex(scenarioIndex);
 		if (mdi == null){
 			mdi = new MarginalDataItem(getId());
+			mdi.setCallSignToUpdateOn(scenarioIndex+"");
+			mdi.setOnlyUpdateOnMatchedCallSign(true);
 			mdil.getMarginalDataItems().set(scenarioIndex, mdi);
 		}
 		
