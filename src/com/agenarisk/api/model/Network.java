@@ -47,6 +47,16 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum ModificationLog {
+		modificationLog,
+		entry,
+		action,
+		description
+	}
+	
+	/**
 	 * Model that contains this Network
 	 */
 	private final Model model;

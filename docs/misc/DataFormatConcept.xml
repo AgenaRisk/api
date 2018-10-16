@@ -443,6 +443,14 @@
 				<entry>
 					<!--Description of the modification-->
 					<!--Tag omitted during XML-to-JSON conversion-->
+					
+					<action>
+						<!--Short summary of the modification-->
+					</action>
+					
+					<description>
+						<!--Detailed description of the modification-->
+					</description>
 				</entry>
 				...
 			</modificationLog>
