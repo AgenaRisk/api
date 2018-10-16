@@ -29,6 +29,7 @@ import uk.co.agena.minerva.model.MessagePassingLinkException;
 import uk.co.agena.minerva.model.PropagationException;
 import uk.co.agena.minerva.model.PropagationTerminatedException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBNNotFoundException;
 import uk.co.agena.minerva.model.scenario.ScenarioNotFoundException;
 import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.io.FileHandlingException;
@@ -73,7 +74,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	/**
 	 * Constructor for Model class.
 	 * <br>
-	 * The Model is created without DataSets or Networks.
+	 * The Model is created with a default empty Network and a DataSet
 	 * <br>
 	 * To be used by Model factory method.
 	 */
@@ -86,10 +87,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		try {
 			logicModel = uk.co.agena.minerva.model.Model.createEmptyModel(outputMode);
-			logicModel.removeExtendedBNs(logicModel.getExtendedBNList().getExtendedBNs(), true);
-			logicModel.removeScenario(logicModel.getScenarioAtIndex(0));
 		}
-		catch (uk.co.agena.minerva.model.ModelException | ScenarioNotFoundException ex){
+		catch (uk.co.agena.minerva.model.ModelException ex){
 			throw new AgenaRiskRuntimeException("Failed to initialise the model", ex);
 		}
 	}
@@ -151,6 +150,15 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public static Model createModel(JSONObject json) throws ModelException, JSONException {
 		
 		Model model = createModel();
+		
+		// Remove the default network and data set
+		try {
+			model.getLogicModel().removeExtendedBNs(model.getLogicModel().getExtendedBNAtIndex(0), true);
+			model.getLogicModel().removeScenario(model.getLogicModel().getScenarioAtIndex(0));
+		}
+		catch (uk.co.agena.minerva.model.ModelException | ScenarioNotFoundException ex){
+			throw new AgenaRiskRuntimeException("Failed to init an empty model", ex);
+		}
 		
 		JSONObject jsonModel = json.getJSONObject(Field.model.toString());
 		
