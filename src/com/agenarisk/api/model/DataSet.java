@@ -210,7 +210,12 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
 	public void setObservationHard(Node node, int value) throws DataSetException {
-		setObservationHardGeneric(node, value);
+		try {
+			setObservationHardGeneric(node, value);
+		}
+		catch(Exception ex){
+			throw new DataSetException("Failed to set observation for node " + node, ex);
+		}
 	}
 	
 	/**
@@ -228,7 +233,12 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
 	public void setObservationHard(Node node, double value) throws DataSetException {
-		setObservationHardGeneric(node, value);
+		try {
+			setObservationHardGeneric(node, value);
+		}
+		catch(Exception ex){
+			throw new DataSetException("Failed to set observation for node " + node, ex);
+		}
 	}
 	
 	/**
@@ -246,7 +256,12 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
 	public void setObservationHard(Node node, String state) throws DataSetException {
-		setObservationHardGeneric(node, state);
+		try {
+			setObservationHardGeneric(node, state);
+		}
+		catch(Exception ex){
+			throw new DataSetException("Failed to set observation for node " + node, ex);
+		}
 	}
 	
 	/**
@@ -346,7 +361,12 @@ public class DataSet implements Identifiable<DataSetException>{
 			throw new DataSetException("Arrays length not equal");
 		}
 		Map<String, Double> entries = IntStream.range(0, states.length).boxed().collect(Collectors.toMap(i -> states[i], i -> weights[i]));
-		setObservationSoft(node, entries);
+		try {
+			setObservationSoft(node, entries);
+		}
+		catch(Exception ex){
+			throw new DataSetException("Failed to set observation for node " + node, ex);
+		}
 	}
 	
 	/**
@@ -438,14 +458,24 @@ public class DataSet implements Identifiable<DataSetException>{
 			
 			if (jsonEntries.length() == 1){
 				// Hard observation
-				setObservationHardGeneric(node, value);
+				try {
+					setObservationHardGeneric(node, value);
+				}
+				catch(Exception ex){
+					throw new DataSetException("Failed to set observation for node " + node, ex);
+				}
 				return;
 			}
 
 			entries.put(String.valueOf(value), weight);
 		}
 		
-		setObservationSoft(node, entries);
+		try {
+			setObservationSoft(node, entries);
+		}
+		catch(Exception ex){
+			throw new DataSetException("Failed to set observation for node " + node, ex);
+		}
 
 	}
 	
