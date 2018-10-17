@@ -310,10 +310,10 @@ public class DataSet implements Identifiable<DataSetException>{
 			}
 		}
 		else if (en instanceof ContinuousIntervalEN){
-			getLogicScenario().addRealObservation(ebn.getId(), en.getId(), (Double) value);
+			getLogicScenario().addRealObservation(ebn.getId(), en.getId(), Double.valueOf(value+""));
 		}
 		else if (en instanceof IntegerIntervalEN){
-			getLogicScenario().addIntegerObservation(ebn.getId(), en.getId(), (Integer) value);
+			getLogicScenario().addIntegerObservation(ebn.getId(), en.getId(), Integer.valueOf(value+""));
 		}
 		else {
 			throw new DataSetException("Unsupported observation type");
