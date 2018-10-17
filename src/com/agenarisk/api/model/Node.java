@@ -420,7 +420,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					throw new LinkException("Cross network link can only be created between nodes of the same type (" + fromNode + " is " + fromNode.getType() + ", " + toNode + " is " + toNode.getType() + ")");
 				}
 				
-				if (fromNode.getLogicNode().getExtendedStates().size() != toNode.getLogicNode().getExtendedStates().size()){
+				if (!fromNode.isSimulated() && !toNode.isSimulated() && fromNode.getLogicNode().getExtendedStates().size() != toNode.getLogicNode().getExtendedStates().size()){
 					throw new LinkException("Cross network link can only be created between nodes with the same number of states");
 				}
 				
