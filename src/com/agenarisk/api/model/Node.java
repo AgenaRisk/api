@@ -847,21 +847,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
 	public void setStates(String[] states) throws NodeException{
-		throw new UnsupportedOperationException("Not implemented");
-	}
-	
-	/**
-	 * Replaces Node's states by the ones given in the JSON array.
-	 * 
-	 * <br>
-	 * This action resets the probability table to uniform.
-	 * 
-	 * @param states new Node's states
-	 * 
-	 * @throws NodeException if state is an invalid range; or if the Node is simulated
-	 */
-	public void setStates(JSONArray states) throws NodeException{
-		
 		if (isSimulated()){
 			throw new NodeException("Can't set states for a simulated node");
 		}
@@ -870,15 +855,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		DataSet ds = new DataSet();
 		
-		for(int s = 0; s < states.length(); s++){
+		for(int s = 0; s < states.length; s++){
 			
-			String stateName;
-			try {
-				stateName = states.getString(s).trim();
-			}
-			catch (JSONException ex){
-				// Should not happen
-				throw new AgenaRiskRuntimeException("Failed to parse states array", ex);
+			String stateName = states[s].trim();
+			
+			if (stateName.isEmpty()){
+				throw new NodeException("State name can't be an empty string");
 			}
 			
 			if (en instanceof RankedEN){
@@ -928,6 +910,25 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		catch (ExtendedStateNumberingException | ExtendedStateException ex){
 			throw new NodeException("Failed to parse states", ex);
 		}
+	}
+	
+	/**
+	 * Replaces Node's states by the ones given in the JSON array.
+	 * 
+	 * <br>
+	 * This action resets the probability table to uniform.
+	 * 
+	 * @param jsonStates new Node's states
+	 * 
+	 * @throws NodeException if state is an invalid range; or if the Node is simulated
+	 */
+	public void setStates(JSONArray jsonStates) throws NodeException{
+		
+		String[] states = new String[jsonStates.length()];
+		for(int s = 0; s < jsonStates.length(); s++){
+			states[s] = jsonStates.optString(s,"");
+		}
+		setStates(states);
 	}
 	
 	/**
