@@ -520,7 +520,7 @@ public class JSONAdapter {
 		}
 		
 		for(ExtendedNodeFunction enf: enfs){
-			String expressionString = enf.getName();
+			String expressionString = enf.getName().replaceAll(" ", "");
 			expressionString += "(" + enf.getParameters().stream().collect(Collectors.joining(",")) + ")";
 			jsonExpressions.put(expressionString);
 		}
