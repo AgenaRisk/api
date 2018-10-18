@@ -701,20 +701,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.Table.expression.toString())){
 				String expression = jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()).getString(0);
-				ExtendedNodeFunction enf;
-				try {
-					enf = ExpressionParser.parseFunctionFromString(expression, parentIDs);
-					for(String fname: ExpressionParser.parsed_functions){
-						// Restore function names to full versions with spaces
-						if (fname.replaceAll(" ", "").equalsIgnoreCase(enf.getName())){
-							enf.setName(fname);
-						}
-					}
-				}
-				catch (ParseException ex){
-					throw new JSONException("Unable to parse node function `"+expression+"`", ex);
-				}
-				getLogicNode().setExpression(enf);
+				setTableFunction(expression, parentIDs);
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Partitioned.toString())){
 				// Get parents used for partitioning (can be only a subset of all parents)
@@ -761,12 +748,39 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * <br>
 	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
 	 * 
-	 * @param function function to set
+	 * @param expression function to set
 	 * 
 	 * @throws NodeException if function is invalid
 	 */
-	public void setTableFunction(String function) throws NodeException {
-		throw new UnsupportedOperationException("Not implemented");
+	public void setTableFunction(String expression) throws NodeException {
+		setTableFunction(expression, new ArrayList<>());
+	}
+	
+	/**
+	 * Sets Node function to the one provided.
+	 * <br>
+	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
+	 * 
+	 * @param expression function to set
+	 * @param parentIDs list of parent IDs to add as parseable tokens
+	 * 
+	 * @throws NodeException if function is invalid
+	 */
+	public void setTableFunction(String expression, List<String> parentIDs) throws NodeException {
+		ExtendedNodeFunction enf;
+		try {
+			enf = ExpressionParser.parseFunctionFromString(expression, parentIDs);
+			for(String fname: ExpressionParser.parsed_functions){
+				// Restore function names to full versions with spaces
+				if (fname.replaceAll(" ", "").equalsIgnoreCase(enf.getName())){
+					enf.setName(fname);
+				}
+			}
+		}
+		catch (ParseException ex){
+			throw new NodeException("Unable to parse node function `"+expression+"`", ex);
+		}
+		getLogicNode().setExpression(enf);
 	}
 	
 	/**
