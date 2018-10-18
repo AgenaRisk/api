@@ -372,10 +372,10 @@ public class JSONAdapter {
 		// Links
 		JSONArray jsonLinks = new JSONArray();
 		for(ExtendedNode en: (List<ExtendedNode>) ebn.getExtendedNodes()){
-			for (ExtendedNode enChild: (List<ExtendedNode>)ebn.getChildNodes(en)){
+			for (ExtendedNode enParent: (List<ExtendedNode>)ebn.getParentNodes(en)){
 				JSONObject jsonLink = new JSONObject();
-				jsonLink.put(Link.Field.parent.toString(), en.getConnNodeId());
-				jsonLink.put(Link.Field.child.toString(), enChild.getConnNodeId());
+				jsonLink.put(Link.Field.parent.toString(), enParent.getConnNodeId());
+				jsonLink.put(Link.Field.child.toString(), en.getConnNodeId());
 				jsonLinks.put(jsonLink);
 			}
 			
