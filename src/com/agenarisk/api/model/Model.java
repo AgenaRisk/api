@@ -90,6 +90,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		try {
 			logicModel = uk.co.agena.minerva.model.Model.createEmptyModel(outputMode);
+			// Remove the default network and data set
+			logicModel.removeExtendedBNs(logicModel.getExtendedBNAtIndex(0), true);
 		}
 		catch (uk.co.agena.minerva.model.ModelException ex){
 			throw new AgenaRiskRuntimeException("Failed to initialise the model", ex);
@@ -154,12 +156,11 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		Model model = createModel();
 		
-		// Remove the default network and data set
+		// Remove the default data set
 		try {
-			model.getLogicModel().removeExtendedBNs(model.getLogicModel().getExtendedBNAtIndex(0), true);
 			model.getLogicModel().removeScenario(model.getLogicModel().getScenarioAtIndex(0));
 		}
-		catch (uk.co.agena.minerva.model.ModelException | ScenarioNotFoundException ex){
+		catch (ScenarioNotFoundException ex){
 			throw new AgenaRiskRuntimeException("Failed to init an empty model", ex);
 		}
 		
