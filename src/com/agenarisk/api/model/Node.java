@@ -11,7 +11,6 @@ import com.agenarisk.api.util.JSONUtils;
 import com.singularsys.jep.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -37,6 +36,7 @@ import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
+import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
@@ -83,12 +83,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Incoming Links from other Nodes
 	 */
-	private final Set<Link> linksIn = Collections.synchronizedSet(new HashSet<>());
+	private final Set<Link> linksIn = Collections.synchronizedSet(new LinkedHashSet());
 	
 	/**
 	 * Outgoing Links to other Nodes
 	 */
-	private final Set<Link> linksOut = Collections.synchronizedSet(new HashSet<>());
+	private final Set<Link> linksOut = Collections.synchronizedSet(new LinkedHashSet<>());
 	
 	/**
 	 * Corresponding ExtendedNode
@@ -162,7 +162,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	@Override
 	public synchronized Set<Node> getParents() {
-		return getLinksIn().stream().map(link -> link.getFromNode()).collect(Collectors.toSet());
+		return getLinksIn().stream().map(link -> link.getFromNode()).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	/**
@@ -172,7 +172,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	@Override
 	public synchronized Set<Node> getChildren() {
-		return getLinksOut().stream().map(link -> link.getToNode()).collect(Collectors.toSet());
+		return getLinksOut().stream().map(link -> link.getToNode()).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 	
 	/**

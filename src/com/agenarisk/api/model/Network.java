@@ -16,7 +16,7 @@ import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -387,7 +387,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	@Override
 	public Set<Network> getParents() {
-		Set<Network> nets = new HashSet<>();
+		Set<Network> nets = new LinkedHashSet<>();
 		nodes.forEach((id,node) -> {
 			node.getLinksIn().stream().map((link) -> link.getFromNode().getNetwork()).filter((net) -> (!Objects.equals(net, this))).forEach((net) -> {
 				nets.add(net);
@@ -407,7 +407,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	@Override
 	public Set<Network> getChildren() {
-		Set<Network> nets = new HashSet<>();
+		Set<Network> nets = new LinkedHashSet<>();
 		nodes.forEach((id,node) -> {
 			node.getLinksOut().stream().map((link) -> link.getToNode().getNetwork()).filter((net) -> (!Objects.equals(net, this))).forEach((net) -> {
 				nets.add(net);
