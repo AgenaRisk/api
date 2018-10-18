@@ -25,6 +25,9 @@ public class Settings {
 	}
 	
 	public static void loadSettings(Model model, JSONObject jsonSettings) {
+		if (jsonSettings == null){
+			return;
+		}
 		uk.co.agena.minerva.model.Model logicModel = model.getLogicModel();
 		logicModel.setSimulationNoOfIterations(jsonSettings.optInt(Field.iterations.toString(), logicModel.getSimulationNoOfIterations()));
 		logicModel.setSimulationEntropyConvergenceTolerance(jsonSettings.optDouble(Field.convergence.toString(), logicModel.getSimulationEntropyConvergenceTolerance()));

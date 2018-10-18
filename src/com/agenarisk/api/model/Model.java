@@ -182,7 +182,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		// Apply settings
-		Settings.loadSettings(model, jsonModel);
+		Settings.loadSettings(model, jsonModel.optJSONObject(Settings.Field.settings.toString()));
 		
 		// Create networks
 		JSONArray jsonNetworks = jsonModel.optJSONArray(Network.Field.networks.toString());
