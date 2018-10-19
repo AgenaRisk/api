@@ -241,7 +241,11 @@ public class JSONAdapter {
 		else {
 			// Hard observation with specific value
 			JSONObject jsonEntry = new JSONObject();
-			jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), observation.getUserEnteredAnswer());
+			String observationAnswer = observation.getUserEnteredAnswer();
+			if (en instanceof DiscreteRealEN || en instanceof ContinuousEN){
+				observationAnswer = Double.valueOf(observationAnswer)+"";
+			}
+			jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), observationAnswer);
 			jsonEntry.put(com.agenarisk.api.model.Observation.Field.weight.toString(), 1);
 			jsonEntries.put(jsonEntry);
 		}
