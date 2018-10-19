@@ -544,7 +544,8 @@ public class JSONAdapter {
 			for(float[] row: npt){
 				JSONArray jsonRow = new JSONArray();
 				for(double p: row){
-					jsonRow.put(MathsHelper.roundDouble(p, 7));
+					//jsonRow.put(MathsHelper.roundDouble(p, 7));
+					jsonRow.put(p);
 				}
 				jsonRows.put(jsonRow);
 			}
