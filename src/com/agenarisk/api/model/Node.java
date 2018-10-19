@@ -537,14 +537,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		
 		// Create variables
-		JSONArray jsonVariables = jsonNode.optJSONArray(NodeConfiguration.Variables.variables.toString());
+		JSONArray jsonVariables = jsonConfiguration.optJSONArray(NodeConfiguration.Variables.variables.toString());
 		if (jsonVariables != null){
 			for(int i = 0; i < jsonVariables.length(); i++){
 				JSONObject jsonVariable = jsonVariables.getJSONObject(i);
 				String variableName = jsonVariable.getString(NodeConfiguration.Variables.name.toString());
 				Double variableValue = jsonVariable.getDouble(NodeConfiguration.Variables.value.toString());
 				try {
-					en.addExpressionVariable(variableName, variableValue, true);
+					uk.co.agena.minerva.util.model.Variable variable = en.addExpressionVariable(variableName, variableValue, true);
 				}
 				catch (ExtendedBNException ex){
 					throw new NodeException("Duplicate variable names detected", ex);
@@ -677,7 +677,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			return;
 		}
 		
+		List<String> allowedTokens = new ArrayList<>();
+		
 		List<String> parentIDs = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getId()).collect(Collectors.toList());
+		List<String> variableNames = getLogicNode().getExpressionVariables().getAllVariableNames();
+		
+		allowedTokens.addAll(parentIDs);
+		allowedTokens.addAll(variableNames);
+		
 		try {
 			String tableType = jsonTable.getString(NodeConfiguration.Table.type.toString());
 
@@ -703,7 +710,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.Table.expression.toString())){
 				String expression = jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()).getString(0);
-				setTableFunction(expression, parentIDs);
+				setTableFunction(expression, allowedTokens);
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Partitioned.toString())){
 				// Get parents used for partitioning (can be only a subset of all parents)
@@ -764,14 +771,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
 	 * 
 	 * @param expression function to set
-	 * @param parentIDs list of parent IDs to add as parseable tokens
+	 * @param allowedTokens list of parent IDs, variable names etc to add as parseable tokens
 	 * 
 	 * @throws NodeException if function is invalid
 	 */
-	public void setTableFunction(String expression, List<String> parentIDs) throws NodeException {
+	public void setTableFunction(String expression, List<String> allowedTokens) throws NodeException {
 		ExtendedNodeFunction enf;
 		try {
-			enf = ExpressionParser.parseFunctionFromString(expression, parentIDs);
+			enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens);
 			for(String fname: ExpressionParser.parsed_functions){
 				// Restore function names to full versions with spaces
 				if (fname.replaceAll(" ", "").equalsIgnoreCase(enf.getName())){
