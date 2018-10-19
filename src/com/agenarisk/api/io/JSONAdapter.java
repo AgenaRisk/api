@@ -57,6 +57,8 @@ import uk.co.agena.minerva.util.model.Variable;
  */
 public class JSONAdapter {
 	
+	public static final boolean CACHE_NPTS = true;
+	
 	public static JSONObject toJSONObject(Model model) throws JSONException {
 		JSONObject json = new JSONObject();
 		
@@ -530,7 +532,9 @@ public class JSONAdapter {
 		}
 		
 		// Probabilities
-		if (tableType.equals(NodeConfiguration.TableType.Manual)){
+		boolean simulated = en instanceof ContinuousEN && ((ContinuousEN)en).isSimulationNode();
+		boolean manual = tableType.equals(NodeConfiguration.TableType.Manual);
+		if (!simulated && (manual || CACHE_NPTS)){
 			float[][] npt;
 			try {
 				npt = en.getNPT();

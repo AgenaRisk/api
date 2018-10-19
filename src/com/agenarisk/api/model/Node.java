@@ -681,12 +681,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		try {
 			String tableType = jsonTable.getString(NodeConfiguration.Table.type.toString());
 
-			if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Manual.toString())){
-				
-				if (this.isSimulated()){
-					throw new NodeException("Can't set a manual NPT for a simulated node");
-				}
-				
+			if (jsonTable.has(NodeConfiguration.Table.probabilities.toString())){
+				// Restore cached NPT if available
 				try {
 					double[][] npt = extractNPTColumns(jsonTable.getJSONArray(NodeConfiguration.Table.probabilities.toString()));
 					List<ExtendedNode> parentNodes = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getLogicNode()).collect(Collectors.toList());
@@ -697,6 +693,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				}
 				catch (ArrayIndexOutOfBoundsException ex){
 					throw new NodeException("NPT may not be a square matrix", ex);
+				}
+			}
+			
+			if(tableType.equalsIgnoreCase(NodeConfiguration.TableType.Manual.toString())){
+				if (this.isSimulated()){
+					throw new NodeException("Can't set a manual NPT for a simulated node");
 				}
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.Table.expression.toString())){
