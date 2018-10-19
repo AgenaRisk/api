@@ -263,7 +263,13 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		for(Map.Entry<Node, Boolean> pair: nptStatuses){
-			pair.getKey().getLogicNode().setNptReCalcRequired(!pair.getValue());
+			uk.co.agena.minerva.util.model.ModificationLog mods = pair.getKey().getNetwork().getLogicNetwork().getModificationLog();
+			boolean nptReCalcRequired = !pair.getValue();
+			
+			if (mods == null || mods.getModificationItems().isEmpty() && nptReCalcRequired){
+				pair.getKey().getNetwork().getLogicNetwork().addModificationLogItem(new NameDescription("Network loaded", "Network loaded"));
+			}
+			pair.getKey().getLogicNode().setNptReCalcRequired(nptReCalcRequired);
 		}
 		
 		return model;
