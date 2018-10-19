@@ -467,9 +467,12 @@ public class JSONAdapter {
 		if (!en.getExpressionVariables().getVariables().isEmpty()){
 			JSONArray jsonVariables = new JSONArray();
 			for(Variable variable: (List<Variable>)en.getExpressionVariables().getVariables()){
+				if (!variable.isEditable()){
+					continue;
+				}
 				JSONObject jsonVariable = new JSONObject();
 				jsonVariable.put(NodeConfiguration.Variables.name.toString(), variable.getName());
-				jsonVariable.put(NodeConfiguration.Variables.value.toString(), variable.getValue());
+				jsonVariable.put(NodeConfiguration.Variables.value.toString(), variable.getDefaultValue());
 				jsonVariables.put(jsonVariable);
 			}
 			jsonConfig.put(NodeConfiguration.Variables.variables.toString(), jsonVariables);
