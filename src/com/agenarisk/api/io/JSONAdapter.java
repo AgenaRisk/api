@@ -233,7 +233,7 @@ public class JSONAdapter {
 			for(DataPoint dp: (List<DataPoint>) ds.getDataPoints()){
 				JSONObject jsonEntry = new JSONObject();
 				ExtendedState es = en.getExtendedState(dp.getConnObjectId());
-				jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), State.computeLabel(en, es));
+				jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), State.computeLabel(en, es).trim());
 				jsonEntry.put(com.agenarisk.api.model.Observation.Field.weight.toString(), dp.getValue());
 				jsonEntries.put(jsonEntry);
 			}
@@ -462,7 +462,7 @@ public class JSONAdapter {
 		if (!simulated){
 			JSONArray jsonStates = new JSONArray();
 			for(ExtendedState es: (List<ExtendedState>)en.getExtendedStates()){
-				jsonStates.put(State.computeLabel(en, es));
+				jsonStates.put(State.computeLabel(en, es).trim());
 			}
 			jsonConfig.put(NodeConfiguration.States.states.toString(), jsonStates);
 		}
