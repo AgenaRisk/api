@@ -27,6 +27,7 @@ import uk.co.agena.minerva.model.MessagePassingLink;
 import uk.co.agena.minerva.model.MessagePassingLinks;
 import uk.co.agena.minerva.model.Model;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
+import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
@@ -36,6 +37,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNodeNotFoundException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
+import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
@@ -242,9 +244,13 @@ public class JSONAdapter {
 			// Hard observation with specific value
 			JSONObject jsonEntry = new JSONObject();
 			String observationAnswer = observation.getUserEnteredAnswer();
-			if (en instanceof DiscreteRealEN || en instanceof ContinuousEN){
+			if (en instanceof DiscreteRealEN || en instanceof ContinuousIntervalEN){
 				observationAnswer = Double.valueOf(observationAnswer)+"";
 			}
+			else if (en instanceof IntegerIntervalEN){
+				observationAnswer = Integer.valueOf(observationAnswer)+"";
+			}
+			
 			jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), observationAnswer);
 			jsonEntry.put(com.agenarisk.api.model.Observation.Field.weight.toString(), 1);
 			jsonEntries.put(jsonEntry);
