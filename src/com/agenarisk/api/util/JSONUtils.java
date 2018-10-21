@@ -3,11 +3,13 @@ package com.agenarisk.api.util;
 import com.agenarisk.api.exception.ModelException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import uk.co.agena.minerva.util.helpers.MathsHelper;
 import uk.co.agena.minerva.util.io.FileHandler;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 
@@ -226,5 +228,157 @@ public class JSONUtils {
 		}
 		
 		return json;
+	}
+	
+	/**
+	 * Checks for deep equality of two JSONObjects, resolving elements that are JSONObjects or JSONArrays recursively.
+	 * <br>
+	 * When the element is a string, equality is computed ignoring case.
+	 * <br>
+	 * If an element is a String value of a number, the ".0" will be stripped from the end before comparison.
+	 * 
+	 * @param jo1
+	 * @param jo2
+	 * 
+	 * @return true if all leaf objects are equal (case insensitive for Strings), false otherwise
+	 * 
+	 * @see #equalsIgnoreCase(JSONArray, JSONArray)
+	 * @see #equalsJSONComponents(Object, Object)
+	 */
+	public static boolean equalsIgnoreCase(JSONObject jo1, JSONObject jo2){
+		
+		if (jo1 == null && jo2 == null){
+			return true;
+		}
+		
+		if (jo1 == null && jo2 != null || jo1 != null && jo2 == null){
+			return false;
+		}
+		
+		if (jo1.length() != jo2.length()){
+			return false;
+		}
+		
+		Iterator<String> keys = jo1.keys();
+		while(keys.hasNext()){
+			String key = keys.next();
+			if (!jo2.has(key)){
+				return false;
+			}
+			
+			Object el1 = jo1.opt(key);
+			Object el2 = jo2.opt(key);
+			boolean equals = equalsJSONComponents(el1, el2);
+			if (!equals){
+				System.out.println("el o not equal: "+el1 + " <> "+el2);
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Checks for deep equality of two JSONArrays, resolving elements that are JSONObjects or JSONArrays recursively.
+	 * <br>
+	 * When the element is a string, equality is computed ignoring case.
+	 * <br>
+	 * If an element is a String value of a number, the ".0" will be stripped from the end before comparison.
+	 * 
+	 * @param ja1
+	 * @param ja2
+	 * 
+	 * @return true if all leaf objects are equal (case insensitive for Strings), false otherwise
+	 * 
+	 * @see #equalsIgnoreCase(JSONObject, JSONObject)
+	 * @see #equalsJSONComponents(Object, Object)
+	 */
+	public static boolean equalsIgnoreCase(JSONArray ja1, JSONArray ja2){
+		
+		if (ja1 == null && ja2 == null){
+			return true;
+		}
+		
+		if (ja1 == null && ja2 != null || ja1 != null && ja2 == null){
+			return false;
+		}
+		
+		if (ja1.length() != ja2.length()){
+			return false;
+		}
+		
+		for (int i = 0; i < ja1.length(); i++) {
+			Object el1 = ja1.opt(i);
+			Object el2 = ja2.opt(i);
+			boolean equals = equalsJSONComponents(el1, el2);
+			if (!equals){
+				System.out.println("el a not equal: "+el1 + " <> "+el2);
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Compares two objects ignoring case for Strings, and local implementations for comparing JSONObject and JSONArray 
+	 * <br>
+	 * If an element is a String value of a number, the ".0" will be stripped from the end before comparison.
+	 * 
+	 * @param o1
+	 * @param o2
+	 * 
+	 * @return true if objects are equal, false otherwise
+	 * 
+	 * @see #equalsIgnoreCase(JSONArray, JSONArray)
+	 * @see #equalsIgnoreCase(JSONObject, JSONObject)
+	 */
+	private static boolean equalsJSONComponents(Object o1, Object o2){
+		
+		if (o1 == null && o2 == null){
+			return true;
+		}
+		
+		if (o1 == null && o2 != null || o1 != null && o2 == null){
+			return false;
+		}
+		
+		if (!o1.getClass().getName().equalsIgnoreCase(o2.getClass().getName())) {
+			return false;
+		}
+		
+		if (o1 instanceof JSONObject){
+			return equalsIgnoreCase((JSONObject) o1, (JSONObject)o2);
+		}
+		
+		if (o1 instanceof JSONArray){
+			return equalsIgnoreCase((JSONArray) o1, (JSONArray)o2);
+		}
+		
+		if (o1 instanceof String){
+			
+			String s1 = ((String)o1);
+			String s2 = ((String)o2);
+			
+			String numberPattern = "-?[\\d]+(\\.[\\d]+)?";
+			
+			if (s1.matches(numberPattern)){
+				s1 = s1.replaceFirst("\\.0$", "");
+			}
+			
+			if (s2.matches(numberPattern)){
+				s2 = s2.replaceFirst("\\.0$", "");
+			}
+			
+			return s1.equalsIgnoreCase(s2);
+		}
+		
+		if (o1 instanceof Double){
+			o1 = new Double(MathsHelper.roundDouble(((Double) o1).doubleValue(), 5));
+			o2 = new Double(MathsHelper.roundDouble(((Double) o2).doubleValue(), 5));
+			return o1.equals(o2);
+		}
+		
+		return o1.equals(o2);
 	}
 }
