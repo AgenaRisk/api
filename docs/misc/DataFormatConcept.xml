@@ -419,21 +419,6 @@
 				
 			</graphics>
 			
-			<riskTable>
-				<!--PLACEHOLDER-->
-				
-				<riskTableEntry>
-					<node></node>
-					<type></type>
-					<visible></visible>
-					<syncName></syncName>
-					<name></name>
-					<text></text>
-					<mode></mode>
-				</riskTableEntry>
-				...
-			</riskTable>
-			
 			<texts>
 				<!--Defined in common.riskMapObjects.texts-->
 			</texts>
@@ -696,6 +681,7 @@
 					</node>
 					
 					<resultValues>
+						<!--Converted into an array of objects in JSON-->
 						<!--Corresponds to uk.co.agena.minerva.util.model.DataSet-->
 						
 						<resultValue>
@@ -722,6 +708,90 @@
 		</dataSet>
 		...
 	</dataSets>
+
+	<questionnaires>
+		<!--Converted into an array of objects in JSON-->
+		<!--List of questionnaires in the risk table-->
+		
+		<questionnaire>
+			<!--Tag omitted during XML-to-JSON conversion-->
+			<!--Corresponds to a heading with a number of questions-->
+			
+			<id>
+				<!--Questionnaire name-->
+			</id>
+			
+			<description>
+				<!--Questionnaire description-->
+			</description>
+			
+			<questions>
+				<!--Converted into an array of objects in JSON-->
+				
+				<question>
+					<!--Tag omitted during XML-to-JSON conversion-->
+					
+					<name>
+						<!--Question name-->
+					</name>
+
+					<description>
+						<!--Question description-->
+					</description>
+					
+					<network>
+						<!--Which network it is for-->
+					</network>
+					
+					<node>
+						<!--Which node it is for-->
+					</node>
+					
+					<type>
+						<!--Observation or Constant-->
+					</type>
+					
+					<mode>
+						<!--Numerical, Selection or Unanswerable-->
+					</mode>
+					
+					<visible>
+						<!--Boolean-->
+					</visible>
+					
+					<syncName>
+						<!--Boolean-->
+					</syncName>
+					
+					<answers>
+						<!--Converted into an array of objects in JSON-->
+				
+						<answer>
+							<!--Tag omitted during XML-to-JSON conversion-->
+							
+							<dataSet>
+								<!--Id of the dataSet-->
+							</dataSet>
+							
+							<value>
+								<!--Value of the observation or constant-->
+							</value>
+							
+						</answer>
+						...
+						
+					</answers>
+
+				</question>
+				...
+				
+			</questions>
+			
+		</questionnaire>
+		...
+		
+	</questionnaires>
+
 	
 	<audit>
 		<!--PLACEHOLDER-->
