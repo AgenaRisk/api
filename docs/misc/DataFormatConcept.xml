@@ -717,9 +717,9 @@
 			<!--Tag omitted during XML-to-JSON conversion-->
 			<!--Corresponds to a heading with a number of questions-->
 			
-			<id>
+			<name>
 				<!--Questionnaire name-->
-			</id>
+			</name>
 			
 			<description>
 				<!--Questionnaire description-->
