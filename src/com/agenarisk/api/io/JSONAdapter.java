@@ -42,6 +42,7 @@ import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
+import uk.co.agena.minerva.model.questionnaire.Answer;
 import uk.co.agena.minerva.model.questionnaire.Question;
 import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.Observation;
@@ -64,7 +65,7 @@ public class JSONAdapter {
 	
 	public static final boolean CACHE_NPTS = true;
 	
-	public static JSONObject toJSONObject(Model model) throws JSONException {
+	public static JSONObject toJSONObject(Model model) throws JSONException, AdapterException {
 		JSONObject json = new JSONObject();
 		
 		// Model
@@ -437,13 +438,23 @@ public class JSONAdapter {
 				jsonQstn.put(RiskTable.Question.name.toString(), qstn.getName().getShortDescription());
 				jsonQstn.put(RiskTable.Question.description.toString(), qstn.getName().getLongDescription());
 				
-				ExtendedBN ebn = model.getExtendedBN(qstn.getConnExtendedBNId());
-				ExtendedNode en = ebn.getExtendedNode(qstn.getConnExtendedNodeId());
+				ExtendedBN ebn = null;
+				ExtendedNode en = null;
+				
+				try {
+					ebn = model.getExtendedBN(qstn.getConnExtendedBNId());
+					en = ebn.getExtendedNode(qstn.getConnExtendedNodeId());
+				}
+				catch (ExtendedBNNotFoundException | ExtendedNodeNotFoundException ex){
+					throw new AdapterException("Questionnaire Network or node not found", ex);
+				}
 				
 				jsonQstn.put(RiskTable.Question.network.toString(), ebn.getConnID());
 				jsonQstn.put(RiskTable.Question.node.toString(), en.getConnNodeId());
 				
 				String questionMode = "";
+				String questionType = RiskTable.QuestionType.observation.toString();
+				
 				switch(qstn.getRecommendedAnsweringMode()){
 					case Question.ANSWER_BY_SELECTION:
 						questionMode = RiskTable.QuestionMode.selection.toString();
@@ -454,18 +465,48 @@ public class JSONAdapter {
 					case Question.ANSWER_NUMERICALLY:
 						questionMode = RiskTable.QuestionMode.numerical.toString();
 						break;
+					case Question.ANSWER_AS_EXPRESSION_VARIABLE:
+						questionMode = RiskTable.QuestionMode.numerical.toString();
+						questionType = RiskTable.QuestionType.constant.toString();
+						break;
 					default: throw new AdapterException("Invalid questionnaire mode: " + qstn.getRecommendedAnsweringMode());
 				}
-				
-				String questionType = "";
-				
 
-				qstn.getExpressionVariableName();
+				if (qstn.getRecommendedAnsweringMode() == Question.ANSWER_AS_EXPRESSION_VARIABLE){
+					jsonQstn.put(RiskTable.Question.constantName.toString(), qstn.getExpressionVariableName());
+				}
 				
 				jsonQstn.put(RiskTable.Question.mode.toString(), questionMode);
+				jsonQstn.put(RiskTable.Question.type.toString(), questionType);
+				
+				jsonQstn.put(RiskTable.Question.visible.toString(), qstn.getVisible());
+				jsonQstn.put(RiskTable.Question.syncName.toString(), qstn.isSyncToConnectedNodeName());
+				
+				JSONArray jsonAnsws = new JSONArray();
+				for(Answer answ: (List<Answer>) qstn.getAnswers()){
+					JSONObject jsonAnsw = new JSONObject();
+					
+					jsonAnsw.put(RiskTable.Answer.name.toString(), answ.getName().getShortDescription());
+					
+					try {
+						int stateId = answ.getConnExtendedStateId();
+						ExtendedState correspondingState = en.getExtendedState(stateId);
+						jsonAnsw.put(RiskTable.Answer.state.toString(), State.computeLabel(en, correspondingState).trim());
+					}
+					catch(ExtendedStateNotFoundException ex){
+						throw new AdapterException("Questionnaire answer state not found in node", ex);
+					}
+					
+					jsonAnsws.put(jsonAnsw);
+				}
+				jsonQstn.put(RiskTable.Answer.answers.toString(), jsonAnsws);
+				jsonQstns.put(jsonQstn);
+				
 			}
 			jsonQstr.put(RiskTable.Question.questions.toString(), jsonQstns);
+			jsonRiskTable.put(jsonQstr);
 		}
+		
 		return jsonRiskTable;
 	}
 	

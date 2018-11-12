@@ -755,6 +755,11 @@
 						<!--Numerical, Selection or Unanswerable-->
 					</mode>
 					
+					<constantName>
+						<!--Optional-->
+						<!--Name of the constant if type is "Constant"-->
+					</constantName>
+					
 					<visible>
 						<!--Boolean-->
 					</visible>
@@ -769,13 +774,13 @@
 						<answer>
 							<!--Tag omitted during XML-to-JSON conversion-->
 							
-							<dataSet>
-								<!--Id of the dataSet-->
-							</dataSet>
+							<name>
+								<!--Display name of the answer-->
+							</name>
 							
-							<value>
-								<!--Value of the observation or constant-->
-							</value>
+							<state>
+								<!--The actual node state the answer corresponds to-->
+							</state>
 							
 						</answer>
 						...

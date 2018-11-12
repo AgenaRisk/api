@@ -35,6 +35,7 @@ public class RiskTable {
 		node,
 		type,
 		mode,
+		constantName,
 		visible,
 		syncName
 	}
@@ -62,7 +63,7 @@ public class RiskTable {
 	public static enum Answer {
 		answers,
 		answer,
-		dataSet,
-		value
+		name,
+		state
 	}
 }
