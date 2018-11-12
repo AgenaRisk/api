@@ -624,6 +624,10 @@
 						<!--Node ID-->
 					</node>
 					
+					<constantName>
+						<!--Name of the observed node constant, if this observation is for a constant-->
+					</constantName>
+					
 					<entries>
 						<!--Converted into an array of objects in JSON-->
 						

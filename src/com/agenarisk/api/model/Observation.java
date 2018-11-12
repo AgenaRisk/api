@@ -19,6 +19,7 @@ public class Observation<T> {
 		observation,
 		network,
 		node,
+		constantName,
 		entries,
 		entry,
 		value,

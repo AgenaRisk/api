@@ -234,6 +234,10 @@ public class JSONAdapter {
 		ExtendedNode en = ebn.getExtendedNode(observation.getConnExtendedNodeId());
 		jsonObservation.put(com.agenarisk.api.model.Observation.Field.node.toString(), en.getConnNodeId());
 		
+		if (!observation.getExpressionVariableName().isEmpty()){
+			jsonObservation.put(com.agenarisk.api.model.Observation.Field.constantName.toString(), observation.getExpressionVariableName());
+		}
+		
 		JSONArray jsonEntries = new JSONArray();
 		
 		if (en instanceof RankedEN || en instanceof LabelledEN || en instanceof DiscreteRealEN){

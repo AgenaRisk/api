@@ -265,6 +265,46 @@ public class DataSet implements Identifiable<DataSetException>{
 	}
 	
 	/**
+	 * Sets a node constant observation for a Node.
+	 * <br>
+	 * Any existing observations are removed and replaced with this one.
+	 * 
+	 * @param node the Node to set observation for
+	 * @param constantName node constant to observe
+	 * @param value the constant value
+	 * 
+	 * @throws DataSetException if any:
+	 * <br>
+	 * ∙ Node's Network does not belong to this Model
+	 * <br>
+	 * ∙ Value passed is an invalid observation for the given Node
+	 */
+	public void setObservationConstant(Node node, String constantName, double value) throws DataSetException {
+		ExtendedBN ebn = node.getNetwork().getLogicNetwork();
+		ExtendedNode en = node.getLogicNode();
+		if (!node.getNetwork().getModel().equals(getModel())){
+			throw new DataSetException("Node and DataSet belong to different models");
+		}
+		
+		uk.co.agena.minerva.util.model.DataSet ds = new uk.co.agena.minerva.util.model.DataSet();
+		ds.addAbsoluteDataPoint(value);
+		
+		uk.co.agena.minerva.model.scenario.Observation observation = new uk.co.agena.minerva.model.scenario.Observation(
+			ebn.getId(),
+			en.getId(),
+			0,
+			ds,
+			uk.co.agena.minerva.model.scenario.Observation.OBSERVATION_TYPE_EXPRESSION_VARIABLE,
+			value+"",
+			en.getConnNodeId(),
+			en.getExtendedStates().size()
+		);
+		observation.setExpressionVariableName(constantName);
+		
+		getLogicScenario().addObservation(observation, false);
+	}
+	
+	/**
 	 * Sets a hard observation for a Node.
 	 * <br>
 	 * Any existing observations are removed and replaced with this one.
@@ -457,6 +497,13 @@ public class DataSet implements Identifiable<DataSetException>{
 			Double weight = jsonEntry.getDouble(Observation.Field.weight.toString());
 			
 			if (jsonEntries.length() == 1){
+				
+				// Constant
+				if (jsonObservation.has(Observation.Field.constantName.toString())){
+					setObservationConstant(node, jsonObservation.getString(Observation.Field.constantName.toString()), Double.valueOf(value+""));
+					return;
+				}
+				
 				// Hard observation
 				try {
 					setObservationHardGeneric(node, value);
