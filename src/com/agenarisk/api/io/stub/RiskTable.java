@@ -12,13 +12,57 @@ public class RiskTable {
 	 */
 	public static enum Field {
 		riskTable,
-		riskTableEntry,
+		questionnaire
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Questionnaire {
+		name,
+		description
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Question {
+		questions,
+		question,
+		name,
+		description,
+		network,
 		node,
 		type,
+		mode,
 		visible,
-		syncName,
-		name,
-		text,
-		mode
+		syncName
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum QuestionType {
+		observation,
+		constant
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum QuestionMode {
+		numerical,
+		selection,
+		unanswerable
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Answer {
+		answers,
+		answer,
+		dataSet,
+		value
 	}
 }

@@ -5,6 +5,7 @@ import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
+import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.Settings;
 import com.agenarisk.api.model.CalculationResult;
@@ -41,6 +42,8 @@ import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
+import uk.co.agena.minerva.model.questionnaire.Question;
+import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.Observation;
 import uk.co.agena.minerva.model.scenario.Scenario;
 import uk.co.agena.minerva.util.Environment;
@@ -84,6 +87,9 @@ public class JSONAdapter {
 		if (!model.getNotes().getNotes().isEmpty()){
 			jsonModel.put(Meta.Field.meta.toString(), modelMetaToJSON(model));
 		}
+		
+		// Risk Table
+		jsonModel.put(RiskTable.Field.riskTable.toString(), modelRiskTableToJSON(model));
 		
 		// Texts
 		
@@ -396,8 +402,6 @@ public class JSONAdapter {
 		
 		// Graphics
 		
-		// Risk Table
-		
 		// Texts
 		
 		// Pictures
@@ -416,6 +420,53 @@ public class JSONAdapter {
 		
 		
 		return jsonNetwork;
+	}
+	
+	protected static JSONArray modelRiskTableToJSON(Model model) throws JSONException, AdapterException {
+		JSONArray jsonRiskTable = new JSONArray();
+		for (Questionnaire qstr: (List<Questionnaire>) model.getQuestionnaireList().getQuestionnaires()){
+			JSONObject jsonQstr = new JSONObject();
+			
+			jsonQstr.put(RiskTable.Questionnaire.name.toString(), qstr.getName().getShortDescription());
+			jsonQstr.put(RiskTable.Questionnaire.description.toString(), qstr.getName().getLongDescription());
+			
+			JSONArray jsonQstns = new JSONArray();
+			for(Question qstn: (List<Question>) qstr.getQuestions()){
+				JSONObject jsonQstn = new JSONObject();
+				
+				jsonQstn.put(RiskTable.Question.name.toString(), qstn.getName().getShortDescription());
+				jsonQstn.put(RiskTable.Question.description.toString(), qstn.getName().getLongDescription());
+				
+				ExtendedBN ebn = model.getExtendedBN(qstn.getConnExtendedBNId());
+				ExtendedNode en = ebn.getExtendedNode(qstn.getConnExtendedNodeId());
+				
+				jsonQstn.put(RiskTable.Question.network.toString(), ebn.getConnID());
+				jsonQstn.put(RiskTable.Question.node.toString(), en.getConnNodeId());
+				
+				String questionMode = "";
+				switch(qstn.getRecommendedAnsweringMode()){
+					case Question.ANSWER_BY_SELECTION:
+						questionMode = RiskTable.QuestionMode.selection.toString();
+						break;
+					case Question.ANSWER_BY_UNANSWERABLE:
+						questionMode = RiskTable.QuestionMode.unanswerable.toString();
+						break;
+					case Question.ANSWER_NUMERICALLY:
+						questionMode = RiskTable.QuestionMode.numerical.toString();
+						break;
+					default: throw new AdapterException("Invalid questionnaire mode: " + qstn.getRecommendedAnsweringMode());
+				}
+				
+				String questionType = "";
+				
+
+				qstn.getExpressionVariableName();
+				
+				jsonQstn.put(RiskTable.Question.mode.toString(), questionMode);
+			}
+			jsonQstr.put(RiskTable.Question.questions.toString(), jsonQstns);
+		}
+		return jsonRiskTable;
 	}
 	
 	protected static JSONObject toJSONObject(ExtendedNode en) throws JSONException {
