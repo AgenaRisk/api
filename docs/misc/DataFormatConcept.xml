@@ -713,7 +713,7 @@
 		...
 	</dataSets>
 
-	<questionnaires>
+	<riskTable>
 		<!--Converted into an array of objects in JSON-->
 		<!--List of questionnaires in the risk table-->
 		
@@ -799,7 +799,7 @@
 		</questionnaire>
 		...
 		
-	</questionnaires>
+	</riskTable>
 
 	
 	<audit>
