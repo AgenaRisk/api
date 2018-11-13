@@ -6,6 +6,7 @@ import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -489,7 +490,7 @@ public class DataSet implements Identifiable<DataSetException>{
 		
 		JSONArray jsonEntries = jsonObservation.getJSONArray(Observation.Field.entries.toString());
 		
-		Map<String, Double> entries = new HashMap<>();
+		Map<String, Double> entries = new LinkedHashMap<>();
 		
 		for (int i = 0; i < jsonEntries.length(); i++) {
 			JSONObject jsonEntry = jsonEntries.getJSONObject(i);
