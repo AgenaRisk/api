@@ -685,8 +685,5 @@ public class JSONAdapter {
 		
 		return jsonMeta;
 	}
-	
-	protected static JSONObject nodeConfigurationToJSON(ExtendedNode en) throws JSONException {
-		return null;
-	}
+
 }
