@@ -111,11 +111,13 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	protected static Network createNetwork(Model model, JSONObject jsonNetwork) throws JSONException, NetworkException {
 		String id = jsonNetwork.getString(Network.Field.id.toString());
 		String name = jsonNetwork.getString(Network.Field.name.toString());
+		String description = jsonNetwork.optString(Network.Field.description.toString());
 		
 		Network network;
 		try {
 			// Don't know if can add with this ID, ask model
 			network = model.createNetwork(id, name);
+			network.setDescription(description);
 		}
 		catch (ModelException ex){
 			throw new NetworkException("Failed to add a network to model", ex);
