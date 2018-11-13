@@ -505,6 +505,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	protected static Node createNode(Network network, JSONObject jsonNode) throws NodeException, JSONException {
 		String id = jsonNode.getString(Field.id.toString());
 		String name = jsonNode.getString(Field.name.toString());
+		String description = jsonNode.optString(Field.description.toString());
 		JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
 		String typeString = jsonConfiguration.getString(NodeConfiguration.Field.type.toString());
 		Type type = Type.valueOf(typeString);
@@ -512,6 +513,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		Node node;
 		try {
 			node = network.createNode(id, name, type);
+			node.setDescription(description);
 		}
 		catch (NetworkException ex){
 			throw new NodeException("Failed to add a node to network", ex);
