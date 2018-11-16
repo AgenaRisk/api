@@ -554,6 +554,12 @@ public class JSONAdapter {
 			ContinuousEN cen = (ContinuousEN) en;
 			simulated = cen.isSimulationNode();
 			jsonConfig.putOpt(NodeConfiguration.Field.simulated.toString(), simulated?true:null);
+			
+			if (simulated){
+				if (cen.getEntropyConvergenceThreshold() >= 0){
+					jsonConfig.put(NodeConfiguration.Field.simulationConvergence.toString(), cen.getEntropyConvergenceThreshold());
+				}
+			}
 		}
 		
 		// Table

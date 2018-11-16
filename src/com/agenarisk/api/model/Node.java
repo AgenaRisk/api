@@ -527,6 +527,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			ContinuousEN cien = (ContinuousEN)en;
 			setDefaultIntervalStates(node);
 			cien.setSimulationNode(true);
+			
+			if (jsonConfiguration.has(NodeConfiguration.Field.simulationConvergence.toString())){
+				cien.setEntropyConvergenceThreshold(jsonConfiguration.getDouble(NodeConfiguration.Field.simulationConvergence.toString()));
+			}
 		}
 		else {
 			try {

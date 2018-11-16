@@ -13,7 +13,8 @@ public class NodeConfiguration {
 	public static enum Field {
 		configuration,
 		type,
-		simulated
+		simulated,
+		simulationConvergence
 	}
 	
 	/**
