@@ -498,7 +498,7 @@ public class JSONAdapter {
 						jsonAnsw.put(RiskTable.Answer.state.toString(), State.computeLabel(en, correspondingState).trim());
 					}
 					catch(ExtendedStateNotFoundException ex){
-						throw new AdapterException("Questionnaire answer state not found in node", ex);
+						throw new AdapterException("Questionnaire answer state not found in node " + en.getConnNodeId() + "[" + en.getName().getShortDescription() + "]", ex);
 					}
 					
 					jsonAnsws.put(jsonAnsw);
