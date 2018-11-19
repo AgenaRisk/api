@@ -63,6 +63,11 @@
 							<!--Invalid if definition.type is not "ContinuousInterval" or "IntegerInterval"-->
 						</simulated>
 						
+						<simulationConvergence>
+							<!--Corresponds to Node properties: simulation convergence threshold in ARD and ContinuousEN.entropyConvergenceThreshold in ARC-->
+							<!--Can only be provided when simulated is "True"-->
+						</simulationConvergence>
+						
 						<states>
 							<!--Corresponds to Node States in ARD and uk.co.agena.minerva.model.extendedbn.ExtendedNode.extendedStates-->
 							<!--Ignored if definition.simulated is "True"-->
