@@ -625,7 +625,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		List<ExtendedNode> parentNodes = getParents().stream().map(node -> node.getLogicNode()).collect(Collectors.toList());
 		
 		AtomicInteger sizeExpected = new AtomicInteger(1);
-		parentNodes.stream().forEach(n -> sizeExpected.set(sizeExpected.get() * n.getExtendedStates().size()));
+		parentNodes.stream().forEachOrdered(n -> sizeExpected.set(sizeExpected.get() * n.getExtendedStates().size()));
 		sizeExpected.set(sizeExpected.get() * getLogicNode().getExtendedStates().size());
 		
 		if (sizeExpected.get() != sizeGiven){
@@ -722,7 +722,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				// Get parents used for partitioning (can be only a subset of all parents)
 				List<String> partitionParentIDs = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.partitions.toString()), String.class);
 				List<ExtendedNode> partitionParentNodes = new ArrayList<>();
-				partitionParentIDs.stream().forEach(parentID -> {
+				partitionParentIDs.stream().forEachOrdered(parentID -> {
 					ExtendedNode parent = getNetwork().getLogicNetwork().getExtendedNodeWithUniqueIdentifier(parentID);
 					if (parent == null){
 						throw new IllegalArgumentException("No such parent `"+parentID+"` found");
