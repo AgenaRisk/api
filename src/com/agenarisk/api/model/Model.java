@@ -13,6 +13,7 @@ import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.io.stub.Picture;
+import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
@@ -31,7 +32,10 @@ import uk.co.agena.minerva.model.MessagePassingLinkException;
 import uk.co.agena.minerva.model.PropagationException;
 import uk.co.agena.minerva.model.PropagationTerminatedException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
-import uk.co.agena.minerva.model.extendedbn.ExtendedBNNotFoundException;
+import uk.co.agena.minerva.model.extendedbn.ExtendedState;
+import uk.co.agena.minerva.model.questionnaire.Answer;
+import uk.co.agena.minerva.model.questionnaire.Question;
+import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.ScenarioNotFoundException;
 import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.io.FileHandlingException;
@@ -242,6 +246,12 @@ public class Model implements IDContainer<ModelException>, Storable {
 					throw new ModelException("Failed to create Network", ex);
 				}
 			}
+		}
+		
+		// Load Risk Table
+		JSONArray jsonRiskTable = jsonModel.optJSONArray(RiskTable.Field.riskTable.toString());
+		if (jsonRiskTable != null){
+			model.loadRiskTable(jsonRiskTable);
 		}
 		
 		// Load modification logs
@@ -520,6 +530,128 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		return dataset;
+	}
+	
+	/**
+	 * Loads Risk Table from JSON into the current Model
+	 * 
+	 * @param jsonRiskTable the Risk Table data
+	 */
+	protected void loadRiskTable(JSONArray jsonRiskTable){
+		// Clear questionnaires created by default
+		getLogicModel().getQuestionnaireList().getQuestionnaires().clear();
+		getLogicModel().getMetaData().getRootMetaDataItem().getConnQuestionnaireList().getQuestionnaires().clear();
+		for(int i = 0; i < jsonRiskTable.length(); i++){
+			this.loadQuestionnaire(jsonRiskTable.optJSONObject(i));
+		}
+	}
+	
+	/**
+	 * Loads a Questionnaire from JSON
+	 * 
+	 * @param jsonQstnr the Questionnaire data
+	 */
+	protected void loadQuestionnaire(JSONObject jsonQstnr){
+		String name = jsonQstnr.optString(RiskTable.Questionnaire.name.toString());
+		String description = jsonQstnr.optString(RiskTable.Questionnaire.description.toString());
+		Questionnaire qstnr = new Questionnaire(new NameDescription(name, description));
+		
+		JSONArray jsonQstns = jsonQstnr.optJSONArray(RiskTable.Question.questions.toString());
+		if (jsonQstns != null){
+			for(int i = 0; i < jsonQstns.length(); i++){
+				JSONObject jsonQstn = jsonQstns.optJSONObject(i);
+				
+				String nameQ = jsonQstn.optString(RiskTable.Question.name.toString());
+				String descriptionQ = jsonQstn.optString(RiskTable.Question.description.toString());
+				String netId = jsonQstn.optString(RiskTable.Question.network.toString());
+				String nodeId = jsonQstn.optString(RiskTable.Question.node.toString());
+				
+				Network network = getNetwork(netId);
+				Node node = network.getNode(nodeId);
+				
+				Question qstn = new Question(network.getLogicNetwork().getId(), node.getLogicNode().getId(), new NameDescription(nameQ, descriptionQ));
+				
+				boolean visible = jsonQstn.optBoolean(RiskTable.Question.visible.toString());
+				boolean syncToConnectedNodeName = jsonQstn.optBoolean(RiskTable.Question.syncName.toString());
+				
+				qstn.setVisible(visible);
+				qstn.setSyncToConnectedNodeName(syncToConnectedNodeName);
+				
+				if (node.isSimulated()){
+					qstn.setSyncAnswersToNodeStates(true);
+				}
+				
+				String questionMode = jsonQstn.optString(RiskTable.Question.mode.toString());
+				String questionType = jsonQstn.optString(RiskTable.Question.type.toString());
+				
+				if (questionType.equalsIgnoreCase(RiskTable.QuestionType.constant.toString())){
+					qstn.setRecommendedAnsweringMode(Question.ANSWER_AS_EXPRESSION_VARIABLE);
+					String expressionVariableName = jsonQstn.optString(RiskTable.Question.constantName.toString());
+					qstn.setExpressionVariableName(expressionVariableName);
+				}
+				else {
+					if (questionMode.equalsIgnoreCase(RiskTable.QuestionMode.numerical.toString())){
+						qstn.setRecommendedAnsweringMode(Question.ANSWER_NUMERICALLY);
+					}
+					else if (questionMode.equalsIgnoreCase(RiskTable.QuestionMode.unanswerable.toString())){
+						qstn.setRecommendedAnsweringMode(Question.ANSWER_BY_UNANSWERABLE);
+					}
+					else {
+						// Fall back to selection option
+						qstn.setRecommendedAnsweringMode(Question.ANSWER_BY_SELECTION);
+					}
+				}
+				
+				JSONArray jsonAnsws = jsonQstn.optJSONArray(RiskTable.Answer.answers.toString());
+				if (jsonAnsws == null || jsonAnsws.length() == 0){
+					qstn.setSyncAnswersToNodeStates(true);
+				}
+				
+				boolean syncAnswers = qstn.isSyncAnswersToNodeStates();
+				
+				if (!qstn.isSyncAnswersToNodeStates()){
+					// Read answers
+					List<Answer> answs = new ArrayList<>();
+					for(int a = 0; a < jsonAnsws.length(); a++){
+						JSONObject jsonAnsw = jsonAnsws.optJSONObject(a);
+						
+						String nameA = jsonAnsw.optString(RiskTable.Answer.name.toString());
+						String correspondingStateLabel = jsonAnsw.optString(RiskTable.Answer.state.toString());
+						
+						ExtendedState correspondingState = null;
+								
+						for(ExtendedState es: (List<ExtendedState>) node.getLogicNode().getExtendedStates()){
+							String computedLabel = State.computeLabel(node.getLogicNode(), es);
+							if (computedLabel.equalsIgnoreCase(correspondingStateLabel)){
+								correspondingState = es;
+								break;
+							}
+						}
+						
+						if (correspondingState == null){
+							// Did not find the matching state, reset answers
+							syncAnswers = true;
+							break;
+						}
+						
+						Answer answ = new Answer(correspondingState.getId(), new NameDescription(nameA, ""));
+						answs.add(answ);
+					}
+					qstn.setAnswers(answs);
+				}
+				
+				if (syncAnswers){
+					// Sync answers to states
+					Question templateQuestion = uk.co.agena.minerva.model.Model.generateQuestionFromNode(network.getLogicNetwork(), node.getLogicNode());
+					qstn.setAnswers(templateQuestion.getAnswers());
+				}
+				
+				qstnr.addQuestion(qstn);
+			}
+		}
+		
+		getLogicModel().getQuestionnaireList().addQuestionnaire(qstnr);
+		getLogicModel().getMetaData().getRootMetaDataItem().getConnQuestionnaireList().getQuestionnaires().add(qstnr);
 	}
 	
 	/**
