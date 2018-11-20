@@ -401,7 +401,13 @@ public class DataSet implements Identifiable<DataSetException>{
 		if (states.length != weights.length){
 			throw new DataSetException("Arrays length not equal");
 		}
-		Map<String, Double> entries = IntStream.range(0, states.length).boxed().collect(Collectors.toMap(i -> states[i], i -> weights[i]));
+		
+		// Create an iterable range to go from 0 to states.length
+		// turn it into a stream
+		// collect it as a map, where keys are taken from states and values from weights
+		// if duplicate keys found, overwrite
+		// map to use is a LinkedHashMap
+		Map<String, Double> entries = IntStream.range(0, states.length).boxed().collect(Collectors.toMap(i -> states[i], i -> weights[i], (k1, k2) -> {return k2;}, LinkedHashMap::new));
 		try {
 			setObservationSoft(node, entries);
 		}
