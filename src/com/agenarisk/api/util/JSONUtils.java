@@ -1,6 +1,7 @@
 package com.agenarisk.api.util;
 
 import com.agenarisk.api.exception.ModelException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -374,9 +375,11 @@ public class JSONUtils {
 		}
 		
 		if (o1 instanceof Double){
-			o1 = new Double(MathsHelper.roundDouble(((Double) o1).doubleValue(), 5));
-			o2 = new Double(MathsHelper.roundDouble(((Double) o2).doubleValue(), 5));
-			return o1.equals(o2);
+			DecimalFormat df = new DecimalFormat("#.#######");
+			o1 = df.format(o1);
+			o2 = df.format(o2);
+			boolean comparison = o1.equals(o2);
+			return comparison;
 		}
 		
 		return o1.equals(o2);
