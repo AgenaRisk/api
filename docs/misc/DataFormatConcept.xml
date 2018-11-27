@@ -582,6 +582,66 @@
 				<!--If missing then root item is selected-->
 			</selectedRiskObject>
 		</paneSettings>
+		
+		<viewSettings>
+			<!--What to highlight on nodes in the Risk Map-->
+			<!--All items here are Boolean and will be transferred into objects defaults and back-->
+			<!--Below items are for illustration-->
+			
+			<ContinuousInterval>
+				<!--Highlight Continuous Interval nodes-->
+			</ContinuousInterval>
+			
+			<DiscreteReal>
+				<!--Highlight Discrete Real nodes-->
+			</DiscreteReal>
+			
+			<Labelled>
+				<!--Highlight Labelled nodes-->
+			</Labelled>
+			
+			<DynamicDiscretisation>
+				<!--Highlight Simulation nodes-->
+			</DynamicDiscretisation>
+			
+			<IntegerInterval>
+				<!--Highlight Integer Interval nodes-->
+			</IntegerInterval>
+			
+			<showExpressions>
+				<!--Highlight nodes with defined expressions-->
+			</showExpressions>
+			
+			<Input>
+				<!--Highlight Input nodes-->
+			</Input>
+			
+			<Target>
+				<!--?-->
+			</Target>
+			
+			<Output>
+				<!--Highlight Output nodes-->
+			</Output>
+			
+			<Observation>
+				<!--?-->
+			</Observation>
+			
+			<ReapplyExpression>
+				<!--Highlight nodes where expressions or NPTs had been reapplied but not recalculated-->
+			</ReapplyExpression>
+			
+			<Boolean>
+				<!--Highlight Boolean nodes-->
+			</Boolean>
+			
+			<Ranked>
+				<!--Highlight Ranked nodes-->
+			</Ranked>
+
+		</viewSettings>
+		
 	</graphics>
 	
 	<meta>
