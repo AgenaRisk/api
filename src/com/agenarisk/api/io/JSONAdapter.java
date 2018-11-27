@@ -487,6 +487,25 @@ public class JSONAdapter {
 				jsonQstn.put(RiskTable.Question.syncName.toString(), qstn.isSyncToConnectedNodeName());
 				
 				JSONArray jsonAnsws = new JSONArray();
+				
+				// Check that all answer mappings are valid
+				// Reset answers if not
+				for(Answer answ: (List<Answer>) qstn.getAnswers()){
+					try {
+						int stateId = answ.getConnExtendedStateId();
+						ExtendedState correspondingState = en.getExtendedState(stateId);
+					}
+					catch(ExtendedStateNotFoundException ex){
+						// Use default answers
+						Environment.logIfDebug("Answer to state mapping broken in node " + en.getConnNodeId() + " [" + en.getName().getShortDescription() + "]", Environment.err());
+						Environment.logIfDebug("Answer: " + answ.getName() + " ["+answ.getConnExtendedStateId()+"]", Environment.err());
+						Environment.printThrowableIfDebug(ex);
+						Question tempQstn = uk.co.agena.minerva.model.Model.generateQuestionFromNode(ebn, en);
+						qstn.setAnswers(tempQstn.getAnswers());
+						break;
+					}
+				}
+				
 				for(Answer answ: (List<Answer>) qstn.getAnswers()){
 					JSONObject jsonAnsw = new JSONObject();
 					
