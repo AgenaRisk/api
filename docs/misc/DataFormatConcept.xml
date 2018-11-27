@@ -564,6 +564,24 @@
 				<!--Corresponds to Model Properties Model Graph Properties minimum probability value displayed in ARD-->
 			</minimumProbabilityDisplayed>
 		</formatting>
+		
+		<paneSettings>
+			
+			<leftPaneExpanded>
+				<!--Boolean-->
+				<!--Corresponds to Risk Explorer being expanded in ARD-->
+			</leftPaneExpanded>
+			
+			<rightPaneExpanded>
+				<!--Boolean-->
+				<!--Corresponds to Risk Graphs being expanded in ARD-->
+			</rightPaneExpanded>
+			
+			<selectedRiskObject>
+				<!--ID of the Risk Object to display when model loads in ARD-->
+				<!--If missing then root item is selected-->
+			</selectedRiskObject>
+		</paneSettings>
 	</graphics>
 	
 	<meta>
