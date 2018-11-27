@@ -14,4 +14,24 @@ public class Graphics {
 		graphics,
 		
 	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum ModelGraphicsFormatting {
+		formatting,
+		decimalPlaces,
+		xAxisAsPercentages,
+		minimumProbabilityDisplayed
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum ModelGraphicsPaneSettings {
+		paneSettings,
+		leftPaneExpanded,
+		rightPaneExpanded,
+		selectedRiskObject
+	}
 }
