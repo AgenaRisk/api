@@ -752,5 +752,42 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		createLink(source, target, source.getState(stateLabel));
 	}
+
+	/**
+	 * Returns Risk Map texts stored as JSON
+	 * 
+	 * @return Risk Map texts stored as JSON
+	 */
+	public JSONArray getJsonTexts() {
+		return jsonTexts;
+	}
+
+	/**
+	 * Returns Risk Map pictures stored as JSON
+	 * 
+	 * @return Risk Map pictures stored as JSON
+	 */
+	public JSONArray getJsonPictures() {
+		return jsonPictures;
+	}
+
+	/**
+	 * Returns model graphics stored as JSON
+	 * 
+	 * @return model graphics stored as JSON
+	 */
+	public JSONObject getJsonGraphics() {
+		return jsonGraphics;
+	}
+
+	/**
+	 * Returns audit stored as JSON
+	 * 
+	 * @return audit stored as JSON
+	 */
+	public JSONObject getJsonAudit() {
+		return jsonAudit;
+	}
+	
 	
 }
