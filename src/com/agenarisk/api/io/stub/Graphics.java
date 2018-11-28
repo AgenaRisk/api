@@ -38,14 +38,10 @@ public class Graphics {
 	/**
 	 * This is set of fields for input/output to XML and JSON format
 	 */
-	public static enum ModelGraphicsViewSettings {
-		viewSettings
+	public static enum ModelGraphics {
+		viewSettings,
+		objectDefaults,
+		openMonitors
 	}
 	
-	/**
-	 * This is set of fields for input/output to XML and JSON format
-	 */
-	public static enum ModelGraphicsObjectDefaults {
-		objectDefaults
-	}
 }
