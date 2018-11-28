@@ -41,7 +41,8 @@ public class Graphics {
 	public static enum ModelGraphics {
 		viewSettings,
 		objectDefaults,
-		openMonitors
+		openMonitors,
+		diagram
 	}
 	
 }
