@@ -679,7 +679,7 @@ public class DataSet implements Identifiable<DataSetException>{
 				// Interval data point
 				String[] bounds = label.split(" - ");
 				Double lowerBound = Double.valueOf(bounds[0]);
-				Double upperBound = Double.valueOf(bounds[0]);
+				Double upperBound = Double.valueOf(bounds[1]);
 				try {
 					IntervalDataPoint idp = new IntervalDataPoint(label, value, -1, lowerBound, upperBound);
 					ds.addDataPoint(idp);
