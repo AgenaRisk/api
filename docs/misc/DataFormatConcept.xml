@@ -591,6 +591,10 @@
 			<!--CDATA-->
 		</objectDefaults>
 		
+		<openMonitors>
+			<!--CDATA-->
+		</openMonitors>
+		
 	</graphics>
 	
 	<meta>
