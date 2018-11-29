@@ -595,6 +595,33 @@
 			<!--CDATA-->
 		</openMonitors>
 		
+		<images>
+			<!--Converted into an array of objects in JSON-->
+			
+			<image>
+				<!--Tag omitted during XML-to-JSON conversion-->
+				
+				<filename>
+					<!--Base file name-->
+				</filename>
+				
+				<data>
+					<!--Base64 encoded image-->
+				</data>
+			</image>
+			...
+		</images>
+		
+		<canvasData>
+			<!--Converted into an array of objects in JSON-->
+			
+			<canvas>
+				<!--Canvas data for a meta data entity-->
+				<!--Tag omitted during XML-to-JSON conversion-->
+			</canvas>
+			...
+		</canvasData>
+		
 	</graphics>
 	
 	<meta>
