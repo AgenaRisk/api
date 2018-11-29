@@ -20,16 +20,6 @@ public class Graphics {
 	/**
 	 * This is set of fields for input/output to XML and JSON format
 	 */
-	public static enum ModelGraphicsFormatting {
-		formatting,
-		decimalPlaces,
-		xAxisAsPercentages,
-		minimumProbabilityDisplayed
-	}
-	
-	/**
-	 * This is set of fields for input/output to XML and JSON format
-	 */
 	public static enum PaneSettings {
 		paneSettings,
 		leftPaneExpanded,
