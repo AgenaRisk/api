@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--Compulsory XML type declaration-->
+<!--This is different from basic implementation of CMPX model format in that texts, images and graphics here are not just in the proprietary delimited format from old AgenaRisk, but properly structured-->
 <!--Entities below are mapped to corresponding entities in AgenaRisk Desktop GUI (ARD) and AgenaRisk API v1 extended and core classes (ARC)-->
 <!--If a Boolean property is absent, its value is assumed to be "False"-->
 
@@ -209,6 +210,171 @@
 						</notes>
 					</meta>
 					
+					<graphics>
+						<!--Graphical properties for displaying this Node in Risk Map-->
+						
+						<position>
+							<!--Defined in common.graphics.position-->
+						</position>
+
+						<figure>
+							<!--Defined in common.graphics.figure-->
+						</figure>
+						
+						<text>
+							<!--Defined in common.graphics.text-->
+						</text>
+						
+						<visible>
+							<!--Corresponds to Node Details Visible in ARD-->
+							<!--Boolean-->
+						</visible>
+						
+						<graph>
+							<!--Corresponds to Graph Defaults in ARD-->
+							
+							<graphTypeSingle>
+								<!--Corresponds to Graph Type for Single Scenario in ARD-->
+							</graphTypeSingle>
+							
+							<graphTypeMultiple>
+								<!--Corresponds to Graph Type for Single Scenario in ARD-->
+								<!--Defined in Ref.NODE_GRAPH_TYPE-->
+							</graphTypeMultiple>
+							
+							<displayHorizontally>
+								<!--Boolean-->
+							</displayHorizontally>
+							
+							<axis>
+								<!--Applies when definition.type is "ContinuousInterval" or "IntegerInterval"-->
+								
+								<plotType>
+									<!--Corresponds to Graph Type Plot Type in ARD-->
+									<!--Defined in Ref.NODE_GRAPH_PLOT_TYPE-->
+								</plotType>
+
+								<minY>
+									<!--Minimum Y value to display-->
+								</minY>
+
+								<maxY>
+									<!--Maximum Y value to display-->
+								</maxY>
+
+								<continuousX>
+									<!--Boolean-->
+									<!--Corresponds to Graph Defaults Continuous X-Axis in ARD-->
+								</continuousX>
+
+								<asLog>
+									<!--Corresponds to Graph Defaults as Log-->
+									<!--Boolean-->
+									<!--Ignored if continuousX is not "True"-->
+								</asLog>
+
+								<minMaxXAsPercentiles>
+									<!--Corresponds to Treat as min/max X as percentiles in ARD-->
+									<!--Boolean-->
+								</minMaxXAsPercentiles>
+
+								<minX>
+									<!--Minimum X value to display-->
+								</minX>
+
+								<maxX>
+									<!--Maximum X value to display-->
+								</maxX>
+								
+							</axis>
+							
+							<formatting>
+								<!--Corresponds to Graph Defaults Formatting-->
+								<!--If present, overrides model.graphics.formatting-->
+								<!--Applies when definition.type is not "ContinuousInterval" or "IntegerInterval"-->
+
+								<decimalPlaces>
+									<!--Corresponds to Model Properties Model Graph Properties decimal places to round to in ARD-->
+								</decimalPlaces>
+
+								<xAxisAsPercentages>
+									<!--Corresponds to Model Properties Model Graph Properties show horizontal values as precentages in ARD-->
+									<!--Boolean-->
+								</xAxisAsPercentages>
+
+								<minimumProbabilityDisplayed>
+									<!--Corresponds to Model Properties Model Graph Properties minimum probability value displayed in ARD-->
+								</minimumProbabilityDisplayed>
+							</formatting>
+							
+							<visibility>
+								<!--Corresponds to Graph Defaults Visibility in ARD-->
+								
+								<legend>
+									<!--Corresponds to Show Legend in ARD-->
+									<!--Boolean-->
+								</legend>
+								
+								<grid>
+									<!--Corresponds to Show Grid in ARD-->
+									<!--Boolean-->
+								</grid>
+								
+								<datasetTransparency>
+									<!--Corresponds to Dataset Transparency in ARD-->
+									<!--Percentage transparency between 0 and 100, multiples of 10-->
+								</datasetTransparency>
+								
+								<statisticsSpace>
+									<!--Corresponds to Space taken by statistics in ARD-->
+									<!--Percentage transparency between 0 and 100, multiples of 10-->
+								</statisticsSpace>
+								
+							</visibility>
+							
+							<summaryStatistics>
+								<!--Applies when definition.type is "ContinuousInterval" or "IntegerInterval"-->
+								
+								<drawMean>
+									<!--Corresponds to Graph Defaults Summary Statistics mean in ARD-->
+									<!--Whether to draw a line on the mean value on the graph-->
+									<!--Boolean-->
+								</drawMean>
+								
+								<drawMedian>
+									<!--Corresponds to Graph Defaults Summary Statistics median in ARD-->
+									<!--Whether to draw a line on the median value on the graph-->
+									<!--Boolean-->
+								</drawMedian>
+								
+								<drawLowerPercentile>
+									<!--Corresponds to Graph Defaults Summary Statistics lower percentile in ARD-->
+									<!--Whether to draw a line on the lower percentile value on the graph-->
+									<!--Boolean-->
+								</drawLowerPercentile>
+								
+								<lowerPercentile>
+									<!--Corresponds to Graph Defaults Summary Statistics lower percentile value in ARD-->
+									<!--Percentage integer value between 1 and 99-->
+								</lowerPercentile>
+								
+								<drawLowerPercentile>
+									<!--Corresponds to Graph Defaults Summary Statistics upper percentile in ARD-->
+									<!--Whether to draw a line on the upper percentile value on the graph-->
+									<!--Boolean-->
+								</drawLowerPercentile>
+								
+								<upperPercentile>
+									<!--Corresponds to Graph Defaults Summary Statistics upper percentile value in ARD-->
+									<!--Percentage integer value between 1 and 99-->
+								</upperPercentile>
+								
+							</summaryStatistics>
+							
+						</graph>
+
+					</graphics>
+					
 				</node>
 				...
 			</nodes>
@@ -228,9 +394,44 @@
 						<!--ID of the child node-->
 					</child>
 					
+					<graphics>
+						<!--Graphical properties for displaying this Link in Risk Map-->
+						
+						<figure>
+							<!--Defined in common.graphics.figure-->
+							<!--The following attributes are ignored: shape, width, height, background-->
+						</figure>
+						
+						<annotation>
+							<!--ID of the text item that is an annotation to this link-->
+						</annotation>
+						
+					</graphics>
 				</link>
 				...
 			</links>
+			
+			<graphics>
+				<!--Graphical properties for displaying this Network in Risk Map-->
+				
+				<position>
+					<!--Defined in common.graphics.position-->
+				</position>
+				
+				<figure>
+					<!--Defined in common.graphics.figure-->
+					<!--The only attributes that will be applied are: width, height, background.color, background.transparency-->
+				</figure>
+				
+			</graphics>
+			
+			<texts>
+				<!--Defined in common.riskMapObjects.texts-->
+			</texts>
+
+			<pictures>
+				<!--Defined in common.riskMapObjects.pictures-->
+			</pictures>
 			
 			<modificationLog>
 				<!--Log of modifications affecting the network since last recalculation-->
@@ -286,9 +487,29 @@
 				<!--Required if link.type is "State"; value is the label of the state to pass-->
 			</passState>
 			
+			<graphics>
+				<!--Graphical properties for displaying this Link in Risk Map-->
+
+				<figure>
+					<!--Defined in common.graphics.figure-->
+					<!--The following attributes are ignored: shape, width, height, background-->
+				</figure>
+
+				<annotation>
+					<!--ID of the text item that is an annotation to this link-->
+				</annotation>
+			</graphics>
 		</link>
 		...
 	</links>
+	
+	<texts>
+		<!--Defined in common.riskMapObjects.texts-->
+	</texts>
+
+	<pictures>
+		<!--Defined in common.riskMapObjects.pictures-->
+	</pictures>
 	
 	<settings>
 		<!--Corresponds to Model Properties Simulation Settings in ARD-->
@@ -329,6 +550,22 @@
 	<graphics>
 		<!--Corresponds to Model Properties Model Graph Properties in ARD-->
 		
+		<formatting>
+			
+			<decimalPlaces>
+				<!--Corresponds to Model Properties Model Graph Properties decimal places to round to in ARD-->
+			</decimalPlaces>
+			
+			<xAxisAsPercentages>
+				<!--Corresponds to Model Properties Model Graph Properties show horizontal values as precentages in ARD-->
+				<!--Boolean-->
+			</xAxisAsPercentages>
+			
+			<minimumProbabilityDisplayed>
+				<!--Corresponds to Model Properties Model Graph Properties minimum probability value displayed in ARD-->
+			</minimumProbabilityDisplayed>
+		</formatting>
+		
 		<paneSettings>
 			
 			<leftPaneExpanded>
@@ -346,45 +583,6 @@
 				<!--If missing then root item is selected-->
 			</selectedRiskObject>
 		</paneSettings>
-		
-		<viewSettings>
-			<!--CDATA-->
-		</viewSettings>
-		
-		<objectDefaults>
-			<!--CDATA-->
-		</objectDefaults>
-		
-		<openMonitors>
-			<!--CDATA-->
-		</openMonitors>
-		
-		<images>
-			<!--Converted into an array of objects in JSON-->
-			
-			<image>
-				<!--Tag omitted during XML-to-JSON conversion-->
-				
-				<filename>
-					<!--Base file name-->
-				</filename>
-				
-				<data>
-					<!--Base64 encoded image-->
-				</data>
-			</image>
-			...
-		</images>
-		
-		<canvasData>
-			<!--Converted into an array of objects in JSON-->
-			
-			<canvas>
-				<!--Canvas data for a meta data entity-->
-				<!--Tag omitted during XML-to-JSON conversion-->
-			</canvas>
-			...
-		</canvasData>
 		
 	</graphics>
 	
@@ -423,6 +621,19 @@
 				<!--DataSet ID-->
 				<!--Corresponds to Scenario name in ARD and uk.co.agena.minerva.util.model.NameDescription.shortDescription in ARC-->
 			</id>
+			
+			<graphics>
+				
+				<displayObservations>
+					<!--Boolean-->
+					<!--Corresponds to Risk Scenarios Active checkbox-->
+				</displayObservations>
+				
+				<displayOnGraph>
+					<!--Boolean-->
+					<!--Corresponds to Risk Scenarios Display on Risk Graphs checkbox-->
+				</displayOnGraph>
+			</graphics>
 			
 			<observations>
 				<!--Converted into an array of objects in JSON-->
@@ -649,3 +860,201 @@
 	</audit>
 	
 </model>
+
+<common>
+	<!--Common element types used by different objects-->
+	<graphics>
+		<!--Graphical properties for displaying this object in Risk Map-->
+		
+		<position>
+			<!--Position on Canvas Map-->
+
+			<x>
+				<!--Horizontal offset from top-left corner-->
+			</x>
+
+			<y>
+				<!--Vertical offset from top-left corner-->
+			</y>
+		</position>
+		
+		<figure>
+			<!--Partially corresponds to Appearance in ARD-->
+
+			<shape>
+				<!--Corresponds to Appearance Shape in ARD-->
+				<!--Values as specified in Ref.GRAPHICS_SHAPE-->
+			</shape>
+
+			<width>
+				<!--Corresponds to Appearance Width in ARD-->
+			</width>
+
+			<height>
+				<!--Corresponds to Appearance Height in ARD-->
+			</height>
+
+			<background>
+				<!--Properties of the background-->
+
+				<color>
+					<!--Corresponds to Appearance Background Colour in ARD-->
+					<!--Hex color-->
+				</color>
+
+				<transparency>
+					<!--Corresponds to Appearance Shape Transparency in ARD-->
+					<!--Percentage transparency between 0 and 100, multiples of 10-->
+				</transparency>
+
+				<filled>
+					<!--Corresponds to Appearance Filled in ARD-->
+					<!--Boolean-->
+				</filled>
+
+			</background>
+
+			<border>
+				<!--Properties of the border-->
+
+				<visible>
+					<!--Corresponds to Appearance Visible Border in ARD-->
+					<!--Boolean-->
+				</visible>
+
+				<color>
+					<!--Corresponds to Appearance Border Colour in ARD-->
+					<!--Hex color-->
+				</color>
+
+				<transparency>
+					<!--Corresponds to Appearance Border Transparency in ARD-->
+					<!--Percentage transparency between 0 and 100, multiples of 10-->
+				</transparency>
+
+				<thickness>
+					<!--Corresponds to Appearance Line Thickness in ARD-->
+					<!--Integer values between 1 and 50-->
+				</thickness>
+
+				<style>
+					<!--Corresponds to Appearance Line Style in ARD-->
+					<!--Line style as defined in Ref.GRAPHICS_LINE_STYLE-->
+				</style>
+
+			</border>
+
+			<clip>
+				<!--Corresponds to Text Format Clip Text in ARD-->
+				<!--Whether to clip contained text in the bounding shape-->
+				<!--Boolean-->
+			</clip>
+
+			<padding>
+				<!--Corresponds to Text Format Buffer between Text and Border in ARD-->
+			</padding>
+
+		</figure>
+		
+		<text>
+			<!--Properties of the object's text-->
+
+			<color>
+				<!--Corresponds to Text Format Text Colour in ARD-->
+				<!--Hex color-->
+			</color>
+
+			<size>
+				<!--Corresponds to Text Format Font Size in ARD-->
+				<!--Font size-->
+			</size>
+
+			<alignment>
+				<!--Text alignment-->
+
+				<horizontal>
+					<!--Corresponds to Text Format Horizontal Text Alignment in ARD-->
+					<!--As defined in Ref.GRAPHICS_TEXT_ALIGNH-->
+				</horizontal>
+
+				<vertical>
+					<!--Corresponds to Text Format Vertical Text Alignment in ARD-->
+					<!--As defined in Ref.GRAPHICS_TEXT_ALIGNV-->
+				</vertical>
+			</alignment>
+		</text>
+	</graphics>
+
+	<riskMapObjects>
+		
+		<texts>
+			<!--Corresponds to Text Labels added to Risk Map in ARD-->
+
+			<text>
+				<!--Tag omitted during XML-to-JSON conversion-->
+
+				<id>
+					<!--ID of the text item to enable an association from a Link to this text as the Link's label-->
+				</id>
+
+				<content>
+					<!--CDATA-->
+				</content>
+
+				<graphics>
+					<!--Graphical properties for displaying this Text in Risk Map-->
+
+					<position>
+						<!--Defined in common.graphics.position-->
+						<!--If a text is a Link label, its position will be automatically adjusted by the Link-->
+					</position>
+
+					<figure>
+						<!--Defined in common.graphics.figure-->
+					</figure>
+
+					<text>
+						<!--Defined in common.graphics.text-->
+					</text>
+
+				</graphics>
+			</text>
+			...
+		</texts>
+
+		<pictures>
+			<!--Corresponds to imported pictures in ARD-->
+
+			<picture>
+				<!--Tag omitted during XML-to-JSON conversion-->
+
+				<data>
+					<!--Picture data base64 encoded-->
+					<!--CDATA-->
+				</data>
+
+				<graphics>
+					<!--Graphical properties for displaying this Picture in Risk Map-->
+
+					<position>
+						<!--Defined in common.graphics.position-->
+					</position>
+
+					<figure>
+						<!--Defined in common.graphics.figure-->
+						<!--The following attributes are ignored: shape, background-->
+					</figure>
+
+					<stretch>
+						<!--Corresponds to Stretch Image to fit shape in ARD-->
+						<!--Boolean-->
+					</stretch>
+
+				</graphics>
+
+			</picture>
+			...
+		</pictures>
+	</riskMapObjects>
+		
+</common>

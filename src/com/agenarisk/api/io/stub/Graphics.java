@@ -12,7 +12,9 @@ public class Graphics {
 	 */
 	public static enum Field {
 		graphics,
-		
+		viewSettings,
+		objectDefaults,
+		openMonitors,
 	}
 	
 	/**
@@ -28,7 +30,7 @@ public class Graphics {
 	/**
 	 * This is set of fields for input/output to XML and JSON format
 	 */
-	public static enum ModelGraphicsPaneSettings {
+	public static enum PaneSettings {
 		paneSettings,
 		leftPaneExpanded,
 		rightPaneExpanded,
@@ -38,11 +40,18 @@ public class Graphics {
 	/**
 	 * This is set of fields for input/output to XML and JSON format
 	 */
-	public static enum ModelGraphics {
-		viewSettings,
-		objectDefaults,
-		openMonitors,
-		diagram
+	public static enum Images {
+		images,
+		image,
+		filename,
+		data
 	}
 	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum CanvasData {
+		canvasData,
+		canvas
+	}
 }
