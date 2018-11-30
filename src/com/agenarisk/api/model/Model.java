@@ -31,6 +31,7 @@ import org.apache.sling.commons.json.JSONObject;
 import uk.co.agena.minerva.model.MessagePassingLinkException;
 import uk.co.agena.minerva.model.PropagationException;
 import uk.co.agena.minerva.model.PropagationTerminatedException;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.questionnaire.Answer;
@@ -544,6 +545,16 @@ public class Model implements IDContainer<ModelException>, Storable {
 		for(int i = 0; i < jsonRiskTable.length(); i++){
 			this.loadQuestionnaire(jsonRiskTable.optJSONObject(i));
 		}
+		
+		// For each ExtendedBN without a questionnaire, create one
+		for (ExtendedBN ebn: (List<ExtendedBN>)getLogicModel().getExtendedBNList().getExtendedBNs()){
+			if (getLogicModel().getQuestionnaireList().getQuestionnairesConnectedToExtendedBN(ebn.getId()).isEmpty()){
+				Questionnaire q = uk.co.agena.minerva.model.Model.createQuestionnaireFromExtendedBN(ebn);
+				q.setSyncToConnectedExBNName(true);
+				getLogicModel().getMetaData().getRootMetaDataItem().addQuestionnaire(q,getLogicModel());
+			}
+			
+		}
 	}
 	
 	/**
@@ -650,8 +661,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 			}
 		}
 		
-		getLogicModel().getQuestionnaireList().addQuestionnaire(qstnr);
-		getLogicModel().getMetaData().getRootMetaDataItem().getConnQuestionnaireList().getQuestionnaires().add(qstnr);
+		if (!qstnr.getQuestions().isEmpty()){
+			getLogicModel().getQuestionnaireList().addQuestionnaire(qstnr);
+			getLogicModel().getMetaData().getRootMetaDataItem().getConnQuestionnaireList().getQuestionnaires().add(qstnr);
+		}
 	}
 	
 	/**
