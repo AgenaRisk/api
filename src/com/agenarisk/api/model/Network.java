@@ -11,6 +11,7 @@ import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;
+import com.agenarisk.api.model.field.ID;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
@@ -77,7 +79,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * <br>
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<String, Node> nodes = Collections.synchronizedMap(new HashMap<>());
+	private final Map<ID, Node> nodes = Collections.synchronizedMap(new HashMap<>());
 	
 	/**
 	 * Factory method to be called by a Model object that is trying to add a Network to itself.
@@ -217,20 +219,20 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	public Node createNode(String id, String name, Node.Type type) throws NetworkException {
 		synchronized (IDContainer.class){
-			if (nodes.containsKey(id)){
+			if (nodes.containsKey(new ID(id))){
 				throw new NetworkException("Node with id `" + id + "` already exists");
 			}
-			nodes.put(id, null);
+			nodes.put(new ID(id), null);
 		}
 		
 		Node node;
 		
 		try {
 			node = Node.createNode(this, id, name, type);
-			nodes.put(id, node);
+			nodes.put(new ID(id), node);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			nodes.remove(id);
+			nodes.remove(new ID(id));
 			throw new NetworkException("Failed to add node `" + id + "`", ex);
 		}
 		
@@ -487,7 +489,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	@Override
 	@Deprecated
-	public Map<String,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws NetworkException {
+	public Map<ID,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws NetworkException {
 		if (Node.class.equals(idClassType)){
 			return nodes;
 		}
@@ -522,7 +524,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @return the Node with the given ID or null if no such node exists in the Network
 	 */
 	public Node getNode(String id){
-		return nodes.get(id);
+		return nodes.get(new ID(id));
 	}
 
 	/**
@@ -533,7 +535,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @return copy of ID-Node map
 	 */
 	public Map<String, Node> getNodes() {
-		return new HashMap<>(nodes);
+		return nodes.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, HashMap::new));
 	}
 
 	/**

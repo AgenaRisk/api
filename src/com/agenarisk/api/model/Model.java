@@ -15,6 +15,7 @@ import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;
+import com.agenarisk.api.model.field.ID;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
@@ -60,13 +62,13 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * ID-Network map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<String, Network> networks = Collections.synchronizedMap(new HashMap<>());
+	public final Map<ID, Network> networks = Collections.synchronizedMap(new HashMap<>());
 	
 	/**
 	 * ID-DataSet map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<String, DataSet> datasets = Collections.synchronizedMap(new HashMap());
+	private final Map<ID, DataSet> datasets = Collections.synchronizedMap(new HashMap());
 	
 	/**
 	 * The underlying logical Model
@@ -362,10 +364,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public Network createNetwork(String id, String name) throws ModelException {
 		synchronized (IDContainer.class){
-			if (networks.containsKey(id)){
+			if (networks.containsKey(new ID(id))){
 				throw new ModelException("Network with id `" + id + "` already exists");
 			}
-			networks.put(id, null);
+			networks.put(new ID(id), null);
 		}
 		
 		Network network;
@@ -373,10 +375,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 		try {
 			// Call protected factory method to create a network instance
 			network = Network.createNetwork(this, id, name);
-			networks.put(id, network);
+			networks.put(new ID(id), network);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			networks.remove(id);
+			networks.remove(new ID(id));
 			throw new ModelException("Failed to add network `" + id + "`", ex);
 		}
 		
@@ -399,7 +401,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	@Override
 	@Deprecated
-	public Map<String,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws ModelException {
+	public Map<ID,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws ModelException {
 		if (Network.class.equals(idClassType)){
 			return networks;
 		}
@@ -439,7 +441,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return the Network identified by ID or null, if no such Network exists in this Model
 	 */
 	public Network getNetwork(String id){
-		return networks.get(id);
+		return networks.get(new ID(id));
 	}
 
 	/**
@@ -448,7 +450,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, Network> getNetworks() {
-		return new TreeMap<>(networks);
+		return networks.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, TreeMap::new));
 	}
 
 	/**
@@ -513,20 +515,20 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public DataSet createDataSet(String id) throws ModelException {
 		synchronized (IDContainer.class){
-			if (datasets.containsKey(id)){
+			if (datasets.containsKey(new ID(id))){
 				throw new ModelException("DataSet with id `" + id + "` already exists");
 			}
-			datasets.put(id, null);
+			datasets.put(new ID(id), null);
 		}
 		
 		DataSet dataset;
 		
 		try {
 			dataset = DataSet.createDataSet(this, id);
-			datasets.put(id, dataset);
+			datasets.put(new ID(id), dataset);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			datasets.remove(id);
+			datasets.remove(new ID(id));
 			throw new ModelException("Failed to add DataSet `" + id + "`", ex);
 		}
 		
@@ -695,7 +697,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, DataSet> getDataSets() {
-		return new TreeMap<>(datasets);
+		return datasets.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, TreeMap::new));
 	}
 	
 	/**
