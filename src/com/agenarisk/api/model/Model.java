@@ -22,7 +22,7 @@ import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.JSONUtils;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -62,13 +62,13 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * ID-Network map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	public final Map<ID, Network> networks = Collections.synchronizedMap(new HashMap<>());
+	public final Map<ID, Network> networks = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * ID-DataSet map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<ID, DataSet> datasets = Collections.synchronizedMap(new HashMap());
+	private final Map<ID, DataSet> datasets = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * The underlying logical Model
