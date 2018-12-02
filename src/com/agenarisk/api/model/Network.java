@@ -403,7 +403,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	@Override
 	public Set<Network> getParents() {
 		Set<Network> nets = new LinkedHashSet<>();
-		nodes.forEach((id,node) -> {
+		nodes.values().forEach(node -> {
 			node.getLinksIn().stream().map((link) -> link.getFromNode().getNetwork()).filter((net) -> (!Objects.equals(net, this))).forEachOrdered((net) -> {
 				nets.add(net);
 			});
@@ -423,7 +423,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	@Override
 	public Set<Network> getChildren() {
 		Set<Network> nets = new LinkedHashSet<>();
-		nodes.forEach((id,node) -> {
+		nodes.values().forEach(node -> {
 			node.getLinksOut().stream().map((link) -> link.getToNode().getNetwork()).filter((net) -> (!Objects.equals(net, this))).forEachOrdered((net) -> {
 				nets.add(net);
 			});
