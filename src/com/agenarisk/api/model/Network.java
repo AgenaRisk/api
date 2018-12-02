@@ -372,6 +372,16 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
+	 * Returns toStringExtra().
+	 * 
+	 * @return toStringExtra()
+	 */
+	@Override
+	public String toString(){
+		return toStringExtra();
+	}
+	
+	/**
 	 * Returns the ID of the underlying network surrounded by back ticks.
 	 * 
 	 * @return the ID of the underlying network surrounded by back ticks
