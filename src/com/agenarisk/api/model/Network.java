@@ -17,6 +17,7 @@ import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * <br>
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<ID, Node> nodes = Collections.synchronizedMap(new HashMap<>());
+	private final Map<ID, Node> nodes = Collections.synchronizedMap(new LinkedHashMap());
 	
 	/**
 	 * Factory method to be called by a Model object that is trying to add a Network to itself.
@@ -545,7 +546,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @return copy of ID-Node map
 	 */
 	public Map<String, Node> getNodes() {
-		return nodes.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, HashMap::new));
+		return nodes.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, LinkedHashMap::new));
 	}
 
 	/**
