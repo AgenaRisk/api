@@ -65,9 +65,10 @@ public class ID implements Comparable<ID> {
 		final ID other = (ID) obj;
 		
 		if (this.getValue().equalsIgnoreCase(other.getValue())) {
-			return false;
+			return true;
 		}
-		return true;
+		
+		return false;
 	}
 
 	/**
