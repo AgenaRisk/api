@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
@@ -450,7 +449,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, Network> getNetworks() {
-		return networks.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, TreeMap::new));
+		return networks.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, LinkedHashMap::new));
 	}
 
 	/**
@@ -697,7 +696,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, DataSet> getDataSets() {
-		return datasets.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, TreeMap::new));
+		return datasets.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, LinkedHashMap::new));
 	}
 	
 	/**
