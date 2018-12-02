@@ -80,7 +80,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * <br>
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<ID, Node> nodes = Collections.synchronizedMap(new LinkedHashMap());
+	private final Map<ID, Node> nodes = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * Factory method to be called by a Model object that is trying to add a Network to itself.
