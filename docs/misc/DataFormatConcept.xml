@@ -341,6 +341,11 @@
 				<!--Corresponds to Risk Graphs being expanded in ARD-->
 			</rightPaneExpanded>
 			
+			<scenarioPaneExpanded>
+				<!--Boolean-->
+				<!--Corresponds to Scenarios being expanded in ARD-->
+			</scenarioPaneExpanded>
+			
 			<selectedRiskObject>
 				<!--ID of the Risk Object to display when model loads in ARD-->
 				<!--If missing then root item is selected-->
