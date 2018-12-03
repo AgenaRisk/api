@@ -24,6 +24,7 @@ public class Graphics {
 		paneSettings,
 		leftPaneExpanded,
 		rightPaneExpanded,
+		scenarioPaneExpanded,
 		selectedRiskObject
 	}
 	
