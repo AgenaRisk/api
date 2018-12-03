@@ -424,6 +424,16 @@
 				<!--Corresponds to Scenario name in ARD and uk.co.agena.minerva.util.model.NameDescription.shortDescription in ARC-->
 			</id>
 			
+			<active>
+				<!--Boolean-->
+				<!--Corresponds to `Active` flag in ARD and uk.co.agena.minerva.model.scenario.Scenario.reportable in ARC-->
+			</active>
+			
+			<displayable>
+				<!--Boolean-->
+				<!--Corresponds to `Display on Risk Graphs` flag in ARD and uk.co.agena.minerva.model.scenario.Scenario.displayOnRiskGraphs in ARC-->
+			</displayable>
+			
 			<observations>
 				<!--Converted into an array of objects in JSON-->
 				
