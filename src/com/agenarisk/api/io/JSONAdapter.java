@@ -145,6 +145,8 @@ public class JSONAdapter {
 		}
 		jsonDataSet.put(com.agenarisk.api.model.Observation.Field.observations.toString(), jsonObservations);
 		
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.active.toString(), scenario.isReportable());
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.displayable.toString(), scenario.isDisplayOnRiskGraphs());
 		
 		// Results
 		JSONArray jsonResults = resultsToJSON(model, scenario);

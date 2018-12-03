@@ -48,7 +48,9 @@ public class DataSet implements Identifiable<DataSetException>{
 	public static enum Field {
 		dataSets,
 		dataSet,
-		id
+		id,
+		active,
+		displayable
 	}
 
 	/**
@@ -114,6 +116,9 @@ public class DataSet implements Identifiable<DataSetException>{
 		catch (JSONException ex){
 			throw new ModelException("Failed reading dataset data", ex);
 		}
+		
+		dataSet.getLogicScenario().setReportable(jsonDataSet.optBoolean(Field.active.toString(), true));
+		dataSet.getLogicScenario().setDisplayOnRiskGraphs(jsonDataSet.optBoolean(Field.displayable.toString(), true));
 		
 		// Set observations
 		if (jsonDataSet.has(Observation.Field.observations.toString())){
