@@ -329,6 +329,48 @@
 	<graphics>
 		<!--Corresponds to Model Properties Model Graph Properties in ARD-->
 		
+		<windowSettings>
+			
+			<preferredScreen>
+				<!--Which screen the window was on-->
+				<!--If this screen is present, put AgenaRisk on it-->
+			</preferredScreen>
+			
+			<preferredFrame>
+				<!--Preferred AgenaRisk frame settings-->
+				
+				<maximised>
+					<!--Boolean-->
+				</maximised>
+				
+				<position>
+					<!--Ignored if out of screen bounds-->
+					<!--Ignored if size given this position is out of screen bounds-->
+					
+					<x>
+						<!--Integer-->
+					</x>
+					
+					<y>
+						<!--Integer-->
+					</y>
+				</position>
+				
+				<size>
+					<!--Ignored if maximised-->
+					<!--Ignored if this size given position is out of screen bounds-->
+
+					<width>
+						<!--Integer-->
+					</width>
+
+					<height>
+						<!--Integer-->
+					</height>
+				</size>
+			</preferredFrame>
+		</windowSettings>
+		
 		<paneSettings>
 			
 			<leftPaneExpanded>

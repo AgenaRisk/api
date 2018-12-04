@@ -45,4 +45,21 @@ public class Graphics {
 		canvasData,
 		canvas
 	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum WindowSettings {
+		windowSettings,
+		preferredScreen,
+		screenId,
+		size,
+		width,
+		height,
+		preferredFrame,
+		maximised,
+		position,
+		x,
+		y
+	}
 }
