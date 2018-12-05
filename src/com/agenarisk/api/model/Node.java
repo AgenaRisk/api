@@ -1040,20 +1040,32 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * <br>
 	 * Will lock IDContainer.class while doing so.
 	 * 
-	 * @param id the new ID
+	 * @param newId the new ID
 	 * 
 	 * @throws NodeException if fails to change ID
 	 */
 	@Override
-	public void setId(String id) throws NodeException {
+	public void setId(String newId) throws NodeException {
+		String oldId = getId();
+		String errorMessage = "Failed to change ID of Node from `" + oldId + "` to `" + newId + "`";
+		
 		try {
-			getNetwork().changeContainedId(this, id);
+			getNetwork().changeContainedId(this, newId);
+			getLogicNode().updateConnNodeId(newId);
+		}
+		catch (CoreBNNodeNotFoundException | ExtendedBNException ex){
+			try {
+				// Rollback
+				getNetwork().changeContainedId(this, oldId);
+			}
+			catch (NetworkException ex2){
+				throw new NodeException(errorMessage, ex2);
+			}
+			throw new NodeException(errorMessage, ex);
 		}
 		catch (NetworkException ex){
-			throw new NodeException("Failed to change ID of Network `" + getId() + "`", ex);
+			throw new NodeException(errorMessage, ex);
 		}
-		
-		getLogicNode().setConnNodeId(id);
 	}
 	
 	/**
