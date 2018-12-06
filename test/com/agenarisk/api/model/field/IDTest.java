@@ -4,12 +4,12 @@ import junit.framework.TestCase;
 
 public class IDTest extends TestCase {
 	
-	ID instance_foo;
-	ID instance_foo2;
-	ID instance_bar;
-	ID instance_FooBar;
-	ID instance_Foo;
-	ID instance_BAR;
+	Id instance_foo;
+	Id instance_foo2;
+	Id instance_bar;
+	Id instance_FooBar;
+	Id instance_Foo;
+	Id instance_BAR;
 	
 	public IDTest(String testName) {
 		super(testName);
@@ -18,12 +18,12 @@ public class IDTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		instance_foo = new ID("foo");
-		instance_foo2 = new ID("foo");
-		instance_bar = new ID("bar");
-		instance_FooBar = new ID("FooBar");
-		instance_Foo = new ID("Foo");
-		instance_BAR = new ID("BAR");
+		instance_foo = new Id("foo");
+		instance_foo2 = new Id("foo");
+		instance_bar = new Id("bar");
+		instance_FooBar = new Id("FooBar");
+		instance_Foo = new Id("Foo");
+		instance_BAR = new Id("BAR");
 	}
 
 	public void testGetValue() {

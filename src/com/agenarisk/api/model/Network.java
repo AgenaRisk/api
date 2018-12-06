@@ -11,7 +11,7 @@ import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;
-import com.agenarisk.api.model.field.ID;
+import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
@@ -79,7 +79,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * <br>
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<ID, Node> nodes = Collections.synchronizedMap(new LinkedHashMap<>());
+	private final Map<Id, Node> nodes = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * Factory method to be called by a Model object that is trying to add a Network to itself.
@@ -219,20 +219,20 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	public Node createNode(String id, String name, Node.Type type) throws NetworkException {
 		synchronized (IDContainer.class){
-			if (nodes.containsKey(new ID(id))){
+			if (nodes.containsKey(new Id(id))){
 				throw new NetworkException("Node with id `" + id + "` already exists");
 			}
-			nodes.put(new ID(id), null);
+			nodes.put(new Id(id), null);
 		}
 		
 		Node node;
 		
 		try {
 			node = Node.createNode(this, id, name, type);
-			nodes.put(new ID(id), node);
+			nodes.put(new Id(id), node);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			nodes.remove(new ID(id));
+			nodes.remove(new Id(id));
 			throw new NetworkException("Failed to add node `" + id + "`", ex);
 		}
 		
@@ -499,7 +499,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	@Override
 	@Deprecated
-	public Map<ID,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws NetworkException {
+	public Map<Id,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws NetworkException {
 		if (Node.class.equals(idClassType)){
 			return nodes;
 		}
@@ -534,7 +534,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @return the Node with the given ID or null if no such node exists in the Network
 	 */
 	public Node getNode(String id){
-		return nodes.get(new ID(id));
+		return nodes.get(new Id(id));
 	}
 
 	/**

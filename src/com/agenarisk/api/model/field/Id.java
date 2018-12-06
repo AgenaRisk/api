@@ -7,7 +7,7 @@ import java.util.Objects;
  * 
  * @author Eugene Dementiev
  */
-public class ID implements Comparable<ID> {
+public class Id implements Comparable<Id> {
 	
 	private final String value;
 
@@ -16,7 +16,7 @@ public class ID implements Comparable<ID> {
 	 * 
 	 * @param value the String value of this ID
 	 */
-	public ID(String value) {
+	public Id(String value) {
 		this.value = value;
 	}
 
@@ -62,7 +62,7 @@ public class ID implements Comparable<ID> {
 			return false;
 		}
 		
-		final ID other = (ID) obj;
+		final Id other = (Id) obj;
 		
 		if (this.getValue().equalsIgnoreCase(other.getValue())) {
 			return true;
@@ -72,8 +72,10 @@ public class ID implements Comparable<ID> {
 	}
 
 	/**
-	 * Compares two ID objects by first using case-insensitive String comparison of their respective values.<br/>
-	 * Then, if IDs compare as same, then they are also compared taking the case into consideration.<br/>
+	 * Compares two ID objects by first using case-insensitive String comparison of their respective values.
+	 * <br>
+	 * Then, if IDs compare as same, then they are also compared taking the case into consideration.
+	 * <br>
 	 * Upper-case characters will precede lower-case characters.
 	 * 
 	 * @param o the ID to compare to
@@ -81,7 +83,7 @@ public class ID implements Comparable<ID> {
 	 * @return a negative integer, zero, or a positive integer if the value of this ID precedes the one of the specified ID
 	 */
 	@Override
-	public int compareTo(ID o) {
+	public int compareTo(Id o) {
 		int res = this.getValue().compareToIgnoreCase(o.getValue());
 		
 		if (res == 0){

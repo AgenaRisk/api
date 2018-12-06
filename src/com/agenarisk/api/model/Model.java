@@ -15,7 +15,7 @@ import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;
-import com.agenarisk.api.model.field.ID;
+import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
@@ -61,13 +61,13 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * ID-Network map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	public final Map<ID, Network> networks = Collections.synchronizedMap(new LinkedHashMap<>());
+	public final Map<Id, Network> networks = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * ID-DataSet map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<ID, DataSet> datasets = Collections.synchronizedMap(new LinkedHashMap<>());
+	private final Map<Id, DataSet> datasets = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * The underlying logical Model
@@ -363,10 +363,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public Network createNetwork(String id, String name) throws ModelException {
 		synchronized (IDContainer.class){
-			if (networks.containsKey(new ID(id))){
+			if (networks.containsKey(new Id(id))){
 				throw new ModelException("Network with id `" + id + "` already exists");
 			}
-			networks.put(new ID(id), null);
+			networks.put(new Id(id), null);
 		}
 		
 		Network network;
@@ -374,10 +374,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 		try {
 			// Call protected factory method to create a network instance
 			network = Network.createNetwork(this, id, name);
-			networks.put(new ID(id), network);
+			networks.put(new Id(id), network);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			networks.remove(new ID(id));
+			networks.remove(new Id(id));
 			throw new ModelException("Failed to add network `" + id + "`", ex);
 		}
 		
@@ -400,7 +400,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	@Override
 	@Deprecated
-	public Map<ID,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws ModelException {
+	public Map<Id,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws ModelException {
 		if (Network.class.equals(idClassType)){
 			return networks;
 		}
@@ -440,7 +440,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return the Network identified by ID or null, if no such Network exists in this Model
 	 */
 	public Network getNetwork(String id){
-		return networks.get(new ID(id));
+		return networks.get(new Id(id));
 	}
 
 	/**
@@ -514,20 +514,20 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public DataSet createDataSet(String id) throws ModelException {
 		synchronized (IDContainer.class){
-			if (datasets.containsKey(new ID(id))){
+			if (datasets.containsKey(new Id(id))){
 				throw new ModelException("DataSet with id `" + id + "` already exists");
 			}
-			datasets.put(new ID(id), null);
+			datasets.put(new Id(id), null);
 		}
 		
 		DataSet dataset;
 		
 		try {
 			dataset = DataSet.createDataSet(this, id);
-			datasets.put(new ID(id), dataset);
+			datasets.put(new Id(id), dataset);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			datasets.remove(new ID(id));
+			datasets.remove(new Id(id));
 			throw new ModelException("Failed to add DataSet `" + id + "`", ex);
 		}
 		

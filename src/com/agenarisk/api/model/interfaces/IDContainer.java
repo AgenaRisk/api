@@ -1,7 +1,7 @@
 package com.agenarisk.api.model.interfaces;
 
 import com.agenarisk.api.exception.AgenaRiskException;
-import com.agenarisk.api.model.field.ID;
+import com.agenarisk.api.model.field.Id;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,7 +20,7 @@ public interface IDContainer <E extends AgenaRiskException> {
 	 * @return ID-Identifiable map
 	 * @throws E if no collection of type idClassType is registered with the implementing class
 	 */
-	Map<ID,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws E;
+	Map<Id,? extends Identifiable> getIdMap(Class<? extends Identifiable> idClassType) throws E;
 	
 	/**
 	 * Throws an Exception with message e.g. "Object with id `id` already exists", localised for the implementing class.
@@ -56,7 +56,7 @@ public interface IDContainer <E extends AgenaRiskException> {
 			
 			Map map = getIdMap(identifiable.getClass());
 			
-			if (map.containsKey(new ID(id))){
+			if (map.containsKey(new Id(id))){
 				throwIdExistsException(id);
 			}
 			
@@ -75,7 +75,7 @@ public interface IDContainer <E extends AgenaRiskException> {
 			}
 			
 			map.remove(oldID);
-			map.put(new ID(id), identifiable);
+			map.put(new Id(id), identifiable);
 			
 			return true;
 		}
