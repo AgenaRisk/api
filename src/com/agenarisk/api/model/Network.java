@@ -333,16 +333,17 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	}
 	
 	/**
-	 * Compares this Network object to another based on its underlying logic network IDs.
+	 * Compares this Network object to another based on the Id of this object.
 	 * 
 	 * @param o another Network object
 	 * 
-	 * @return String comparison of toStringExtra() of both Networks
+	 * @return a negative integer, zero, or a positive integer if the value of this object's ID precedes the one of the specified object's ID
+	 * @see Id#compareTo(Id) 
 	 */
 	@Override
 	public synchronized int compareTo(Network o) {
 		// Sync to prevent wrong comparisons because ID was changed by another thread
-		return this.toStringExtra().compareTo(o.toStringExtra());
+		return new Id(getId()).compareTo(new Id(o.getId()));
 	}
 	
 	/**

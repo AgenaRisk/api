@@ -36,6 +36,7 @@ import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
+import com.agenarisk.api.model.field.Id;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import uk.co.agena.minerva.util.model.DataSet;
@@ -1109,15 +1110,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 
 	/**
-	 * Compares this Node object to another based on its underlying logic network and node IDs.
+	 * Compares this Node object to another based on the Id of this object.
 	 * 
 	 * @param o another Node object
 	 * 
-	 * @return String comparison of toStringExtra() of both Nodes
+	 * @return a negative integer, zero, or a positive integer if the value of this object's ID precedes the one of the specified object's ID
 	 */
 	@Override
 	public int compareTo(Node o) {
-		return this.toStringExtra().compareTo(o.toStringExtra());
+		return new Id(getId()).compareTo(new Id(o.getId()));
 	}
 	
 	/**
