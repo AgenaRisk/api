@@ -543,6 +543,21 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			}
 		}
 		
+		if (jsonConfiguration.optBoolean(NodeConfiguration.Field.output.toString(), false)){
+			en.setConnectableOutputNode(true);
+		}
+		
+		try {
+			if (jsonConfiguration.optBoolean(NodeConfiguration.Field.input.toString(), false)){
+				en.setConnectableInputNode(true);
+			}
+		}
+		catch (ExtendedBNException ex){
+			throw new NodeException("Can't mark node as input node", ex);
+		}
+		
+		
+		
 		// Create variables
 		JSONArray jsonVariables = jsonConfiguration.optJSONArray(NodeConfiguration.Variables.variables.toString());
 		if (jsonVariables != null){

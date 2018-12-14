@@ -63,6 +63,14 @@
 							<!--Invalid if definition.type is not "ContinuousInterval" or "IntegerInterval"-->
 						</simulated>
 						
+						<input>
+							<!--Boolean-->
+						</input>
+						
+						<output>
+							<!--Boolean-->
+						</output>
+						
 						<simulationConvergence>
 							<!--Corresponds to Node properties: simulation convergence threshold in ARD and ContinuousEN.entropyConvergenceThreshold in ARC-->
 							<!--Can only be provided when simulated is "True"-->

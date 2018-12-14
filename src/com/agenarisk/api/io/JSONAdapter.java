@@ -569,6 +569,14 @@ public class JSONAdapter {
 		Node.Type nodeType = Node.resolveNodeType(en);
 		jsonConfig.put(NodeConfiguration.Field.type.toString(), nodeType);
 		
+		if (en.isConnectableInputNode()){
+			jsonConfig.put(NodeConfiguration.Field.input.toString(), en.isConnectableInputNode());
+		}
+		
+		if (en.isConnectableOutputNode()){
+			jsonConfig.put(NodeConfiguration.Field.output.toString(), en.isConnectableOutputNode());
+		}
+		
 		// Simulated
 		boolean simulated = false;
 		if (en instanceof ContinuousEN){

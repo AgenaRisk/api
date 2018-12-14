@@ -14,7 +14,9 @@ public class NodeConfiguration {
 		configuration,
 		type,
 		simulated,
-		simulationConvergence
+		simulationConvergence,
+		input,
+		output
 	}
 	
 	/**
