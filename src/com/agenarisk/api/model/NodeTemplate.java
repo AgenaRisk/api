@@ -123,6 +123,7 @@ public class NodeTemplate {
 		return jsonTable;
 	}
 	
+	/*
 	public static void main(String[] args) throws Exception {
 		
 		JSONObject table = generateTableFromRows(new Double[][]{
@@ -148,4 +149,5 @@ public class NodeTemplate {
 		
 		System.out.println(nt.getJSON().toString(20));
 	}
+	*/
 }
