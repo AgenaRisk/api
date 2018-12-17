@@ -94,7 +94,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Corresponding ExtendedNode
 	 */
-	private final ExtendedNode logicNode;
+	private ExtendedNode logicNode;
 	
 	/**
 	 * This stores meta tag for the Node, and should be set on model load
@@ -1305,5 +1305,18 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	public Type getType(){
 		ExtendedNode en = getLogicNode();
 		return resolveNodeType(en);
+	}
+
+	/**
+	 * Links this Node to an underlying Minerva Node object. Should only be used while wrapping a new Model around the Minerva Model.
+	 * 
+	 * @param logicNode the logical node
+	 */
+	protected void setLogicNode(ExtendedNode logicNode) {
+		if (!new Id(getId()).equals(new Id(logicNode.getConnNodeId()))){
+			throw new AgenaRiskRuntimeException("Logic node id mismatch: " + getId() + "," + logicNode.getConnNodeId());
+		}
+		
+		this.logicNode = logicNode;
 	}
 }

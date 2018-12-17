@@ -1,5 +1,6 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.DataSetException;
@@ -8,6 +9,7 @@ import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.exception.NodeException;
+import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.io.stub.Audit;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
@@ -72,7 +74,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	/**
 	 * The underlying logical Model
 	 */
-	private final uk.co.agena.minerva.model.Model logicModel;
+	private uk.co.agena.minerva.model.Model logicModel;
 	
 	/**
 	 * Should be set on model load, and then saved on model save
@@ -102,6 +104,19 @@ public class Model implements IDContainer<ModelException>, Storable {
 		catch (uk.co.agena.minerva.model.ModelException ex){
 			throw new AgenaRiskRuntimeException("Failed to initialise the model", ex);
 		}
+	}
+	
+	/**
+	 * Constructor for Model class.
+	 * <br>
+	 * The Model is linked with the provided logical model. Deep structure not created here.
+	 * <br>
+	 * To be used by Model factory method.
+	 * 
+	 * @param api1Model the logical model to link to
+	 */
+	private Model(uk.co.agena.minerva.model.Model api1Model){
+		logicModel = api1Model;
 	}
 	
 	/**
@@ -144,6 +159,43 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public static Model createModel(){
 		return new Model();
+	}
+	
+	/**
+	 * Creates a Model from a Minerva Model object.
+	 * 
+	 * @param api1Model the logical Minerva Model
+	 * 
+	 * @return Model object with the provided Minerva Model underneath
+	 * 
+	 * @throws ModelException if Minerva Model fails to be converted to JSON
+	 */
+	public static Model createModel(uk.co.agena.minerva.model.Model api1Model) throws ModelException {
+		JSONObject json;
+		Model model;
+		
+		try {
+			json = JSONAdapter.toJSONObject(api1Model);
+			model = Model.createModel(json);
+		}
+		catch (AdapterException ex){
+			throw new ModelException("Failed to convert minerva model to JSON", ex);
+		}
+		catch (JSONException ex){
+			throw new ModelException("Failed to convert minerva model to JSON: " + JSONUtils.createMissingAttrMessage(ex), ex);
+		}
+		
+		model.setLogicModel(api1Model);
+		
+		model.getNetworks().forEach((netId, network) -> {
+			network.setLogicNetwork(model.getLogicModel().getExtendedBNList().getExtendedBNWithConnID(netId));
+			
+			network.getNodes().forEach((nodeId, node) -> {
+				node.setLogicNode(network.getLogicNetwork().getExtendedNodeWithUniqueIdentifier(nodeId));
+			});
+		});
+		
+		return model;
 	}
 	
 	/**
@@ -802,6 +854,14 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public JSONObject getJsonAudit() {
 		return jsonAudit;
 	}
-	
+
+	/**
+	 * Links this Model to an underlying Minerva Model object. Should only be used while wrapping a new Model around the Minerva Model.
+	 * 
+	 * @param logicModel the logical model
+	 */
+	protected void setLogicModel(uk.co.agena.minerva.model.Model logicModel) {
+		this.logicModel = logicModel;
+	}
 	
 }

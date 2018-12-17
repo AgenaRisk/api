@@ -66,7 +66,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	/**
 	 * Corresponding ExtendedBN
 	 */
-	private final ExtendedBN logicNetwork;
+	private ExtendedBN logicNetwork;
 	
 	/**
 	 * Should be set on model load, and then saved on model save
@@ -597,6 +597,19 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	@Override
 	public String getDescription(){
 		return getLogicNetwork().getName().getLongDescription();
+	}
+
+	/**
+	 * Links this Network to an underlying Minerva Network object. Should only be used while wrapping a new Model around the Minerva Model.
+	 * 
+	 * @param logicNetwork the logical network
+	 */
+	protected void setLogicNetwork(ExtendedBN logicNetwork) {
+		if (!new Id(getId()).equals(new Id(logicNetwork.getConnID()))){
+			throw new AgenaRiskRuntimeException("Logic network id mismatch: " + getId() + "," + logicNetwork.getConnID());
+		}
+		
+		this.logicNetwork = logicNetwork;
 	}
 	
 }

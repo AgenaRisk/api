@@ -1,5 +1,6 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.StateException;
 import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
@@ -27,7 +28,7 @@ public class State {
 	/**
 	 * Corresponding logic state
 	 */
-	private final ExtendedState logicState;
+	private ExtendedState logicState;
 	
 	/**
 	 * Constructor for State class.
@@ -179,6 +180,23 @@ public class State {
 		}
 
 		return label;
+	}
+
+	/**
+	 * Links this State to an underlying Minerva State object. Should only be used while wrapping a new Model around the Minerva Model.
+	 * 
+	 * @param logicState the logical state
+	 */
+	protected void setLogicState(ExtendedState logicState) {
+		ExtendedNode en = getNode().getLogicNode();
+		String labelThis = computeLabel(en, getLogicState());
+		String labelThat = computeLabel(en, logicState);
+		
+		if (!labelThis.equals(labelThat)){
+			throw new AgenaRiskRuntimeException("Logic state mismatch: " + labelThis + "," + labelThat);
+		}
+		
+		this.logicState = logicState;
 	}
 
 }
