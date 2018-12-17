@@ -97,21 +97,35 @@ public class DataSet implements Identifiable<DataSetException>{
 	
 	/**
 	 * Creates a DataSet for the Model from JSON data.
+	 * <br>
+	 * If a DataSet with the provided ID already exists, it will append a number to that ID to make it unique.
+	 * <br>
+	 * If an observation in DataSet fails to be set, it is ignored and results for that DataSet are not loaded.
 	 * 
 	 * @param model the model to create a data set in
 	 * @param jsonDataSet the JSON data
 	 * 
 	 * @return created DataSet
 	 * 
-	 * @throws JSONException if JSON was corrupt or missing required attributes
 	 * @throws ModelException if a DataSet with this ID already exists
 	 * @throws DataSetException if failed to load observations or results data
 	 */
-	protected static DataSet createDataSet(Model model, JSONObject jsonDataSet) throws JSONException, ModelException, DataSetException {
+	protected static DataSet createDataSet(Model model, JSONObject jsonDataSet) throws ModelException, DataSetException {
+		
+		boolean someFailed = false;
+		
 		DataSet dataSet;
 		try {
-			String id = DataSet.Field.id.toString();
-			dataSet = model.createDataSet(jsonDataSet.getString(id));
+			// Try to use original ID. If it exists, try appending numbers
+			
+			String idOriginal = jsonDataSet.getString(DataSet.Field.id.toString());
+			String id = idOriginal;
+			int i = 1;
+			while(model.getDataSets().get(id) != null){
+				id = idOriginal + "_" + i++;
+			}
+			
+			dataSet = model.createDataSet(id);
 		}
 		catch (JSONException ex){
 			throw new ModelException("Failed reading dataset data", ex);
@@ -122,16 +136,28 @@ public class DataSet implements Identifiable<DataSetException>{
 		
 		// Set observations
 		if (jsonDataSet.has(Observation.Field.observations.toString())){
+			JSONArray jsonObservations;
 			try {
-				JSONArray jsonObservations = jsonDataSet.getJSONArray(Observation.Field.observations.toString());
-				for (int i = 0; i < jsonObservations.length(); i++) {
+				jsonObservations = jsonDataSet.getJSONArray(Observation.Field.observations.toString());
+			}
+			catch(JSONException ex){
+				throw new ModelException("Failed reading observation data", ex);
+			}
+					
+			for (int i = 0; i < jsonObservations.length(); i++) {
+				try {
 					JSONObject jsonObservation = jsonObservations.optJSONObject(i);
 					dataSet.setObservation(jsonObservation);
 				}
+				catch (JSONException | DataSetException ex){
+					someFailed = true;
+				}
 			}
-			catch (JSONException | DataSetException ex){
-				throw new ModelException("Failed to set observations", ex);
-			}
+		}
+		
+		if (someFailed){
+			// If some observations failed to be set, skip loading calculation data for this DataSet
+			return dataSet;
 		}
 		
 		// Load results

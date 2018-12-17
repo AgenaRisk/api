@@ -202,6 +202,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * Factory method to create an instance of a Model from provided JSONObject.
 	 * <br>
 	 * Creates all member components.
+	 * <br>
+	 * If a DataSet with the provided ID already exists, it will append a number to that ID to make it unique.
+	 * <br>
+	 * If an observation in DataSet fails to be set, it is ignored and results for that DataSet are not loaded.
 	 * 
 	 * @param json JSONObject representing this model, including structure, tables, graphics etc
 	 * 
@@ -722,6 +726,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 	
 	/**
 	 * Creates a DataSet for this Model from JSON data.
+	 * <br>
+	 * If a DataSet with the provided ID already exists, it will append a number to that ID to make it unique.
+	 * <br>
+	 * If an observation in DataSet fails to be set, it is ignored and results for that DataSet are not loaded.
 	 * 
 	 * @param jsonDataSet the JSON data
 	 * 
@@ -735,7 +743,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		try {
 			dataSet = DataSet.createDataSet(this, jsonDataSet);
 		}
-		catch (DataSetException | JSONException ex){
+		catch (DataSetException | ModelException ex){
 			throw new ModelException("Failed to add DataSet", ex);
 		}
 
