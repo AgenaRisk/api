@@ -322,9 +322,11 @@ public class JSONUtils {
 	}
 	
 	/**
-	 * Compares two objects ignoring case for Strings, and local implementations for comparing JSONObject and JSONArray 
+	 * Compares two objects ignoring case for Strings, and local implementations for comparing JSONObject and JSONArray.
 	 * <br>
 	 * If an element is a String value of a number, the ".0" will be stripped from the end before comparison.
+	 * <br>
+	 * Doubles are formatted to 7 decimal digits.
 	 * 
 	 * @param o1
 	 * @param o2
