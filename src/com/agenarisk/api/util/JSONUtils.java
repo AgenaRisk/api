@@ -406,4 +406,44 @@ public class JSONUtils {
 		
 		return o1.equals(o2);
 	}
+	
+	public static JSONObject getnnJObject(JSONArray parent, int index){
+		JSONObject jObject = parent.optJSONObject(index);
+		
+		if (jObject == null){
+//			jObject = new JSONObject();
+		}
+		
+		return jObject;
+	}
+	
+	public static JSONObject getNNJObject(JSONObject parent, Object key){
+		JSONObject jObject = parent.optJSONObject(key+"");
+		
+		if (jObject == null){
+//			jObject = new JSONObject();
+		}
+		
+		return jObject;
+	}
+	
+	public static JSONArray getNNJArray(JSONObject parent, Object key){
+		JSONArray jArray = parent.optJSONArray(key+"");
+		
+		if (jArray == null){
+//			jArray = new JSONArray();
+		}
+		
+		return jArray;
+	}
+	
+	public static JSONArray getNNJArray(JSONArray parent, int index){
+		JSONArray jArray = parent.optJSONArray(index);
+		
+		if (jArray == null){
+//			jArray = new JSONArray();
+		}
+		
+		return jArray;
+	}
 }
