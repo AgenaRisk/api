@@ -1,5 +1,6 @@
 package com.agenarisk.api.util;
 
+import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.ModelException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import uk.co.agena.minerva.util.helpers.MathsHelper;
 import uk.co.agena.minerva.util.io.FileHandler;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 
@@ -191,6 +191,26 @@ public class JSONUtils {
 		}
 		
 		grandParent.put(parentKey, jsonArray);
+	}
+	
+	/**
+	 * Wraps all elements of the provided JSONArray into JSONObjects that each contains the element under the provided key.
+	 * 
+	 * @param parent the array to wrap elements of
+	 * @param wrapperName the key name under which to wrap each element
+	 */
+	public static void wrapArrayElements(JSONArray parent, String wrapperName){
+		for(int i = 0; i < parent.length(); i++){
+			Object o = parent.opt(i);
+			JSONObject wrapper = new JSONObject();
+			try {
+				wrapper.put(wrapperName, o);
+				parent.put(i, wrapper);
+			}
+			catch (JSONException ex){
+				throw new AgenaRiskRuntimeException("Failed to wrap elements", ex);
+			}
+		}
 	}
 	
 	/**
