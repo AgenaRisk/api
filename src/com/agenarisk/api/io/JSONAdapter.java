@@ -2,7 +2,6 @@ package com.agenarisk.api.io;
 
 import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
-import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.io.stub.RiskTable;
@@ -556,8 +555,6 @@ public class JSONAdapter {
 		}
 		
 		// Graphics
-		JSONObject jsonGraphics = new JSONObject();
-		json.put(Graphics.Field.graphics.toString(), jsonGraphics);
 		
 		return json;
 	}
