@@ -415,14 +415,7 @@
 		</openMonitors>
 		
 		<canvasData>
-			<!--Converted into an array of objects in JSON-->
-			
-			<canvas>
-				<!--Canvas data for a meta data entity-->
-				<!--Tag omitted during XML-to-JSON conversion-->
-				<!--CDATA-->
-			</canvas>
-			...
+			<!--CDATA-->
 		</canvasData>
 		
 	</graphics>
