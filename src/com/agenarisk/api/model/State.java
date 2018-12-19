@@ -21,6 +21,14 @@ import uk.co.agena.minerva.util.model.Range;
 public class State {
 	
 	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Field {
+		states,
+		state
+	}
+	
+	/**
 	 * The State's Node
 	 */
 	private final Node node;
