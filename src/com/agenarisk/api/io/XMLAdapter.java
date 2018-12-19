@@ -1,7 +1,27 @@
 package com.agenarisk.api.io;
 
+import com.agenarisk.api.io.stub.Audit;
+import com.agenarisk.api.io.stub.Graphics;
+import com.agenarisk.api.io.stub.Meta;
+import com.agenarisk.api.io.stub.NodeConfiguration;
+import com.agenarisk.api.io.stub.RiskTable;
+import com.agenarisk.api.model.CalculationResult;
+import com.agenarisk.api.model.DataSet;
+import com.agenarisk.api.model.Link;
+import com.agenarisk.api.model.Network;
+import com.agenarisk.api.model.Node;
+import com.agenarisk.api.model.Observation;
+import com.agenarisk.api.model.State;
+import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.util.JSONUtils;
 import com.agenarisk.api.util.Ref;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
@@ -12,6 +32,42 @@ import org.apache.sling.commons.json.xml.XML;
  * @author Eugene Dementiev
  */
 public class XMLAdapter {
+	
+	private static final Map<String, String> WRAPPER_MAP = new HashMap<>();
+	
+	static {
+		WRAPPER_MAP.put(Network.Field.networks.toString(), Network.Field.network.toString());
+		WRAPPER_MAP.put(Network.ModificationLog.modificationLog.toString(), Network.ModificationLog.entry.toString());
+		WRAPPER_MAP.put(Node.Field.nodes.toString(), Node.Field.node.toString());
+		WRAPPER_MAP.put(State.Field.states.toString(), State.Field.state.toString());
+		WRAPPER_MAP.put(NodeConfiguration.Table.expressions.toString(), NodeConfiguration.Table.expression.toString());
+		WRAPPER_MAP.put(NodeConfiguration.Table.partitions.toString(), NodeConfiguration.Table.partition.toString());
+		WRAPPER_MAP.put(NodeConfiguration.Variables.variables.toString(), NodeConfiguration.Variables.variable.toString());
+		WRAPPER_MAP.put(Link.Field.links.toString(), Link.Field.link.toString());
+		WRAPPER_MAP.put(DataSet.Field.dataSets.toString(), DataSet.Field.dataSet.toString());
+		WRAPPER_MAP.put(CalculationResult.Field.results.toString(), CalculationResult.Field.result.toString());
+		WRAPPER_MAP.put(ResultValue.Field.resultValues.toString(), ResultValue.Field.resultValue.toString());
+		WRAPPER_MAP.put(Observation.Field.entries.toString(), Observation.Field.entry.toString());
+		WRAPPER_MAP.put(Observation.Field.observations.toString(), Observation.Field.observation.toString());
+		WRAPPER_MAP.put(RiskTable.Field.riskTable.toString(), RiskTable.Field.questionnaire.toString());
+		WRAPPER_MAP.put(RiskTable.Question.questions.toString(), RiskTable.Question.question.toString());
+		WRAPPER_MAP.put(RiskTable.Answer.answers.toString(), RiskTable.Answer.answer.toString());
+		WRAPPER_MAP.put(Meta.Field.notes.toString(), Meta.Field.note.toString());
+		WRAPPER_MAP.put(Audit.Field.changelog.toString(), Audit.Field.change.toString());
+		
+		WRAPPER_MAP.put(Network.Field.description.toString(), "CDATA");
+		WRAPPER_MAP.put(Node.Field.description.toString(), "CDATA");
+		WRAPPER_MAP.put(NodeConfiguration.Table.expression.toString(), "CDATA");
+		WRAPPER_MAP.put(Meta.Field.text.toString(), "CDATA");
+		WRAPPER_MAP.put(Graphics.Field.viewSettings.toString(), "CDATA");
+		WRAPPER_MAP.put(Graphics.Field.objectDefaults.toString(), "CDATA");
+		WRAPPER_MAP.put(Graphics.Field.openMonitors.toString(), "CDATA");
+		WRAPPER_MAP.put(Graphics.CanvasData.canvasData.toString(), "CDATA");
+		WRAPPER_MAP.put(Audit.Field.comment.toString(), "CDATA");
+		
+		WRAPPER_MAP.put(NodeConfiguration.Table.probabilities.toString(), "row");
+		WRAPPER_MAP.put("row", "cell");
+	}
 
 	/**
 	 * Reads XML from String and converts it to a corresponding JSONObject.
@@ -92,6 +148,111 @@ public class XMLAdapter {
 		}
 		
 		return json;
+	}
+	
+	/**
+	 * Converts an object to its XML representation.
+	 * <br>
+	 * Intended for converting JSON AgenaRisk 10 model to XML format.
+	 * 
+	 * @param o object in JSON format
+	 * 
+	 * @return object in XML format
+	 */
+	public static String toXMLString(Object o){
+		return toXMLString(o, null);
+	}
+	
+	/**
+	 * Converts an object to its XML representation.
+	 * <br>
+	 * Intended for converting JSON AgenaRisk 10 model to XML format.
+	 * <br>
+	 * If o is JSONObject, will wrap the object representation into an open-close wrapper tag pair, and will use keys to resolve wrappers for its children.
+	 * <br>
+	 * If o is a JSONArray, will wrap each element into an open-close wrapper tag pair, and will use the wrapper to resolve wrapper for its elements.
+	 * <br>
+	 * Otherwise will wrap the element into an open-close wrapper tag pair.
+	 * <br>
+	 * If wrapper is CDATA then will wrap into XML CDATA.
+	 * <br>
+	 * Wrapper can be comma-delimited, in which case will wrap into a corresponding sequence of tags (sequence reverted for closing).
+	 * 
+	 * @param o object in JSON format
+	 * @param wrapper additional wrapper to use when converting
+	 * 
+	 * @return object in XML format
+	 */
+	public static String toXMLString(Object o, String wrapper){
+		StringBuilder sb = new StringBuilder();
+		
+		String prefix = "";
+		String suffix = "";
+		
+		if (wrapper != null){
+			if (wrapper.equals("CDATA")){
+				prefix = "<![CDATA[";
+				suffix = "]]>";
+			}
+			else {
+				List<String> wrappers = Arrays.asList(wrapper.split(","));
+				prefix = wrappers.stream().map(w -> "<"+w+">").collect(Collectors.joining(""));
+				Collections.reverse(wrappers);
+				suffix = wrappers.stream().map(w -> "</"+w+">").collect(Collectors.joining(""));
+			}
+		}
+		
+		if (o instanceof JSONObject){
+			if (!prefix.isEmpty()){
+				sb.append(prefix);
+			}
+			
+			JSONObject jo = (JSONObject) o;
+			Iterator<String> keys = jo.keys();
+			while(keys.hasNext()){
+				String key = keys.next();
+				sb.append("<").append(key).append(">");
+				
+				String wrapperNext = WRAPPER_MAP.get(key);
+				
+				sb.append(toXMLString(jo.opt(key), wrapperNext));
+				sb.append("</").append(key).append(">");
+			}
+			
+			if (!suffix.isEmpty()){
+				sb.append(suffix);
+			}
+		}
+		else if (o instanceof JSONArray){
+			JSONArray ja = (JSONArray)o;
+			for (int i = 0; i < ja.length(); i++) {
+				if (!prefix.isEmpty()){
+					sb.append(prefix);
+				}
+				
+				String wrapperNext = WRAPPER_MAP.get(wrapper);
+				
+				sb.append(toXMLString(ja.opt(i), wrapperNext));
+				
+				if (!suffix.isEmpty()){
+					sb.append(suffix);
+				}
+			}
+		}
+		else {
+			
+			if (!prefix.isEmpty()){
+				sb.append(prefix);
+			}
+			
+			sb.append(o);
+			
+			if (!suffix.isEmpty()){
+				sb.append(suffix);
+			}
+		}
+		
+		return sb.toString();
 	}
 	
 }
