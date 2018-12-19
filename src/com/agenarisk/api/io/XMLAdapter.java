@@ -186,8 +186,6 @@ public class XMLAdapter {
 	 * @return object in XML format
 	 */
 	public static String toXMLString(Object o, String wrapper){
-		
-		System.out.println(o.getClass() + " -> "+wrapper);
 		StringBuilder sb = new StringBuilder();
 		
 		String prefix = "";
