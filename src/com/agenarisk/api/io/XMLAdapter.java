@@ -15,6 +15,8 @@ import com.agenarisk.api.model.State;
 import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.util.JSONUtils;
 import com.agenarisk.api.util.Ref;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -184,6 +186,8 @@ public class XMLAdapter {
 	 * @return object in XML format
 	 */
 	public static String toXMLString(Object o, String wrapper){
+		
+		System.out.println(o.getClass() + " -> "+wrapper);
 		StringBuilder sb = new StringBuilder();
 		
 		String prefix = "";
@@ -201,8 +205,42 @@ public class XMLAdapter {
 				suffix = wrappers.stream().map(w -> "</"+w+">").collect(Collectors.joining(""));
 			}
 		}
-		
-		if (o instanceof JSONObject){
+		if (o instanceof JsonObject){
+			if (!prefix.isEmpty()){
+				sb.append(prefix);
+			}
+			
+			JsonObject jo = (JsonObject) o;
+			for(String key: jo.keySet()){
+				sb.append("<").append(key).append(">");
+				
+				String wrapperNext = WRAPPER_MAP.get(key);
+				
+				sb.append(toXMLString(jo.get(key), wrapperNext));
+				sb.append("</").append(key).append(">");
+			}
+			
+			if (!suffix.isEmpty()){
+				sb.append(suffix);
+			}
+		}
+		else if (o instanceof JsonArray){
+			JsonArray ja = (JsonArray)o;
+			for (int i = 0; i < ja.size(); i++) {
+				if (!prefix.isEmpty()){
+					sb.append(prefix);
+				}
+				
+				String wrapperNext = WRAPPER_MAP.get(wrapper);
+				
+				sb.append(toXMLString(ja.get(i), wrapperNext));
+				
+				if (!suffix.isEmpty()){
+					sb.append(suffix);
+				}
+			}
+		}
+		else if (o instanceof JSONObject){
 			if (!prefix.isEmpty()){
 				sb.append(prefix);
 			}
