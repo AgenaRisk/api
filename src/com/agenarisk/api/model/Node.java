@@ -535,7 +535,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		else {
 			try {
-				node.setStates(jsonConfiguration.getJSONArray(NodeConfiguration.States.states.toString()));
+				node.setStates(jsonConfiguration.getJSONArray(State.Field.states.toString()));
 			}
 			catch (JSONException ex){
 				// Should not happen

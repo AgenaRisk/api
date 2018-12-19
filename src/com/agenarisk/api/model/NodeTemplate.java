@@ -21,7 +21,7 @@ public class NodeTemplate {
 		{Node.Field.name, "NAME"},
 		{NodeConfiguration.Field.configuration, JSONUtils.toJSONObject(new Object[][]{
 			{NodeConfiguration.Field.type, "NODE_TYPE"},
-			{NodeConfiguration.States.states, new JSONArray()},
+			{State.Field.states, new JSONArray()},
 			{NodeConfiguration.Table.table, JSONUtils.toJSONObject(new Object[][]{
 				{NodeConfiguration.Table.type, "TABLE_TYPE"},
 				{NodeConfiguration.Table.probabilities, new JSONArray()}
@@ -73,7 +73,7 @@ public class NodeTemplate {
 	}
 	
 	public NodeTemplate setStates(List<String> states) throws JSONException {
-		json.getJSONObject(NodeConfiguration.Field.configuration.toString()).put(NodeConfiguration.States.states.toString(), new JSONArray(states));
+		json.getJSONObject(NodeConfiguration.Field.configuration.toString()).put(State.Field.states.toString(), new JSONArray(states));
 		return this;
 	}
 	
