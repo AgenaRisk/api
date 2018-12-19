@@ -601,7 +601,7 @@ public class JSONAdapter {
 			for(ExtendedState es: (List<ExtendedState>)en.getExtendedStates()){
 				jsonStates.put(State.computeLabel(en, es).trim());
 			}
-			jsonConfig.put(NodeConfiguration.States.states.toString(), jsonStates);
+			jsonConfig.put(State.Field.states.toString(), jsonStates);
 		}
 		
 		// Variables
