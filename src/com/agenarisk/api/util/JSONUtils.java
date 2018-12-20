@@ -411,7 +411,7 @@ public class JSONUtils {
 		JSONObject jObject = parent.optJSONObject(index);
 		
 		if (jObject == null){
-//			jObject = new JSONObject();
+			jObject = new JSONObject();
 		}
 		
 		return jObject;
@@ -421,7 +421,7 @@ public class JSONUtils {
 		JSONObject jObject = parent.optJSONObject(key+"");
 		
 		if (jObject == null){
-//			jObject = new JSONObject();
+			jObject = new JSONObject();
 		}
 		
 		return jObject;
@@ -431,7 +431,7 @@ public class JSONUtils {
 		JSONArray jArray = parent.optJSONArray(key+"");
 		
 		if (jArray == null){
-//			jArray = new JSONArray();
+			jArray = new JSONArray();
 		}
 		
 		return jArray;
@@ -441,7 +441,7 @@ public class JSONUtils {
 		JSONArray jArray = parent.optJSONArray(index);
 		
 		if (jArray == null){
-//			jArray = new JSONArray();
+			jArray = new JSONArray();
 		}
 		
 		return jArray;
