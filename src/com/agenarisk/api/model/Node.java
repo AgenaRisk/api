@@ -710,6 +710,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				// Restore cached NPT if available
 				try {
 					double[][] npt = extractNPTColumns(jsonTable.getJSONArray(NodeConfiguration.Table.probabilities.toString()));
+					if (NodeConfiguration.Table.column.toString().equals(jsonTable.optString(NodeConfiguration.Table.pvalues.toString()))){
+						// The probability values were read from XML where they have been defined as columns rather than rows, need to transpose
+						npt = NodeConfiguration.transposeMatrix(npt);
+					}
 					List<ExtendedNode> parentNodes = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getLogicNode()).collect(Collectors.toList());
 					getLogicNode().setNPT(npt, parentNodes);
 				}
