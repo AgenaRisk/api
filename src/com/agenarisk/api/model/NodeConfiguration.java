@@ -78,9 +78,11 @@ public class NodeConfiguration {
 	
 	
 	/**
-	 *
-	 * @param matrix
-	 * @return
+	 * Transposes the provided 2D matrix.
+	 * 
+	 * @param matrix the matrix to transpose
+	 * 
+	 * @return transposed matrix as a new array
 	 */
 	public static double[][] transposeMatrix(double[][] matrix) {
 		double[][] matrixTransposed = new double[matrix[0].length][matrix.length];
