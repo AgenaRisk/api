@@ -504,8 +504,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	protected static Node createNode(Network network, JSONObject jsonNode) throws NodeException, JSONException {
 		String id = jsonNode.getString(Field.id.toString());
-		String name = jsonNode.getString(Field.name.toString());
+		String name = jsonNode.optString(Field.name.toString());
 		String description = jsonNode.optString(Field.description.toString());
+		
+		if (name.isEmpty()){
+			name = id;
+		}
+		
 		JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
 		String typeString = jsonConfiguration.getString(NodeConfiguration.Field.type.toString());
 		Type type = Type.valueOf(typeString);
@@ -533,13 +538,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			}
 		}
 		else {
-			try {
-				node.setStates(jsonConfiguration.getJSONArray(State.Field.states.toString()));
-			}
-			catch (JSONException ex){
-				// Should not happen
-				throw new AgenaRiskRuntimeException("Failed to access states array", ex);
-			}
+			node.setStates(jsonConfiguration.optJSONArray(State.Field.states.toString()));
 		}
 		
 		if (jsonConfiguration.optBoolean(NodeConfiguration.Field.output.toString(), false)){
@@ -918,7 +917,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 	/**
 	 * Replaces Node's states by the ones given in the JSON array.
-	 * 
+	 * <br>
+	 * If null or empty array are provided, no changes are made.
 	 * <br>
 	 * This action resets the probability table to uniform.
 	 * 
@@ -927,6 +927,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
 	public void setStates(JSONArray jsonStates) throws NodeException{
+		
+		if (jsonStates == null || jsonStates.length() == 0){
+			return;
+		}
 		
 		String[] states = new String[jsonStates.length()];
 		for(int s = 0; s < jsonStates.length(); s++){
