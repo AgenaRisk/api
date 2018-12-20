@@ -278,7 +278,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 					Node node = network.getNode(jsonNode.getString(Node.Field.id.toString()));
 					
 					JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
-					JSONObject jsonTable = jsonConfiguration.getJSONObject(NodeConfiguration.Table.table.toString());
+					JSONObject jsonTable = jsonConfiguration.optJSONObject(NodeConfiguration.Table.table.toString());
 					try {
 						node.setTable(jsonTable);
 					}
@@ -287,7 +287,16 @@ public class Model implements IDContainer<ModelException>, Storable {
 					}
 					
 					// Remember statuses of node NPTs
-					nptStatuses.add(new java.util.AbstractMap.SimpleEntry(node, jsonTable.optBoolean(NodeConfiguration.Table.nptCompiled.toString(), false)));
+					boolean nptCompiled = false;
+					try {
+						nptCompiled = jsonTable.optBoolean(NodeConfiguration.Table.nptCompiled.toString(), false);
+					}
+					catch (NullPointerException ex){
+						// Ignore
+						Environment.logIfDebug("Table missing, defaulting npt compiled to false");
+					}
+					
+					nptStatuses.add(new java.util.AbstractMap.SimpleEntry(node, nptCompiled));
 				}
 			}
 		}

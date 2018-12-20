@@ -696,7 +696,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * ∙ the number of cells does not match the number of partitions created by the combination of parent states
 	 */
 	public void setTable(JSONObject jsonTable) throws NodeException {
-		if (jsonTable.length() == 0){
+		if (jsonTable == null || jsonTable.length() == 0){
 			return;
 		}
 		
