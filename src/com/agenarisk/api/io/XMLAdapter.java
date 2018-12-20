@@ -1,9 +1,10 @@
 package com.agenarisk.api.io;
 
+import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.io.stub.Audit;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
-import com.agenarisk.api.io.stub.NodeConfiguration;
+import com.agenarisk.api.model.NodeConfiguration;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.model.CalculationResult;
 import com.agenarisk.api.model.DataSet;
@@ -14,7 +15,6 @@ import com.agenarisk.api.model.Observation;
 import com.agenarisk.api.model.State;
 import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.util.JSONUtils;
-import com.agenarisk.api.util.Ref;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -73,92 +73,31 @@ public class XMLAdapter {
 	}
 
 	/**
-	 * Reads XML from String and converts it to a corresponding JSONObject.
-	 * <br>
-	 * Note that expected arrays are parsed by converting a parent tag containing series of siblings into a JSONArray omitting the immediate child tag, e.g.
-	 * <br>
-	 * &lt;parent&gt;
-	 * <br>
-	 * &nbsp;&lt;child&gt;A&lt;/child&gt;
-	 * <br>
-	 * &nbsp;&lt;child&gt;b&lt;/child&gt;
-	 * <br>
-	 * &lt;/parent&gt;
-	 * <br>
-	 * will be converted into {"parent":["A","B"]}
-	 * <br>
-	 * This conversion applies to:
-	 * <br>
-	 * <ul>
-	 * <li>model.links.link</li>
-	 * <li>model.networks.network</li>
-	 * <li>network.nodes.node</li>
-	 * <li>network.links.link</li>
-	 * <li>node.meta.notes.note</li>
-	 * <li>node.configuration.states.state</li>
-	 * <li>node.configuration.table.expressions.expression</li>
-	 * <li>node.configuration.table.partitions.partition</li>
-	 * <li>node.configuration.table.probabilities.row</li>
-	 * <li>row.cell</li>
-	 * </ul>
-	 * <br>
-	 * Other unexpected array structures will be converted by grouping siblings into an JSONArray, e.g.
-	 * <br>
-	 * {"parent":{"child":["A","B"]}}
+	 * Parses XML string to JSONObject and then formats the JSONObject to conform to AgenaRisk 10 JSON model format.
 	 * 
-	 * @param xmlString
+	 * @param xmlString XML string to parse
 	 * 
 	 * @return corresponding JSONObject
-	 * @throws JSONException if invalid XML structure or unexpected values
+	 * 
+	 * @throws AdapterException if invalid XML structure or unexpected values
 	 */
-	public static JSONObject parseXMLAsJSON(String xmlString) throws JSONException {
-		JSONObject json = XML.toJSONObject(xmlString);
-		
-		JSONUtils.convertToJSONArray(json.getJSONObject(Ref.MODEL), Ref.NETWORKS, Ref.NETWORK);
-		JSONUtils.convertToJSONArray(json.getJSONObject(Ref.MODEL), Ref.LINKS, Ref.LINK);
-
-		JSONArray jsonModelNetworks = json.getJSONObject(Ref.MODEL).getJSONArray(Ref.NETWORKS);
-		for(int n = 0; n < jsonModelNetworks.length(); n++){
-			JSONObject jsonNetwork = jsonModelNetworks.getJSONObject(n);
-			JSONUtils.convertToJSONArray(jsonNetwork, Ref.NODES, Ref.NODE);
-			JSONUtils.convertToJSONArray(jsonNetwork, Ref.LINKS, Ref.LINK);
-			
-			JSONArray jsonNodes = jsonNetwork.getJSONArray(Ref.NODES);
-			for(int i = 0; i < jsonNodes.length(); i++){
-				JSONObject jsonNode = jsonNodes.getJSONObject(i);
-				JSONObject jsonNodeDefinition = jsonNode.getJSONObject(Ref.CONFIGURATION);
-				if (jsonNodeDefinition.has(Ref.STATES)){
-					JSONUtils.convertToJSONArray(jsonNodeDefinition, Ref.STATES, Ref.STATE);
-				}
-				
-				if (!jsonNodeDefinition.has(Ref.TABLE)){
-					jsonNodeDefinition.put(Ref.TABLE, new JSONObject());
-					continue;
-				}
-				
-				JSONObject jsonTable = jsonNodeDefinition.getJSONObject(Ref.TABLE);
-				if (jsonTable.has(Ref.EXPRESSIONS)){
-					JSONUtils.convertToJSONArray(jsonTable, Ref.EXPRESSIONS, Ref.EXPRESSION);
-				}
-				if (jsonTable.has(Ref.PARTITIONS)){
-					JSONUtils.convertToJSONArray(jsonTable, Ref.PARTITIONS, Ref.PARTITION);
-				}
-				if (jsonTable.has(Ref.PROBABILITIES)){
-					JSONUtils.convertToJSONArray(jsonTable, Ref.PROBABILITIES, Ref.ROW);
-					JSONUtils.convertTo2DArray(jsonTable, Ref.PROBABILITIES, Ref.CELL);
-				}
-			}
+	public static JSONObject xmlToJson(String xmlString) throws AdapterException {
+		JSONObject json;
+		try {
+			json = XML.toJSONObject(xmlString);
+			convertXmlJson(json);
+		}
+		catch (JSONException ex){
+			throw new AdapterException("Failed to convert model XML to JSON", ex);
 		}
 		
 		return json;
 	}
 	
 	/**
-	 * Converts an object to its XML representation.
-	 * <br>
-	 * Intended for converting JSON AgenaRisk 10 model to XML format.
+	 * Converts a JSON AgenaRisk 10 model to its XML representation.
 	 * 
-	 * @param o object in JSON format
+	 * @param o object in JSON format (JSONObject, JSONArray, JsonObject, JsonArray, etc)
 	 * 
 	 * @return object in XML format
 	 */
@@ -186,7 +125,7 @@ public class XMLAdapter {
 	 * 
 	 * @return object in XML format
 	 */
-	public static String toXMLString(Object o, String wrapper){
+	private static String toXMLString(Object o, String wrapper){
 		StringBuilder sb = new StringBuilder();
 		
 		String prefix = "";
@@ -295,6 +234,102 @@ public class XMLAdapter {
 		}
 		
 		return sb.toString();
+	}
+
+	/**
+	 * Traverses the JSON tree and removes unnecessary wrappers that were introduced in the original JSON to XML conversion, e.g. turning
+	 * <pre>
+	 * &lt;networks&gt;
+	 *   &lt;network&gt;net1&lt;/network&gt;
+	 *   &lt;network&gt;net2&lt;/network&gt;
+	 * &lt;/networks&gt;
+	 * </pre>
+	 * into
+	 * <pre>
+	 * {"networks":[
+	 *   "net1",
+	 *   "net2"
+	 * ]}
+	 * </pre>
+	 * Will also convert
+	 * <pre>
+	 * &lt;probabilities&gt;
+	 * 	&lt;row&gt;
+	 * 		&lt;cell&gt;1&lt;/cell&gt;
+	 * 		&lt;cell&gt;2&lt;/cell&gt;
+	 * 	&lt;/row&gt;
+	 * 	&lt;row&gt;
+	 * 		&lt;cell&gt;3&lt;/cell&gt;
+	 * 		&lt;cell&gt;4&lt;/cell&gt;
+	 * 	&lt;/row&gt;
+	 * &lt;/probabilities&gt;
+	 * </pre>
+	 * into
+	 * <pre>
+	 * "probabilities": [[1, 2], [3, 4]]
+	 * </pre>
+	 * 
+	 * @param o object to process
+	 * 
+	 * @throws JSONException if JSON is malformed or does not conform to the expected format extracted from XML
+	 */
+	private static void convertXmlJson(Object o) throws JSONException, AdapterException{
+		if (o instanceof JSONObject){
+			JSONObject jo = (JSONObject) o;
+			
+			Iterator<String> keys = jo.keys();
+			while(keys.hasNext()){
+				String key = keys.next();
+				
+				String wrapper = WRAPPER_MAP.get(key);
+				
+				if (NodeConfiguration.Table.probabilities.toString().equals(key)){
+					
+					boolean columns = false;
+					boolean rows = false;
+					
+					JSONObject jTable = jo.optJSONObject(NodeConfiguration.Table.probabilities.toString());
+					try {
+						columns = jTable.has(NodeConfiguration.Table.column.toString());
+						rows = jTable.has(NodeConfiguration.Table.row.toString());
+					}
+					catch (NullPointerException ex){
+						// Probably no probabilities in the table
+					}
+					
+					if (rows && columns){
+						throw new AdapterException("Node table can contain either rows or columns, but not both");
+					}
+					
+					String groupKey = "";
+					if (columns){
+						groupKey = NodeConfiguration.Table.column.toString();
+					}
+					else {
+						groupKey = NodeConfiguration.Table.row.toString();
+					}
+					
+					if (rows || columns){
+						jo.put(NodeConfiguration.Table.pvalues.toString(), groupKey);
+						JSONUtils.convertToJSONArray(jo, key, groupKey);
+						JSONUtils.convertTo2DArray(jo, key, NodeConfiguration.Table.cell.toString());
+					}
+				}
+				else if (wrapper != null && !wrapper.equals("CDATA")){
+					JSONUtils.convertToJSONArray(jo, key, wrapper);
+				}
+				
+				convertXmlJson(jo.opt(key));
+			}
+		}
+		else if (o instanceof JSONArray){
+			JSONArray ja = (JSONArray) o;
+			for (int i = 0; i < ja.length(); i++) {
+				convertXmlJson(ja.opt(i));
+			}
+		}
+		
+		// Don't do anything special for other types
 	}
 	
 }
