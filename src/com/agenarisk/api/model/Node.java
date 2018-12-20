@@ -669,12 +669,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	public void setTableRows(double[][] rows) throws NodeException {
 		// Set manual table
 		// Transpose arrays
-		double[][] columns = new double[rows[0].length][rows.length];
-		for (int i = 0; i < rows.length; i++) {
-			for (int j = 0; j < rows[i].length; j++) {
-				columns[j][i] = rows[i][j];
-			}
-		}
+		
+		double[][] columns = NodeConfiguration.transposeMatrix(rows);
 		
 		setTableColumns(columns);
 	}
