@@ -13,7 +13,6 @@ import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.io.stub.Audit;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
-import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;

@@ -3,7 +3,7 @@ package com.agenarisk.api.io;
 import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.io.stub.Meta;
-import com.agenarisk.api.io.stub.NodeConfiguration;
+import com.agenarisk.api.model.NodeConfiguration;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.Settings;
@@ -563,7 +563,7 @@ public class JSONAdapter {
 		JSONObject jsonConfig = new JSONObject();
 		
 		// Type
-		Node.Type nodeType = Node.resolveNodeType(en);
+		Node.Type nodeType = NodeConfiguration.resolveNodeType(en);
 		jsonConfig.put(NodeConfiguration.Field.type.toString(), nodeType);
 		
 		if (en.isConnectableInputNode()){

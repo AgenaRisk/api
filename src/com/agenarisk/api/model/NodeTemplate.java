@@ -1,7 +1,6 @@
 package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.NodeException;
-import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.util.JSONUtils;
 import java.util.Arrays;
 import java.util.List;

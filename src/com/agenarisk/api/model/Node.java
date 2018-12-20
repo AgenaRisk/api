@@ -35,7 +35,6 @@ import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
-import com.agenarisk.api.io.stub.NodeConfiguration;
 import com.agenarisk.api.model.field.Id;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -113,7 +112,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @param logicNode the Node's corresponding logic Node
 	 */
 	private Node(Network network, String id, String name, Type type) {
-		String nodeClassName = resolveNodeClassName(type);
+		String nodeClassName = NodeConfiguration.resolveNodeClassName(type);
 		
 		ExtendedNode en;
 		try {
@@ -526,7 +525,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		if (simulated){
 			ContinuousEN cien = (ContinuousEN)en;
-			setDefaultIntervalStates(node);
+			NodeConfiguration.setDefaultIntervalStates(node);
 			cien.setSimulationNode(true);
 			
 			if (jsonConfiguration.has(NodeConfiguration.Field.simulationConvergence.toString())){
@@ -709,7 +708,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			if (jsonTable.has(NodeConfiguration.Table.probabilities.toString())){
 				// Restore cached NPT if available
 				try {
-					double[][] npt = extractNPTColumns(jsonTable.getJSONArray(NodeConfiguration.Table.probabilities.toString()));
+					double[][] npt = NodeConfiguration.extractNPTColumns(jsonTable.getJSONArray(NodeConfiguration.Table.probabilities.toString()));
 					if (NodeConfiguration.Table.column.toString().equals(jsonTable.optString(NodeConfiguration.Table.pvalues.toString()))){
 						// The probability values were read from XML where they have been defined as columns rather than rows, need to transpose
 						npt = NodeConfiguration.transposeMatrix(npt);
@@ -843,32 +842,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * NPT in JSON is given by rows, while ExtendedNode expects an array of columns, so we will need to invert it.
-	 * 
-	 * @param jsonNPT
-	 * 
-	 * @return 2D array where first dimension are the columns and second dimension are the cells
-	 * 
-	 * @throws JSONException 
-	 */
-	private static double[][] extractNPTColumns(JSONArray jsonNPT) throws JSONException {
-		int rows = jsonNPT.length();
-		int cols = jsonNPT.getJSONArray(0).length();
-		double[][] npt = new double[cols][rows];
-		
-		for(int r = 0; r < jsonNPT.length(); r++){
-			JSONArray jsonCells = jsonNPT.getJSONArray(r);
-			for(int c = 0; c < jsonCells.length(); c++){
-				double cell = jsonCells.getDouble(c);
-				npt[c][r] = cell;
-			}
-				
-		}
-		
-		return npt;
-	}
-	
-	/**
 	 * Replaces Node's states by the ones given in the array.
 	 * <br>
 	 * This action resets the probability table to uniform.
@@ -981,7 +954,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		
 		if (getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN)){
-			setDefaultIntervalStates(this);
+			NodeConfiguration.setDefaultIntervalStates(this);
 			ContinuousEN cien = (ContinuousEN)this.getLogicNode();
 			cien.setSimulationNode(true);
 			return true;
@@ -1179,76 +1152,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Gets fully-qualified name for ExtendedNode concrete implementation matching the provided Node type from Note.Type.
-	 * 
-	 * @param type Node type
-	 * 
-	 * @return fully-qualified ExtendedNode subclass name
-	 */
-	protected static String resolveNodeClassName(Type type) {
-		String nodeClassName;
-		switch (type) {
-			case Boolean:
-				nodeClassName = BooleanEN.class.getName();
-				break;
-			case Labelled:
-				nodeClassName = LabelledEN.class.getName();
-				break;
-			case Ranked:
-				nodeClassName = RankedEN.class.getName();
-				break;
-			case DiscreteReal:
-				nodeClassName = DiscreteRealEN.class.getName();
-				break;
-			case ContinuousInterval:
-				nodeClassName = ContinuousIntervalEN.class.getName();
-				break;
-			case IntegerInterval:
-				nodeClassName = IntegerIntervalEN.class.getName();
-				break;
-			default:
-				throw new AgenaRiskRuntimeException("Invalid node type provided");
-		}
-		
-		return nodeClassName;
-	}
-	
-	/**
-	 * Resolves the Node Type based on the logical node.
-	 * 
-	 * @param en logical node to resolve Type from
-	 * 
-	 * @return resolved Node type
-	 */
-	public static Type resolveNodeType(ExtendedNode en){
-		if (en instanceof BooleanEN){
-			return Type.Boolean;
-		}
-		
-		if (en instanceof LabelledEN){
-			return Type.Labelled;
-		}
-		
-		if (en instanceof RankedEN){
-			return Type.Ranked;
-		}
-		
-		if (en instanceof DiscreteRealEN){
-			return Type.DiscreteReal;
-		}
-		
-		if (en instanceof ContinuousIntervalEN){
-			return Type.ContinuousInterval;
-		}
-		
-		if (en instanceof IntegerIntervalEN){
-			return Type.IntegerInterval;
-		}
-		
-		throw new AgenaRiskRuntimeException("Invalid node type");
-	}
-
-	/**
 	 * Creates a JSON representing this Node, ready for file storage.
 	 * 
 	 * @return JSONObject representing this Node
@@ -1263,27 +1166,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 //			node.graphics = json.optJSONObject(Ref.GRAPHICS);
 //		}
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-	
-	/**
-	 * Replaces Node states with 3 default interval states.
-	 * 
-	 * @param node 
-	 */
-	private static void setDefaultIntervalStates(Node node){
-		ContinuousEN cien = (ContinuousEN)node.getLogicNode();
-		DataSet cids = new DataSet();                          
-		cids.addIntervalDataPoint(Double.NEGATIVE_INFINITY, -1);
-		cids.addIntervalDataPoint(-1, 1);
-		cids.addIntervalDataPoint(1, Double.POSITIVE_INFINITY);
-
-		try {
-			cien.removeExtendedStates(0, cien.getExtendedStates().size()-1, true);
-			cien.createExtendedStates(cids);
-		}
-		catch (ExtendedBNException | MinervaRangeException ex){
-			throw new AgenaRiskRuntimeException("Failed to initialise interval states for node " + node.toStringExtra(), ex);
-		}
 	}
 	
 	/**
@@ -1304,7 +1186,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	public Type getType(){
 		ExtendedNode en = getLogicNode();
-		return resolveNodeType(en);
+		return NodeConfiguration.resolveNodeType(en);
 	}
 
 	/**
