@@ -112,8 +112,12 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	protected static Network createNetwork(Model model, JSONObject jsonNetwork) throws JSONException, NetworkException {
 		String id = jsonNetwork.getString(Network.Field.id.toString());
-		String name = jsonNetwork.getString(Network.Field.name.toString());
+		String name = jsonNetwork.optString(Network.Field.name.toString());
 		String description = jsonNetwork.optString(Network.Field.description.toString());
+		
+		if (name.isEmpty()){
+			name = id;
+		}
 		
 		Network network;
 		try {
