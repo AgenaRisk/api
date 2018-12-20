@@ -500,7 +500,7 @@ public class JSONAdapter {
 						// Use default answers
 						Environment.logIfDebug("Resetting answers to state mapping " + en.getConnNodeId() + " [" + en.getName().getShortDescription() + "]", Environment.err());
 						Environment.logIfDebug("Broken answer was: " + answ.getName() + " ["+answ.getConnExtendedStateId()+"]", Environment.err());
-						Environment.printThrowableIfDebug(ex);
+//						Environment.printThrowableIfDebug(ex);
 						Question tempQstn = uk.co.agena.minerva.model.Model.generateQuestionFromNode(ebn, en);
 						qstn.setAnswers(tempQstn.getAnswers());
 						break;
