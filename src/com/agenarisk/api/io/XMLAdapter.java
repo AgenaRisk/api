@@ -17,6 +17,7 @@ import com.agenarisk.api.util.JSONUtils;
 import com.agenarisk.api.util.Ref;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -281,7 +282,12 @@ public class XMLAdapter {
 				sb.append(prefix);
 			}
 			
-			sb.append(o);
+			if (o instanceof JsonPrimitive){
+				sb.append(((JsonPrimitive) o).getAsString());
+			}
+			else {
+				sb.append(o);
+			}
 			
 			if (!suffix.isEmpty()){
 				sb.append(suffix);
