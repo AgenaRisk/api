@@ -65,15 +65,18 @@
 						
 						<input>
 							<!--Boolean-->
+							<!--Optional if you have cross network links defined for this node-->
 						</input>
 						
 						<output>
 							<!--Boolean-->
+							<!--Optional if you have cross network links defined for this node-->
 						</output>
 						
 						<simulationConvergence>
 							<!--Corresponds to Node properties: simulation convergence threshold in ARD and ContinuousEN.entropyConvergenceThreshold in ARC-->
 							<!--Can only be provided when simulated is "True"-->
+							<!--Optional-->
 						</simulationConvergence>
 						
 						<states>
