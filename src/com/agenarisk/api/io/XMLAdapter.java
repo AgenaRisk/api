@@ -143,42 +143,8 @@ public class XMLAdapter {
 				suffix = wrappers.stream().map(w -> "</"+w+">").collect(Collectors.joining(""));
 			}
 		}
-		if (o instanceof JsonObject){
-			if (!prefix.isEmpty()){
-				sb.append(prefix);
-			}
-			
-			JsonObject jo = (JsonObject) o;
-			for(String key: jo.keySet()){
-				sb.append("<").append(key).append(">");
-				
-				String wrapperNext = WRAPPER_MAP.get(key);
-				
-				sb.append(toXMLString(jo.get(key), wrapperNext));
-				sb.append("</").append(key).append(">");
-			}
-			
-			if (!suffix.isEmpty()){
-				sb.append(suffix);
-			}
-		}
-		else if (o instanceof JsonArray){
-			JsonArray ja = (JsonArray)o;
-			for (int i = 0; i < ja.size(); i++) {
-				if (!prefix.isEmpty()){
-					sb.append(prefix);
-				}
-				
-				String wrapperNext = WRAPPER_MAP.get(wrapper);
-				
-				sb.append(toXMLString(ja.get(i), wrapperNext));
-				
-				if (!suffix.isEmpty()){
-					sb.append(suffix);
-				}
-			}
-		}
-		else if (o instanceof JSONObject){
+		
+		if (o instanceof JSONObject){
 			if (!prefix.isEmpty()){
 				sb.append(prefix);
 			}
