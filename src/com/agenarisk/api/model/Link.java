@@ -6,7 +6,7 @@ import com.agenarisk.api.model.interfaces.Storable;
 import com.singularsys.jep.JepException;
 import java.util.List;
 import java.util.Objects;
-import org.apache.sling.commons.json.JSONObject;
+import org.json.JSONObject;
 import uk.co.agena.minerva.model.corebn.CoreBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;

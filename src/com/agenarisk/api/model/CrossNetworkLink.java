@@ -22,7 +22,7 @@ import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.helpers.MathsHelper;
 import com.agenarisk.api.model.interfaces.Storable;
-import org.apache.sling.commons.json.JSONObject;
+import org.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.Variable;

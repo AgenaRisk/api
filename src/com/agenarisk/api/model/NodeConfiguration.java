@@ -2,8 +2,8 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.model.Node;
-import org.apache.sling.commons.json.JSONArray;
-import org.apache.sling.commons.json.JSONException;
+import org.json.JSONArray;
+import org.json.JSONException;
 import uk.co.agena.minerva.model.extendedbn.BooleanEN;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;

@@ -1,6 +1,6 @@
 package com.agenarisk.api.model.interfaces;
 
-import org.apache.sling.commons.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Classes that will be stored in a JSON format should implement this.

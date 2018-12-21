@@ -1,6 +1,6 @@
 package com.agenarisk.api.model;
 
-import org.apache.sling.commons.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * This is a stub class that only contains field values for input/output to XML and JSON format.

@@ -24,9 +24,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.sling.commons.json.JSONArray;
-import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 

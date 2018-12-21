@@ -4,7 +4,7 @@ import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.model.dataset.ResultValue;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.sling.commons.json.JSONObject;
+import org.json.JSONObject;
 import uk.co.agena.minerva.model.MarginalDataItem;
 import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
