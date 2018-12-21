@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -273,10 +274,14 @@ public class JSONUtils {
 		}
 		
 		if (jo1 == null && jo2 != null || jo1 != null && jo2 == null){
+			System.out.println("return 1");
 			return false;
 		}
 		
 		if (jo1.length() != jo2.length()){
+			System.out.println("return 2");
+			System.out.println(jo1);
+			System.out.println(jo2);
 			return false;
 		}
 		
@@ -284,6 +289,7 @@ public class JSONUtils {
 		while(keys.hasNext()){
 			String key = keys.next();
 			if (!jo2.has(key)){
+				System.out.println("return 3");
 				return false;
 			}
 			
@@ -291,6 +297,7 @@ public class JSONUtils {
 			Object el2 = jo2.opt(key);
 			boolean equals = equalsJSONComponents(el1, el2);
 			if (!equals){
+				System.out.println("return 4");
 				return false;
 			}
 		}
@@ -320,10 +327,15 @@ public class JSONUtils {
 		}
 		
 		if (ja1 == null && ja2 != null || ja1 != null && ja2 == null){
+			System.out.println("return 5");
 			return false;
 		}
 		
 		if (ja1.length() != ja2.length()){
+			System.out.println("COMPARING");
+			System.out.println(ja1);
+			System.out.println(ja2);
+			System.out.println("return 6");
 			return false;
 		}
 		
@@ -332,6 +344,7 @@ public class JSONUtils {
 			Object el2 = ja2.opt(i);
 			boolean equals = equalsJSONComponents(el1, el2);
 			if (!equals){
+				System.out.println("return 7");
 				return false;
 			}
 		}
@@ -361,10 +374,12 @@ public class JSONUtils {
 		}
 		
 		if (o1 == null && o2 != null || o1 != null && o2 == null){
+			System.out.println("return 8");
 			return false;
 		}
 		
 		if (!o1.getClass().getName().equalsIgnoreCase(o2.getClass().getName())) {
+			System.out.println("return 9");
 			return false;
 		}
 		
@@ -391,7 +406,12 @@ public class JSONUtils {
 				s2 = s2.replaceFirst("\\.0$", "");
 			}
 			
-			return s1.equalsIgnoreCase(s2);
+			boolean comparison = s1.equalsIgnoreCase(s2);
+			if (!comparison){
+				System.out.println("return 10");
+			}
+			
+			return comparison;
 		}
 		
 		if (o1 instanceof Double){
@@ -399,6 +419,9 @@ public class JSONUtils {
 			o1 = df.format(o1);
 			o2 = df.format(o2);
 			boolean comparison = o1.equals(o2);
+			if (!comparison){
+				System.out.println("return 11");
+			}
 			return comparison;
 		}
 		
@@ -443,5 +466,35 @@ public class JSONUtils {
 		}
 		
 		return jArray;
+	}
+	
+	/**
+	 * Applies the provided action to the provided object. Then, if the object is JSONObject or JSONArray, recursively traverses through their elements.
+	 * <br>
+	 * Order of traversal is the one backed by the object.
+	 * <br>
+	 * Nulls are not handled in any way, so the action must handle them.
+	 * 
+	 * @param o object to apply action to and potentially traverse
+	 * 
+	 * @param action action to apply
+	 */
+	public static void traverse(Object o, Consumer<Object> action) {
+		action.accept(o);
+		if (o instanceof JSONObject){
+			JSONObject jo = (JSONObject) o;
+			Iterator<String> keys = jo.keys();
+			while(keys.hasNext()){
+				String key = keys.next();
+				traverse(jo.opt(key), action);
+			}
+		}
+		else if (o instanceof JSONArray){
+			JSONArray ja = (JSONArray) o;
+			for (int i = 0; i < ja.length(); i++) {
+				traverse(ja.opt(i), action);
+			}
+		}
+		// Don't do anything special for other types
 	}
 }
