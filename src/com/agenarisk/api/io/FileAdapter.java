@@ -34,7 +34,7 @@ public class FileAdapter {
 			fileContents = new String(Files.readAllBytes(Paths.get(filePath)));
 		}
 		catch(IOException ex){
-			throw new AdapterException("Failed to open file: " + ex.getMessage(), ex);
+			throw new AdapterException("Failed to read file", ex);
 		}
 		
 		if (fileContents.startsWith("{")){
