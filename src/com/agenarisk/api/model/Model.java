@@ -9,6 +9,7 @@ import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.exception.NodeException;
+import com.agenarisk.api.io.FileAdapter;
 import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.io.stub.Audit;
 import com.agenarisk.api.io.stub.Graphics;
@@ -132,10 +133,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		JSONObject json;
 		try {
-			json = JSONUtils.loadModelJSON(path);
+			json = FileAdapter.extractJSONObject(path);
 		}
-		catch (JSONException ex){
-			throw new ModelException("Invalid model file format", ex);
+		catch (AdapterException ex){
+			throw new ModelException("Failed to load model", ex);
 		}
 		
 		Model model;
