@@ -564,7 +564,7 @@ public class JSONAdapter {
 		
 		// Type
 		Node.Type nodeType = NodeConfiguration.resolveNodeType(en);
-		jsonConfig.put(NodeConfiguration.Field.type.toString(), nodeType);
+		jsonConfig.put(NodeConfiguration.Field.type.toString(), nodeType.toString());
 		
 		if (en.isConnectableInputNode()){
 			jsonConfig.put(NodeConfiguration.Field.input.toString(), en.isConnectableInputNode());
@@ -640,7 +640,7 @@ public class JSONAdapter {
 			default:
 				throw new AgenaRiskRuntimeException("Invalid node table type `" + en.getFunctionMode() + "` for node `" + en.getConnNodeId() + "`");
 		}
-		jsonTable.put(NodeConfiguration.Table.type.toString(), tableType);
+		jsonTable.put(NodeConfiguration.Table.type.toString(), tableType.toString());
 		
 		// Partitions
 		if (tableType.equals(NodeConfiguration.TableType.Partitioned)){
