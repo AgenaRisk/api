@@ -291,7 +291,6 @@ public class JSONUtils {
 			Object el2 = jo2.opt(key);
 			boolean equals = equalsJSONComponents(el1, el2);
 			if (!equals){
-				System.out.println("el o not equal: "+el1 + " <> "+el2);
 				return false;
 			}
 		}
@@ -333,7 +332,6 @@ public class JSONUtils {
 			Object el2 = ja2.opt(i);
 			boolean equals = equalsJSONComponents(el1, el2);
 			if (!equals){
-				System.out.println("el a not equal: "+el1 + " <> "+el2);
 				return false;
 			}
 		}
