@@ -184,12 +184,7 @@ public class XMLAdapter {
 				sb.append(prefix);
 			}
 			
-			if (o instanceof JsonPrimitive){
-				sb.append(((JsonPrimitive) o).getAsString());
-			}
-			else {
-				sb.append(o);
-			}
+			sb.append(o);
 			
 			if (!suffix.isEmpty()){
 				sb.append(suffix);
