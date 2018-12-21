@@ -418,7 +418,9 @@
 		</openMonitors>
 		
 		<canvasData>
-			<!--CDATA-->
+			
+			<canvas><!--CDATA--></canvas>
+			...
 		</canvasData>
 		
 	</graphics>
