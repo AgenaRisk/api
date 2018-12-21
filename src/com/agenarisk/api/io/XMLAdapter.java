@@ -54,6 +54,7 @@ public class XMLAdapter {
 		WRAPPER_MAP.put(RiskTable.Answer.answers.toString(), RiskTable.Answer.answer.toString());
 		WRAPPER_MAP.put(Meta.Field.notes.toString(), Meta.Field.note.toString());
 		WRAPPER_MAP.put(Audit.Field.changelog.toString(), Audit.Field.change.toString());
+		WRAPPER_MAP.put(Graphics.CanvasData.canvasData.toString(), Graphics.CanvasData.canvas.toString());
 		
 		WRAPPER_MAP.put(Network.Field.description.toString(), "CDATA");
 		WRAPPER_MAP.put(Node.Field.description.toString(), "CDATA");
@@ -62,7 +63,7 @@ public class XMLAdapter {
 		WRAPPER_MAP.put(Graphics.Field.viewSettings.toString(), "CDATA");
 		WRAPPER_MAP.put(Graphics.Field.objectDefaults.toString(), "CDATA");
 		WRAPPER_MAP.put(Graphics.Field.openMonitors.toString(), "CDATA");
-		WRAPPER_MAP.put(Graphics.CanvasData.canvasData.toString(), "CDATA");
+		WRAPPER_MAP.put(Graphics.CanvasData.canvas.toString(), "CDATA");
 		WRAPPER_MAP.put(Audit.Field.comment.toString(), "CDATA");
 		
 		WRAPPER_MAP.put(NodeConfiguration.Table.probabilities.toString(), "row");
@@ -262,13 +263,14 @@ public class XMLAdapter {
 					String groupKey = "";
 					if (columns){
 						groupKey = NodeConfiguration.Table.column.toString();
+						// JSON format assumes probabilities are rows, so indicate otherwise
+						jo.put(NodeConfiguration.Table.pvalues.toString(), groupKey);
 					}
 					else {
 						groupKey = NodeConfiguration.Table.row.toString();
 					}
 					
 					if (rows || columns){
-						jo.put(NodeConfiguration.Table.pvalues.toString(), groupKey);
 						JSONUtils.convertToJSONArray(jo, key, groupKey);
 						JSONUtils.convertTo2DArray(jo, key, NodeConfiguration.Table.cell.toString());
 					}
