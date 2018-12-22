@@ -69,7 +69,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * ID-DataSet map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	private final Map<Id, DataSet> datasets = Collections.synchronizedMap(new LinkedHashMap<>());
+	private final Map<Id, DataSet> dataSets = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * The underlying logical Model
@@ -471,7 +471,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		if (DataSet.class.equals(idClassType)){
-			return datasets;
+			return dataSets;
 		}
 		
 		throw new ModelException("Invalid class type provided: "+idClassType);
@@ -579,20 +579,20 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public DataSet createDataSet(String id) throws ModelException {
 		synchronized (IDContainer.class){
-			if (datasets.containsKey(new Id(id))){
+			if (dataSets.containsKey(new Id(id))){
 				throw new ModelException("DataSet with id `" + id + "` already exists");
 			}
-			datasets.put(new Id(id), null);
+			dataSets.put(new Id(id), null);
 		}
 		
 		DataSet dataset;
 		
 		try {
 			dataset = DataSet.createDataSet(this, id);
-			datasets.put(new Id(id), dataset);
+			dataSets.put(new Id(id), dataset);
 		}
 		catch (AgenaRiskRuntimeException ex){
-			datasets.remove(new Id(id));
+			dataSets.remove(new Id(id));
 			throw new ModelException("Failed to add DataSet `" + id + "`", ex);
 		}
 		
@@ -765,7 +765,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return copy of ID-Network map
 	 */
 	public Map<String, DataSet> getDataSets() {
-		return datasets.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, LinkedHashMap::new));
+		return dataSets.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, LinkedHashMap::new));
 	}
 	
 	/**
@@ -889,7 +889,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @return the DataSet identified by ID or null, if no such DataSet exists in this Model
 	 */
 	public DataSet getDataSet(String id){
-		return datasets.get(new Id(id));
+		return dataSets.get(new Id(id));
 	}
 	
 }
