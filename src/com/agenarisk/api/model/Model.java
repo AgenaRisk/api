@@ -195,6 +195,10 @@ public class Model implements IDContainer<ModelException>, Storable {
 			});
 		});
 		
+		model.getDataSets().forEach((dsId, ds) -> {
+			ds.setLogicScenario(model.getLogicModel().getScenarioWithName(dsId));
+		});
+		
 		return model;
 	}
 	
