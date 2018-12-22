@@ -638,7 +638,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * ∙ range lower bound more or equal then upper bound
 	 * @throws JSONException if JSON data is invalid
 	 */
-	protected void loadCalculationResult(JSONObject jsonResult) throws DataSetException, JSONException {
+	public void loadCalculationResult(JSONObject jsonResult) throws DataSetException, JSONException {
 		String networkId = jsonResult.getString(CalculationResult.Field.network.toString());
 		String nodeId = jsonResult.getString(CalculationResult.Field.node.toString());
 		Node node;
