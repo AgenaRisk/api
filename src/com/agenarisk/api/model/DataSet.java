@@ -1,11 +1,12 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.dataset.ResultValue;
+import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.Identifiable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	/**
 	 * The corresponding uk.co.agena.minerva.model.scenario.Scenario
 	 */
-	private final uk.co.agena.minerva.model.scenario.Scenario logicScenario;
+	private uk.co.agena.minerva.model.scenario.Scenario logicScenario;
 
 	/**
 	 * Private constructor for DataSet class.
@@ -182,8 +183,21 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * 
 	 * @return the underlying logical ExtendedBN network
 	 */
-	protected final uk.co.agena.minerva.model.scenario.Scenario getLogicScenario() {
+	protected final Scenario getLogicScenario() {
 		return logicScenario;
+	}
+
+	/**
+	 * Links this Network to an underlying Minerva Network object. Should only be used while wrapping a new Model around the Minerva Model.
+	 * 
+	 * @param logicScenario the logical scenario
+	 */
+	protected void setLogicScenario(Scenario logicScenario) {
+		if (!new Id(getId()).equals(new Id(logicScenario.getName().getShortDescription()))){
+			throw new AgenaRiskRuntimeException("Logic scenario id mismatch: " + getId() + "," + logicScenario.getName().getShortDescription());
+		}
+		
+		this.logicScenario = logicScenario;
 	}
 	
 	/**
