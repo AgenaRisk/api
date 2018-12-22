@@ -881,4 +881,15 @@ public class Model implements IDContainer<ModelException>, Storable {
 		this.logicModel = logicModel;
 	}
 	
+	/**
+	 * Looks up and returns a DataSet by its ID.
+	 * 
+	 * @param id the ID of the DataSet to return
+	 * 
+	 * @return the DataSet identified by ID or null, if no such DataSet exists in this Model
+	 */
+	public DataSet getDataSet(String id){
+		return datasets.get(new Id(id));
+	}
+	
 }
