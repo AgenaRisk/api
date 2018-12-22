@@ -1,0 +1,207 @@
+<model>
+	<networks>
+		
+		<network>
+			<id>Net1</id>
+			
+			<nodes>
+				
+				<node>
+					<id>Node1</id>
+					<configuration>
+						<type>Boolean</type>
+						<table>
+							<type>Manual</type>
+							<probabilities>
+								<column>
+									<cell>0.2</cell>
+									<cell>0.8</cell>
+								</column>
+							</probabilities>
+						</table>
+						<states>
+							<state>False</state>
+							<state>True</state>
+						</states>
+					</configuration>
+				</node>
+				
+				<node>
+					<id>Node2</id>
+					<configuration>
+						<type>Boolean</type>
+						<table>
+							<type>Manual</type>
+							<probabilities>
+								<row>
+									<cell>0.6</cell>
+									<cell>0.9</cell>
+								</row>
+								<row>
+									<cell>0.4</cell>
+									<cell>0.1</cell>
+								</row>
+							</probabilities>
+						</table>
+						<states>
+							<state>False</state>
+							<state>True</state>
+						</states>
+					</configuration>
+				</node>
+				
+			</nodes>
+			
+			<links>
+				<link>
+					<parent>Node1</parent>
+					<child>Node2</child>
+				</link>
+			</links>
+			
+		</network>
+		
+		<network>
+			<id>Net2</id>
+			
+			<nodes>
+				
+				<node>
+					<id>Node1</id>
+					<configuration>
+						<type>Boolean</type>
+					</configuration>
+				</node>
+				
+				<node>
+					<id>Node2</id>
+					<configuration>
+						<type>Boolean</type>
+						<table>
+							<type>Manual</type>
+							<probabilities>
+								<row>
+									<cell>0.9</cell>
+									<cell>0.1</cell>
+								</row>
+								<row>
+									<cell>0.1</cell>
+									<cell>0.9</cell>
+								</row>
+							</probabilities>
+						</table>
+						<states>
+							<state>False</state>
+							<state>True</state>
+						</states>
+					</configuration>
+				</node>
+				
+			</nodes>
+			
+			<links>
+				<link>
+					<parent>Node1</parent>
+					<child>Node2</child>
+				</link>
+			</links>
+			
+		</network>
+		
+		<network>
+			<id>Net3</id>
+			
+			<nodes>
+				
+				<node>
+					<id>Node1</id>
+					<configuration>
+						<type>Boolean</type>
+					</configuration>
+				</node>
+				
+				<node>
+					<id>Node2</id>
+					<configuration>
+						<type>Boolean</type>
+					</configuration>
+				</node>
+				
+				<node>
+					<id>Node3</id>
+					<configuration>
+						<type>Boolean</type>
+						<table>
+							<type>Manual</type>
+							<probabilities>
+								<column>
+									<cell>0.1</cell>
+									<cell>0.9</cell>
+								</column>
+								<column>
+									<cell>0.2</cell>
+									<cell>0.8</cell>
+								</column>
+								<column>
+									<cell>0.3</cell>
+									<cell>0.7</cell>
+								</column>
+								<column>
+									<cell>0.4</cell>
+									<cell>0.6</cell>
+								</column>
+							</probabilities>
+						</table>
+						<states>
+							<state>False</state>
+							<state>True</state>
+						</states>
+					</configuration>
+				</node>
+				
+			</nodes>
+			
+			<links>
+				
+				<link>
+					<parent>Node1</parent>
+					<child>Node3</child>
+				</link>
+				
+				<link>
+					<parent>Node2</parent>
+					<child>Node3</child>
+				</link>
+				
+			</links>
+			
+		</network>
+		
+	</networks>
+	
+	<links>
+		
+		<link>
+			<sourceNetwork>Net1</sourceNetwork>
+			<targetNetwork>Net2</targetNetwork>
+			<sourceNode>Node2</sourceNode>
+			<targetNode>Node1</targetNode>
+		</link>
+		
+		<link>
+			<sourceNetwork>Net1</sourceNetwork>
+			<targetNetwork>Net3</targetNetwork>
+			<sourceNode>Node1</sourceNode>
+			<targetNode>Node1</targetNode>
+		</link>
+		
+		<link>
+			<sourceNetwork>Net2</sourceNetwork>
+			<targetNetwork>Net3</targetNetwork>
+			<sourceNode>Node2</sourceNode>
+			<targetNode>Node2</targetNode>
+		</link>
+		
+	</links>
+	
+</model>
