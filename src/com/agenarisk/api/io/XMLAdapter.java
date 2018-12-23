@@ -65,6 +65,7 @@ public class XMLAdapter {
 		WRAPPER_MAP.put(Graphics.Field.openMonitors.toString(), "CDATA");
 		WRAPPER_MAP.put(Graphics.CanvasData.canvas.toString(), "CDATA");
 		WRAPPER_MAP.put(Audit.Field.comment.toString(), "CDATA");
+//		WRAPPER_MAP.put(RiskTable.Question.name.toString(), "CDATA");
 		
 		WRAPPER_MAP.put(NodeConfiguration.Table.probabilities.toString(), "row");
 		WRAPPER_MAP.put("row", "cell");
@@ -128,6 +129,10 @@ public class XMLAdapter {
 		
 		String prefix = "";
 		String suffix = "";
+		
+		if (o instanceof String && prefix.isEmpty() && suffix.isEmpty()){
+			wrapper = "CDATA";
+		}
 		
 		if (wrapper != null){
 			if (wrapper.equals("CDATA")){
