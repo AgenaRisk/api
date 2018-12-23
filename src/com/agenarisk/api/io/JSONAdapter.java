@@ -207,7 +207,17 @@ public class JSONAdapter {
 					JSONObject jsonResultValue = new JSONObject();
 					
 					String label = dp.getLabel();
-					if (dp instanceof IntervalDataPoint){
+					if (dp.getConnObjectId() >= 0){
+						try {
+							ExtendedState es = en.getExtendedState(dp.getConnObjectId());
+							label = State.computeLabel(en, es);
+						}
+						catch(ExtendedStateNotFoundException ex) {
+							// Ignore, will use data point label
+						}
+					}
+					
+					if (dp instanceof IntervalDataPoint && !(en instanceof RankedEN)){
 						IntervalDataPoint idp = (IntervalDataPoint) dp;
 						label = idp.getIntervalLowerBound() + " - " + idp.getIntervalUpperBound();
 					}
