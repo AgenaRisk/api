@@ -47,7 +47,6 @@ import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.Observation;
 import uk.co.agena.minerva.model.scenario.Scenario;
 import uk.co.agena.minerva.util.Environment;
-import uk.co.agena.minerva.util.helpers.MathsHelper;
 import uk.co.agena.minerva.util.model.DataPoint;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
@@ -698,7 +697,7 @@ public class JSONAdapter {
 			
 			for(float[] row: npt){
 				JSONArray jsonRow = new JSONArray();
-				for(double p: row){
+				for(float p: row){
 					//jsonRow.put(MathsHelper.roundDouble(p, 7));
 					jsonRow.put(p);
 				}
