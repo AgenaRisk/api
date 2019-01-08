@@ -1051,7 +1051,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		try {
 			getNetwork().changeContainedId(this, newId);
-			getLogicNode().updateConnNodeId(newId);
+			getNetwork().getLogicNetwork().updateConnNodeId(getLogicNode(), newId);
 		}
 		catch (CoreBNNodeNotFoundException | ExtendedBNException ex){
 			try {
