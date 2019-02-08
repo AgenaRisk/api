@@ -759,7 +759,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				for(String expression: expressions){
 					ExtendedNodeFunction enf;
 					try {
-						enf = ExpressionParser.parseFunctionFromString(expression, parentIDs);
+						enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens);
 					}
 					catch (ParseException ex){
 						throw new NodeException("Unable to parse node function `"+expression+"`", ex);
