@@ -762,7 +762,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 						enf = ExpressionParser.parseFunctionFromString(expression, parentIDs);
 					}
 					catch (ParseException ex){
-						throw new JSONException("Unable to parse node function `"+expression, ex);
+						throw new NodeException("Unable to parse node function `"+expression+"`", ex);
 					}
 					enfs.add(enf);
 				}
