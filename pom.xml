@@ -1,6 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
+	<properties>
+		<!-- Change these versions if you need a specific build -->
+		<!-- Default settings are configured for latest development version -->
+		<version.com.agenarisk.core>master-SNAPSHOT</version.com.agenarisk.core>
+		
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+	
 	<groupId>com.agenarisk</groupId>
 	<artifactId>com.agenarisk.api</artifactId>
 	<version>0.1-SNAPSHOT</version>
@@ -37,7 +47,7 @@
 		<dependency>
 			<groupId>com.agenarisk</groupId>
 			<artifactId>com.agenarisk.core</artifactId>
-			<version>10.6020-SNAPSHOT</version>
+			<version>${version.com.agenarisk.core}</version>
 		</dependency>
 		
 		<dependency>
@@ -55,12 +65,6 @@
 		
 	</dependencies>
   
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-	</properties>
-	
 	<build>
 				
 		<plugins>
