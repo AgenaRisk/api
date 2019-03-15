@@ -33,14 +33,14 @@ public class XMLAdapterTest {
 		List<String> pathsIn = new ArrayList<>();
 		List<String> pathsOut = new ArrayList<>();
 		
-		TestHelper.copyInputOuputResources(Paths.get("resources", "com", "agenarisk", "api", "io", "FileAdapterTest"), "cmpx", "xml", pathsIn, pathsOut);
+		TestHelper.copyInputOuputResources(Paths.get("com", "agenarisk", "api", "io", "FileAdapterTest"), "cmpx", "xml", pathsIn, pathsOut);
 		
 		assertTrue(!pathsIn.isEmpty());
 		assertEquals(pathsIn.size(), pathsOut.size());
 		
 		for (int i = 0; i < pathsIn.size(); i++) {
-			String input = new String(Files.readAllBytes(Paths.get(pathsIn.get(i))), "UTF-8");
-			String outputExpected = new String(Files.readAllBytes(Paths.get(pathsOut.get(i))), "UTF-8");
+			String input = new String(Files.readAllBytes(Paths.get(pathsIn.get(i))), "UTF-8").trim();
+			String outputExpected = new String(Files.readAllBytes(Paths.get(pathsOut.get(i))), "UTF-8").trim();
 			
 			if (input.trim().isEmpty()){
 				throw new RuntimeException("Test file reading failed");
@@ -81,14 +81,14 @@ public class XMLAdapterTest {
 		List<String> pathsIn = new ArrayList<>();
 		List<String> pathsOut = new ArrayList<>();
 		
-		TestHelper.copyInputOuputResources(Paths.get("resources", "com", "agenarisk", "api", "io", "FileAdapterTest"), "xml", "cmpx", pathsIn, pathsOut);
+		TestHelper.copyInputOuputResources(Paths.get("com", "agenarisk", "api", "io", "FileAdapterTest"), "xml", "cmpx", pathsIn, pathsOut);
 		
 		assertTrue(!pathsIn.isEmpty());
 		assertEquals(pathsIn.size(), pathsOut.size());
 		
 		for (int i = 0; i < pathsIn.size(); i++) {
-			String input = new String(Files.readAllBytes(Paths.get(pathsIn.get(i))), "UTF-8");
-			String outputExpected = new String(Files.readAllBytes(Paths.get(pathsOut.get(i))), "UTF-8");
+			String input = new String(Files.readAllBytes(Paths.get(pathsIn.get(i))), "UTF-8").trim();
+			String outputExpected = new String(Files.readAllBytes(Paths.get(pathsOut.get(i))), "UTF-8").trim();
 			
 			if (input.trim().isEmpty()){
 				throw new RuntimeException("Test file reading failed");

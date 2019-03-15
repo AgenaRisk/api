@@ -31,7 +31,7 @@ public class FileAdapterTest {
 		List<String> pathsInJson = new ArrayList<>();
 		List<String> pathsInXml = new ArrayList<>();
 		
-		TestHelper.copyInputOuputResources(Paths.get("resources", "com", "agenarisk", "api", "io", "FileAdapterTest"), "cmpx", "xml", pathsInJson, pathsInXml);
+		TestHelper.copyInputOuputResources(Paths.get("com", "agenarisk", "api", "io", "FileAdapterTest"), "cmpx", "xml", pathsInJson, pathsInXml);
 		
 		assertTrue(!pathsInJson.isEmpty());
 		assertEquals(pathsInJson.size(), pathsInXml.size());
