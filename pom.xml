@@ -69,6 +69,23 @@
 				
 		<plugins>
 			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+						<manifestEntries>
+							<Built-By>Agena</Built-By>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			
 			<!-- Download natively compiled dependencies -->
 			<!-- Only required to run AgenaRisk Core (which would be run on testing) -->
 			<plugin>
