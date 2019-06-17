@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import uk.co.agena.minerva.util.Environment;
+import uk.co.agena.minerva.util.Logger;
 
 /**
  * This class provides means to retrieve the version of this build from manifest or .properties
@@ -25,14 +25,14 @@ public class VersionApi {
 		String revString = VersionApi.class.getPackage().getImplementationVersion();
 		
 		if (revString == null){
-			Environment.logIfDebug("Failed to read API version from manifest");
+			Logger.logIfDebug("Failed to read API version from manifest");
 			
 			// Attempt to retrieve version from properties
 			try (InputStream is = VersionApi.class.getResourceAsStream("/api.properties"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 				revString = br.readLine();
 			}
 			catch (NullPointerException | IOException ex){
-				Environment.logIfDebug("Failed to read API version from desktop.properties: " + ex.getMessage());
+				Logger.logIfDebug("Failed to read API version from desktop.properties: " + ex.getMessage());
 			}
 		}
 		return revString;
@@ -47,7 +47,7 @@ public class VersionApi {
 				revParsed = Integer.parseInt(version);
 			}
 			catch (NumberFormatException ex){
-				Environment.logIfDebug("Failed to parse API version string: " + ex.getMessage());
+				Logger.logIfDebug("Failed to parse API version string: " + ex.getMessage());
 			}
 		}
 		

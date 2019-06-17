@@ -42,6 +42,7 @@ import uk.co.agena.minerva.model.questionnaire.Question;
 import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.ScenarioNotFoundException;
 import uk.co.agena.minerva.util.Environment;
+import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
 
@@ -129,7 +130,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @throws ModelException if failed to read the file or if JSON was corrupt or missing required attributes
 	 */
 	public static Model loadModel(String path) throws ModelException {
-		Environment.logIfDebug("Loading model from: " + path);
+		Logger.logIfDebug("Loading model from: " + path);
 		
 		JSONObject json;
 		try {
@@ -147,7 +148,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 			throw new ModelException("Failed to read model data", ex);
 		}
 				
-		Environment.logIfDebug("Model loaded");
+		Logger.logIfDebug("Model loaded");
 		
 		return model;
 	}
@@ -298,7 +299,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 					}
 					catch (NullPointerException ex){
 						// Ignore
-						Environment.logIfDebug("Table missing, defaulting npt compiled to false");
+						Logger.logIfDebug("Table missing, defaulting npt compiled to false");
 					}
 					
 					nptStatuses.add(new java.util.AbstractMap.SimpleEntry(node, nptCompiled));

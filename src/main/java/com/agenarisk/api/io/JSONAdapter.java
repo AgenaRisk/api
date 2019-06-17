@@ -46,7 +46,7 @@ import uk.co.agena.minerva.model.questionnaire.Question;
 import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.Observation;
 import uk.co.agena.minerva.model.scenario.Scenario;
-import uk.co.agena.minerva.util.Environment;
+import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.model.DataPoint;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
@@ -138,7 +138,7 @@ public class JSONAdapter {
 			}
 			catch (ExtendedBNNotFoundException | ExtendedNodeNotFoundException | ExtendedStateNotFoundException ex){
 				// Ignore, should not happen
-				Environment.printThrowableIfDebug(ex);
+				Logger.printThrowableIfDebug(ex);
 			}
 		}
 		jsonDataSet.put(com.agenarisk.api.model.Observation.Field.observations.toString(), jsonObservations);
@@ -293,7 +293,7 @@ public class JSONAdapter {
 				catch (ExtendedBNNotFoundException | ExtendedNodeNotFoundException | ExtendedStateNotFoundException | JSONException ex){
 					// Ignore this error and keep going
 					// Should not happen for valid models
-					Environment.printThrowableIfDebug(ex);
+					Logger.printThrowableIfDebug(ex);
 				}
 			}
 		}
@@ -507,8 +507,8 @@ public class JSONAdapter {
 					}
 					catch(ExtendedStateNotFoundException ex){
 						// Use default answers
-						Environment.logIfDebug("Resetting answers to state mapping " + en.getConnNodeId() + " [" + en.getName().getShortDescription() + "]", Environment.err());
-						Environment.logIfDebug("Broken answer was: " + answ.getName() + " ["+answ.getConnExtendedStateId()+"]", Environment.err());
+						Logger.logIfDebug("Resetting answers to state mapping " + en.getConnNodeId() + " [" + en.getName().getShortDescription() + "]", Logger.err());
+						Logger.logIfDebug("Broken answer was: " + answ.getName() + " ["+answ.getConnExtendedStateId()+"]", Logger.err());
 //						Environment.printThrowableIfDebug(ex);
 						Question tempQstn = uk.co.agena.minerva.model.Model.generateQuestionFromNode(ebn, en);
 						qstn.setAnswers(tempQstn.getAnswers());

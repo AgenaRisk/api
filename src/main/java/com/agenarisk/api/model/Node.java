@@ -39,6 +39,7 @@ import com.agenarisk.api.model.field.Id;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import uk.co.agena.minerva.util.Environment;
+import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -332,7 +333,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				}
 			}
 			catch (JSONException ex){
-				Environment.logIfDebug("No cross network link type provided, defaulting to type = Marginals");
+				Logger.logIfDebug("No cross network link type provided, defaulting to type = Marginals");
 			}
 			
 			String stateId = jsonLink.optString(CrossNetworkLink.Field.passState.toString(), null);
