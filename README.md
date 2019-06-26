@@ -6,6 +6,9 @@ AgenaRisk Java API v2 is ultimately a convenient front-end for the AgenaRisk Cor
 - hiding most of the core functionality that was not self-explanatory or unsafe
 - fully documented features
 
+# Usage
+See [Example App](https://github.com/AgenaRisk/api-example-app) for usage example
+
 # Licensing
 Once cloned, you will need to perform mvn clean to trigger automatic download of non-Java dependencies into your project/lib directory.
 ~~~~
