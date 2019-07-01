@@ -555,14 +555,14 @@ public class DataSet implements Identifiable<DataSetException>{
 		
 		for (int i = 0; i < jsonEntries.length(); i++) {
 			JSONObject jsonEntry = jsonEntries.getJSONObject(i);
-			Object value = jsonEntry.get(Observation.Field.value.toString());
+			String value = jsonEntry.getString(Observation.Field.value.toString());
 			Double weight = jsonEntry.getDouble(Observation.Field.weight.toString());
 			
 			if (jsonEntries.length() == 1){
 				
 				// Constant
 				if (jsonObservation.has(Observation.Field.constantName.toString())){
-					setObservationConstant(node, jsonObservation.getString(Observation.Field.constantName.toString()), Double.valueOf(value+""));
+					setObservationConstant(node, jsonObservation.getString(Observation.Field.constantName.toString()), Double.valueOf(value));
 					return;
 				}
 				
