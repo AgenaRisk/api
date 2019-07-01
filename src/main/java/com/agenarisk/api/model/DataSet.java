@@ -410,11 +410,21 @@ public class DataSet implements Identifiable<DataSetException>{
 				}
 			}
 		}
-		else if (en instanceof ContinuousIntervalEN){
-			getLogicScenario().addRealObservation(ebn.getId(), en.getId(), Double.valueOf(value+""));
-		}
-		else if (en instanceof IntegerIntervalEN){
-			getLogicScenario().addIntegerObservation(ebn.getId(), en.getId(), Integer.valueOf(value+""));
+		else if (en instanceof ContinuousIntervalEN || en instanceof IntegerIntervalEN){
+			try {
+				if (en instanceof ContinuousIntervalEN){
+					Double.valueOf(String.valueOf(value));
+				}
+				if (en instanceof IntegerIntervalEN){
+					Integer.valueOf(String.valueOf(value));
+				}
+			}
+			catch (NumberFormatException ex){
+				throw new DataSetException("Invalid observation value - not a number", ex);
+			}
+			
+			uk.co.agena.minerva.model.scenario.Observation obs = new uk.co.agena.minerva.model.scenario.Observation(ebn.getId(), en.getId(), -1, new uk.co.agena.minerva.util.model.DataSet(new NameDescription("", ""), en.getId()), uk.co.agena.minerva.model.scenario.Observation.OBSERVATION_TYPE_NUMERIC, String.valueOf(value));
+			getLogicScenario().addObservation(obs, false);
 		}
 		else {
 			throw new DataSetException("Unsupported observation type");
