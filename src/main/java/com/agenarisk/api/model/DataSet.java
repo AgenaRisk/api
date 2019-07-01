@@ -730,7 +730,7 @@ public class DataSet implements Identifiable<DataSetException>{
 			String label = jsonEntry.getString(ResultValue.Field.label.toString());
 			Double value = jsonEntry.getDouble(ResultValue.Field.value.toString());
 			
-			if (en instanceof NumericalEN && label.contains(" - ")){
+			if (en instanceof NumericalEN && !(en instanceof RankedEN) && label.contains(" - ")){
 				// Interval data point
 				String[] bounds = label.split(" - ");
 				Double lowerBound = Double.valueOf(bounds[0]);
