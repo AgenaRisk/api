@@ -726,6 +726,11 @@ public class DataSet implements Identifiable<DataSetException>{
 				Double lowerBound = Double.valueOf(bounds[0]);
 				Double upperBound = Double.valueOf(bounds[1]);
 				try {
+					if (en instanceof IntegerIntervalEN){
+						int ilb = lowerBound.intValue();
+						int iub = upperBound.intValue();
+						label = ilb + ((ilb != iub)? (" - " + iub) : "");
+					}
 					IntervalDataPoint idp = new IntervalDataPoint(label, value, -1, lowerBound, upperBound);
 					ds.addDataPoint(idp);
 				}
