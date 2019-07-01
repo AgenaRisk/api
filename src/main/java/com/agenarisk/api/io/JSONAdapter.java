@@ -27,7 +27,6 @@ import uk.co.agena.minerva.model.MessagePassingLink;
 import uk.co.agena.minerva.model.MessagePassingLinks;
 import uk.co.agena.minerva.model.Model;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
-import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
@@ -37,7 +36,6 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNodeNotFoundException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
-import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
@@ -252,25 +250,32 @@ public class JSONAdapter {
 		
 		if (en instanceof RankedEN || en instanceof LabelledEN || en instanceof DiscreteRealEN){
 			// Hard / Soft observation with arc dataset
+			// Can be linked to a specific state
 			DataSet ds = observation.getDataSet();
 			for(DataPoint dp: (List<DataPoint>) ds.getDataPoints()){
 				JSONObject jsonEntry = new JSONObject();
-				ExtendedState es = en.getExtendedState(dp.getConnObjectId());
-				jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), State.computeLabel(en, es).trim());
+				
+				String value = observation.getUserEnteredAnswer();
+				ExtendedState es = null;
+				try {
+					es = en.getExtendedState(dp.getConnObjectId());
+				}
+				catch (ExtendedStateNotFoundException ex){
+				}
+				if (es != null){
+					value = es.getName().getShortDescription();
+				}
+				
+				jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), value);
 				jsonEntry.put(com.agenarisk.api.model.Observation.Field.weight.toString(), dp.getValue());
 				jsonEntries.put(jsonEntry);
 			}
 		}
 		else {
 			// Hard observation with specific value
+			// Not linked to a specific state
 			JSONObject jsonEntry = new JSONObject();
 			String observationAnswer = observation.getUserEnteredAnswer();
-			if (en instanceof DiscreteRealEN || en instanceof ContinuousIntervalEN){
-				observationAnswer = Double.valueOf(observationAnswer)+"";
-			}
-			else if (en instanceof IntegerIntervalEN){
-				observationAnswer = Integer.valueOf(observationAnswer)+"";
-			}
 			
 			jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), observationAnswer);
 			jsonEntry.put(com.agenarisk.api.model.Observation.Field.weight.toString(), 1);
