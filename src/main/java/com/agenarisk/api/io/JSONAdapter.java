@@ -3,6 +3,7 @@ package com.agenarisk.api.io;
 import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.io.stub.Meta;
+import com.agenarisk.api.io.stub.NodeGraphics;
 import com.agenarisk.api.model.NodeConfiguration;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.SummaryStatistic;
@@ -569,6 +570,10 @@ public class JSONAdapter {
 		}
 		
 		// Graphics
+		JSONObject jsonGraphics = nodeGraphicsToJSON(en);
+		if (!jsonGraphics.isEmpty()){
+			json.put(NodeGraphics.Field.graphics.toString(), jsonGraphics);
+		}
 		
 		return json;
 	}
@@ -631,6 +636,15 @@ public class JSONAdapter {
 		}
 		
 		return jsonConfig;
+	}
+	
+	protected static JSONObject nodeGraphicsToJSON(ExtendedNode en) throws JSONException {
+		JSONObject jsonGraphics = new JSONObject();
+		if (!en.getVisible()){
+			// For now, only record this if it isn't default (true)
+			jsonGraphics.put(NodeGraphics.Field.visible.toString(), en.getVisible());
+		}
+		return jsonGraphics;
 	}
 	
 	protected static JSONObject nodeTableToJSON(ExtendedNode en) throws JSONException {

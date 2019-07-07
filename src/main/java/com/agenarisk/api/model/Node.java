@@ -30,6 +30,7 @@ import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
+import com.agenarisk.api.io.stub.NodeGraphics;
 import com.agenarisk.api.model.field.Id;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -590,6 +591,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		catch (JSONException ex){
 			throw new NodeException("Failed loading model notes", ex);
+		}
+		
+		// Load graphics
+		try {
+			boolean visible = jsonNode.optJSONObject(NodeGraphics.Field.graphics.toString()).optBoolean(NodeGraphics.Field.visible.toString());
+			node.getLogicNode().setVisible(visible);
+		}
+		catch(NullPointerException ex){
+			// Ignore, property not set
 		}
 		
 		return node;

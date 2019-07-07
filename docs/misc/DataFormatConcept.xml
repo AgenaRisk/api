@@ -220,6 +220,16 @@
 						</notes>
 					</meta>
 					
+					<graphics>
+						<!--Optional-->
+						<visible>
+							<!--Optional-->
+							<!--Whether the node should be visible on Risk Map-->
+							<!--Boolean-->
+							<!--Default = True-->
+						</visible>
+					</graphics>
+					
 				</node>
 				...
 			</nodes>
