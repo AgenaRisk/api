@@ -333,7 +333,6 @@ public class DataSet implements Identifiable<DataSetException>{
 		}
 		
 		uk.co.agena.minerva.util.model.DataSet ds = new uk.co.agena.minerva.util.model.DataSet();
-		ds.addAbsoluteDataPoint(value);
 		
 		uk.co.agena.minerva.model.scenario.Observation observation = new uk.co.agena.minerva.model.scenario.Observation(
 			ebn.getId(),
