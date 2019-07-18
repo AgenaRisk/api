@@ -274,14 +274,14 @@ public class JSONUtils {
 		}
 		
 		if (jo1 == null && jo2 != null || jo1 != null && jo2 == null){
-			System.out.println("return 1");
+//			System.out.println("return 1");
 			return false;
 		}
 		
 		if (jo1.length() != jo2.length()){
-			System.out.println("return 2");
-			System.out.println(jo1);
-			System.out.println(jo2);
+//			System.out.println("return 2");
+//			System.out.println(jo1);
+//			System.out.println(jo2);
 			return false;
 		}
 		
@@ -289,7 +289,7 @@ public class JSONUtils {
 		while(keys.hasNext()){
 			String key = keys.next();
 			if (!jo2.has(key)){
-				System.out.println("return 3");
+//				System.out.println("return 3");
 				return false;
 			}
 			
@@ -297,7 +297,7 @@ public class JSONUtils {
 			Object el2 = jo2.opt(key);
 			boolean equals = equalsJSONComponents(el1, el2);
 			if (!equals){
-				System.out.println("return 4");
+//				System.out.println("return 4");
 				return false;
 			}
 		}
@@ -327,15 +327,15 @@ public class JSONUtils {
 		}
 		
 		if (ja1 == null && ja2 != null || ja1 != null && ja2 == null){
-			System.out.println("return 5");
+//			System.out.println("return 5");
 			return false;
 		}
 		
 		if (ja1.length() != ja2.length()){
-			System.out.println("COMPARING");
-			System.out.println(ja1);
-			System.out.println(ja2);
-			System.out.println("return 6");
+//			System.out.println("COMPARING");
+//			System.out.println(ja1);
+//			System.out.println(ja2);
+//			System.out.println("return 6");
 			return false;
 		}
 		
@@ -344,7 +344,7 @@ public class JSONUtils {
 			Object el2 = ja2.opt(i);
 			boolean equals = equalsJSONComponents(el1, el2);
 			if (!equals){
-				System.out.println("return 7");
+//				System.out.println("return 7");
 				return false;
 			}
 		}
@@ -374,12 +374,12 @@ public class JSONUtils {
 		}
 		
 		if (o1 == null && o2 != null || o1 != null && o2 == null){
-			System.out.println("return 8");
+//			System.out.println("return 8");
 			return false;
 		}
 		
 		if (!o1.getClass().getName().equalsIgnoreCase(o2.getClass().getName())) {
-			System.out.println("return 9");
+//			System.out.println("return 9");
 			return false;
 		}
 		
@@ -407,9 +407,9 @@ public class JSONUtils {
 			}
 			
 			boolean comparison = s1.equalsIgnoreCase(s2);
-			if (!comparison){
-				System.out.println("return 10");
-			}
+//			if (!comparison){
+//				System.out.println("return 10");
+//			}
 			
 			return comparison;
 		}
@@ -419,9 +419,9 @@ public class JSONUtils {
 			o1 = df.format(o1);
 			o2 = df.format(o2);
 			boolean comparison = o1.equals(o2);
-			if (!comparison){
-				System.out.println("return 11");
-			}
+//			if (!comparison){
+//				System.out.println("return 11: "+o1 +" <> "+o2);
+//			}
 			return comparison;
 		}
 		
