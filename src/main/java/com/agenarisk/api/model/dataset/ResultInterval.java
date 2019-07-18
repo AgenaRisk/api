@@ -18,12 +18,13 @@ public class ResultInterval extends ResultValue {
 	 * Constructor for ResultInterval.
 	 * 
 	 * @param calculationResult Marginal containing the data set
+	 * @param label entry label (state or range); if null is provided, the label will be computed from range bounds
+	 * @param value probability mass value
 	 * @param lowerBound lower bound of the range
 	 * @param upperBound upper bound of the range
-	 * @param value probability mass value
 	 */
-	public ResultInterval(CalculationResult calculationResult, double lowerBound, double upperBound, double value) {
-		super(calculationResult, computeLabel(lowerBound, upperBound), value);
+	public ResultInterval(CalculationResult calculationResult, String label, double value, double lowerBound, double upperBound) {
+		super(calculationResult, (label == null)?computeLabel(lowerBound, upperBound):label, value);
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
 	}
