@@ -358,15 +358,6 @@ public class CalculationResult {
 	}
 
 	/**
-	 * Gets the DataSet containing this result.
-	 * 
-	 * @return DataSet containing this result
-	 */
-	public DataSet getDataset() {
-		return dataset;
-	}
-
-	/**
 	 * Returns if the calculation result is for a continuous variable.
 	 * 
 	 * @return true if the calculation result is for a continuous variable
