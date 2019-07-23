@@ -543,22 +543,6 @@
 						<!--Converted into an array of objects in JSON-->
 						<!--Corresponds to uk.co.agena.minerva.util.model.DataSet-->
 						
-						<summaryStatistics>
-							<!--Summary statistics of the calculation result-->
-							<!--Only available if the node is a numerical node-->
-
-							<confidenceInterval></confidenceInterval>
-							<mean></mean>
-							<median></median>
-							<standardDeviation></standardDeviation>
-							<variance></variance>
-							<entropy></entropy>
-							<percentile></percentile>
-							<lowerPercentile></lowerPercentile>
-							<upperPercentile></upperPercentile>
-
-						</summaryStatistics>
-						
 						<resultValue>
 							<!--Tag omitted during XML-to-JSON conversion-->
 							<!--Corresponds to uk.co.agena.minerva.util.model.DataPoint for discrete nodes-->
@@ -576,6 +560,23 @@
 						</resultValue>
 						...
 					</resultValues>
+					
+					<summaryStatistics>
+						<!--Summary statistics of the calculation result-->
+						<!--Only available if the node is a numerical node-->
+
+						<confidenceInterval></confidenceInterval>
+						<mean></mean>
+						<median></median>
+						<standardDeviation></standardDeviation>
+						<variance></variance>
+						<entropy></entropy>
+						<percentile></percentile>
+						<lowerPercentile></lowerPercentile>
+						<upperPercentile></upperPercentile>
+
+					</summaryStatistics>
+					
 				</result>
 				...
 			</results>
