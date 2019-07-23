@@ -284,74 +284,83 @@ public class CalculationResult {
 	public ResultValue getResultValue(String label) {
 		return resultValues.get(label);
 	}
+	
+	/**
+	 * Gets confidence interval value for this result
+	 * 
+	 * @return confidence interval
+	 */
+	public double getConfidenceInterval(){
+		return logicResult.getConfidenceInterval();
+	}
 
 	/**
-	 * Gets entropy error value for this data set
+	 * Gets entropy error value for this result
 	 * 
-	 * @return entropy error value for this data set
+	 * @return entropy error value for this result
 	 */
 	public double getEntropy() {
 		return logicResult.getEntropyValue();
 	}
 
 	/**
-	 * Gets variance value for this data set.
+	 * Gets variance value for this result.
 	 * 
-	 * @return variance value for this data set
+	 * @return variance value for this result
 	 */
 	public double getVariance() {
 		return logicResult.getVarianceValue();
 	}
 
 	/**
-	 * Gets standard deviation value for this data set.
+	 * Gets standard deviation value for this result.
 	 * 
-	 * @return standard deviation value for this data set
+	 * @return standard deviation value for this result
 	 */
 	public double getStandardDeviation() {
 		return logicResult.getStandardDeviationValue();
 	}
 
 	/**
-	 * Gets mean value for this data set.
+	 * Gets mean value for this result.
 	 * 
-	 * @return mean value for this data set
+	 * @return mean value for this result
 	 */
 	public double getMean() {
 		return logicResult.getMeanValue();
 	}
 
 	/**
-	 * Gets median value for this data set.
+	 * Gets median value for this result.
 	 * 
-	 * @return median value for this data set
+	 * @return median value for this result
 	 */
 	public double getMedian() {
 		return logicResult.getMedianValue();
 	}
 
 	/**
-	 * Gets percentile value for this data set.
+	 * Gets percentile value for this result.
 	 * 
-	 * @return percentile value for this data set
+	 * @return percentile value for this result
 	 */
 	public double getPercentile() {
 		return logicResult.getPercentileValue();
 	}
 
 	/**
-	 * Gets lower percentile value for this data set.
+	 * Gets lower percentile value for this result.
 	 * 
-	 * @return lower percentile value for this data set
+	 * @return lower percentile value for this result
 	 */
 	public double getLowerPercentile() {
 		return logicResult.getLowerPercentile();
 	}
 
 	/**
-	 * Gets upper percentile value for this data set.
+	 * Gets upper percentile value for this result.
 	 * 
-	 * @return upper percentile value for this data set
+	 * @return upper percentile value for this result
 	 */
 	public double getUpperPercentile() {
 		return logicResult.getUpperPercentile();
