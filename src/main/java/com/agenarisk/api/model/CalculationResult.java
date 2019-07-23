@@ -7,6 +7,7 @@ import com.agenarisk.api.model.dataset.ResultValue;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import uk.co.agena.minerva.model.MarginalDataItem;
@@ -375,4 +376,53 @@ public class CalculationResult {
 		return continuous;
 	}
 	
+	/**
+	 * Returns a JSON representation of this object.
+	 * 
+	 * @return JSON
+	 */
+	public JSONObject toJson(){
+		JSONObject json = new JSONObject();
+		json.put(Field.node.toString(), node.getId());
+		json.put(Field.network.toString(), node.getNetwork().getId());
+		json.put(ResultValue.Field.resultValues.toString(), new JSONArray(resultValues.values().stream().map(rv -> rv.toJson()).collect(Collectors.toList())));
+		if (continuous){
+			JSONObject ssJson = new JSONObject();
+			
+			ssJson.put(SummaryStatistic.Field.confidenceInterval.toString(), getConfidenceInterval());
+			ssJson.put(SummaryStatistic.Field.entropy.toString(), getEntropy());
+			ssJson.put(SummaryStatistic.Field.lowerPercentile.toString(), getLowerPercentile());
+			ssJson.put(SummaryStatistic.Field.mean.toString(), getMean());
+			ssJson.put(SummaryStatistic.Field.median.toString(), getMedian());
+			ssJson.put(SummaryStatistic.Field.percentile.toString(), getPercentile());
+			ssJson.put(SummaryStatistic.Field.standardDeviation.toString(), getStandardDeviation());
+			ssJson.put(SummaryStatistic.Field.upperPercentile.toString(), getUpperPercentile());
+			ssJson.put(SummaryStatistic.Field.variance.toString(), getVariance());
+			
+			json.put(SummaryStatistic.Field.summaryStatistics.toString(), ssJson);
+		}
+		
+		return json;
+	}
+	
+	/**
+	 * Returns a String value of the JSON representation of this object.
+	 * 
+	 * @return JSON string
+	 */
+	@Override
+	public String toString(){
+		return toJson().toString();
+	}
+	
+	/**
+	 * Returns a String value of the JSON representation of this object.
+	 * 
+	 * @param indentFactor Larger number indicates the depth to which new lines and tabs should be used to indent the JSON string
+	 * 
+	 * @return Indented JSON string
+	 */
+	public String toString(int indentFactor){
+		return toJson().toString(indentFactor);
+	}
 }
