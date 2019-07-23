@@ -774,6 +774,15 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
+	 * Returns DataSets of this Model as a list
+	 * 
+	 * @return list of DataSets
+	 */
+	public List<DataSet> getDataSetList() {
+		return new ArrayList<>(dataSets.values());
+	}
+	
+	/**
 	 * Creates a CrossNetworkLink of given Type.
 	 * <br>
 	 * Type can not be CrossNetworkLink.Type.State, use createCrossNetworkLink(Node, Node, String) instead.
