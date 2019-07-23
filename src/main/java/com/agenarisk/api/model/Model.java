@@ -521,6 +521,15 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public Map<String, Network> getNetworks() {
 		return networks.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, LinkedHashMap::new));
 	}
+	
+	/**
+	 * Returns Networks of this Model as a list
+	 * 
+	 * @return list of Networks
+	 */
+	public List<Network> getNetworkList(){
+		return new ArrayList<>(networks.values());
+	}
 
 	/**
 	 * Returns the underlying ExtendedBN.
