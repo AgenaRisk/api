@@ -15,6 +15,7 @@ import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -551,6 +552,15 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 */
 	public Map<String, Node> getNodes() {
 		return nodes.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue(), (i, j) -> i, LinkedHashMap::new));
+	}
+	
+	/**
+	 * Returns Nodes of this Network as a list
+	 * 
+	 * @return list of Nodes
+	 */
+	public List<Node> getNodeList(){
+		return new ArrayList<>(nodes.values());
 	}
 
 	/**
