@@ -1,7 +1,11 @@
 package com.agenarisk.test;
 
+import com.agenarisk.api.model.Model;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +15,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.XML;
 import org.junit.rules.TemporaryFolder;
+import uk.co.agena.minerva.util.Logger;
 
 /**
  *
@@ -72,5 +81,27 @@ public class TestHelper {
 	public static TemporaryFolder initTemporaryFolder(){
 		TEMPORARY_FOLDER = new TemporaryFolder();
 		return TEMPORARY_FOLDER;
+	}
+	
+	public static Model loadModelFromResource(String resourcePath) {
+		
+		try (InputStream is = TestHelper.class.getResourceAsStream(resourcePath); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+			String content = br.lines().collect(Collectors.joining("\n"));
+			
+			try {
+				return Model.createModel(new JSONObject(content));
+			}
+			catch (JSONException ex){
+				// XML?
+				return Model.createModel(XML.toJSONObject(content));
+			}
+			
+			// If neither, just fail
+		}
+		catch (Exception ex){
+			Logger.logIfDebug("Failed to read from resource `"+resourcePath+"`: " + ex.getMessage());
+			return null;
+		}
+		
 	}
 }
