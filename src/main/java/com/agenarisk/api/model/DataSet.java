@@ -8,9 +8,12 @@ import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.Identifiable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.json.JSONArray;
@@ -635,9 +638,8 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @param node the Node for which CalculationResult should be returned
 	 * 
 	 * @return CalculationResult for the given Node
-	 * @throws DataSetException if there are no results in this DataSet for this Node or the Node and DataSet belong to different Models
 	 */
-	public CalculationResult getCalculationResult(Node node) throws DataSetException {
+	public CalculationResult getCalculationResult(Node node) {
 		return CalculationResult.getCalculationResult(this, node);
 	}
 	
@@ -647,7 +649,27 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @return list of all CalculationResults for all Nodes for this DataSet
 	 */
 	public List<CalculationResult> getCalculationResults() {
-		throw new UnsupportedOperationException("Not implemented");
+		return getModel()
+				.getNetworks()
+				.values()
+				.stream()
+				.flatMap(network -> getCalculationResults(network).values().stream())
+				.collect(Collectors.toList());
+	}
+	
+	/**
+	 * Maps nodes to calculation results in the given network in this data set.
+	 * 
+	 * @param network Network to get calculation results for
+	 * 
+	 * @return map of nodes to results
+	 */
+	public Map<Node, CalculationResult> getCalculationResults(Network network) {
+		return network
+				.getNodes()
+				.values()
+				.stream()
+				.collect(Collectors.toMap(node -> node, node -> CalculationResult.getCalculationResult(this, node)));
 	}
 	
 	/**
