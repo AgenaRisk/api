@@ -139,7 +139,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		}
 		
 		// Create links
-		JSONArray jsonLinks = jsonNetwork.getJSONArray(Link.Field.links.toString());
+		JSONArray jsonLinks = jsonNetwork.optJSONArray(Link.Field.links.toString());
 		if (jsonLinks != null){
 			for(int i = 0; i < jsonLinks.length(); i++){
 				JSONObject jsonLink = jsonLinks.getJSONObject(i);
