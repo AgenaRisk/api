@@ -1,0 +1,92 @@
+<model>
+	
+	<networks>
+		
+		<network>
+			<id>net1</id>
+			<nodes>
+				<node>
+					<id>n_normal</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<simulated>true</simulated>
+						<table>
+							<type>Expression</type>
+							<expressions>
+								<expression>Normal(n_mean,n_var)</expression>
+							</expressions>
+						</table>
+					</configuration>
+				</node>
+			
+				<node>
+					<id>n_var</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<simulated>true</simulated>
+						<table>
+							<type>Expression</type>
+							<expressions>
+								<expression>Normal(1000,100)</expression>
+							</expressions>
+						</table>
+					</configuration>
+				</node>
+			
+				<node>
+					<id>n_mean</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<simulated>true</simulated>
+					</configuration>
+				</node>
+			
+			</nodes>
+	
+		
+			<links>
+				<link>
+					<parent>n_var</parent>
+					<child>n_normal</child>
+				</link>
+			
+				<link>
+					<parent>n_mean</parent>
+					<child>n_normal</child>
+				</link>
+			</links>
+		
+		</network>
+		
+		<network>
+			<id>net2</id>
+			<nodes>
+				<node>
+					<id>n_mean</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<simulated>true</simulated>
+						<table>
+							<type>Expression</type>
+							<expressions>
+								<expression>Normal(100,10000)</expression>
+							</expressions>
+						</table>
+					</configuration>
+				</node>
+			</nodes>
+			
+		</network>
+		
+	</networks>
+	
+	<links>
+		<link>
+			<sourceNetwork>net2</sourceNetwork>
+			<targetNetwork>net1</targetNetwork>
+			<sourceNode>n_mean</sourceNode>
+			<targetNode>n_mean</targetNode>
+		</link>
+	</links>
+	
+</model>
