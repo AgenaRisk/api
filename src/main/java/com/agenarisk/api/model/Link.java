@@ -156,7 +156,7 @@ public class Link implements Comparable<Link>, Storable {
 	 * @return string representation of the Link
 	 */
 	public String toStringExtra(){
-		return fromNode.toStringExtra() + " → " + toNode.toStringExtra();
+		return fromNode.toStringExtra() + " -> " + toNode.toStringExtra();
 	}
 
 	/**
