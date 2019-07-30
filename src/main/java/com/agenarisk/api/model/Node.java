@@ -419,8 +419,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					throw new LinkException("Node " + fromNode.toStringExtra() + " already appears to be configured for cross network incoming link");
 				}
 				
-				if (!Objects.equals(fromNode.getType(), toNode.getType())){
-					throw new LinkException("Cross network link can only be created between nodes of the same type (" + fromNode + " is " + fromNode.getType() + ", " + toNode + " is " + toNode.getType() + ")");
+				if (Objects.equals(fromNode.getType(), toNode.getType()) && Objects.equals(fromNode.isSimulated(), toNode.isSimulated()) /* Same type and same simulation */
+						|| !fromNode.isNumericInterval() && !Type.DiscreteReal.equals(fromNode.getType()) && toNode.isSimulated() /* Not numeric going to simulation */
+						|| Objects.equals(fromNode.getType(), toNode.getType()) && fromNode.isSimulated() /* Numeric sim interval going into same non-sim type */
+					){
+					// OK
+				}
+				else {
+					throw new LinkException("Cross network link not allowed between nodes (" + fromNode + " is " + fromNode.getType() + ", " + toNode + " is " + toNode.getType() + "), see documentation");
 				}
 				
 				if (!fromNode.isSimulated() && !toNode.isSimulated() && fromNode.getLogicNode().getExtendedStates().size() != toNode.getLogicNode().getExtendedStates().size()){
