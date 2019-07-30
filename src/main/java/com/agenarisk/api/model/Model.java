@@ -260,7 +260,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 			
 		for(int i = 0; i < jsonNetworks.length(); i++){
 			// Call public method to create a network in model from JSON
-			model.createNetwork(jsonNetworks.getJSONObject(i));
+			model.createNetwork(jsonNetworks.getJSONObject(i), false);
 		}
 
 		// Create cross cross network links
@@ -385,7 +385,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * <br>
 	 * Creates all member components.
 	 * <br>
-	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>node.setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * Note: loading node tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
 	 * 
 	 * @param jsonNetwork JSONObject representing the network, including structure, tables, graphics etc
 	 * 
@@ -396,10 +396,30 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @throws ModelException
 	 */
 	public Network createNetwork(JSONObject jsonNetwork) throws ModelException {
+		return createNetwork(jsonNetwork, true);
+	}
+	
+	/**
+	 * Creates a Network and adds it to this Model.
+	 * <br>
+	 * Creates all member components.
+	 * <br>
+	 * Note: loading node tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * 
+	 * @param jsonNetwork JSONObject representing the network, including structure, tables, graphics etc
+	 * @param withTables whether to load node tables from JSON
+	 * 
+	 * @return Network object
+	 * 
+	 * @see Node#setTable(JSONObject)
+	 * 
+	 * @throws ModelException
+	 */
+	public Network createNetwork(JSONObject jsonNetwork, boolean withTables) throws ModelException {
 		Network network;
 		try {
 			// Call protected method that actually creates everything in the network
-			network = Network.createNetwork(this, jsonNetwork);
+			network = Network.createNetwork(this, jsonNetwork, withTables);
 		}
 		catch (NetworkException | JSONException ex){
 			throw new ModelException("Failed to create Network", ex);

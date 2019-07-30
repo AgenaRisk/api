@@ -494,12 +494,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return new Node(network, id, name, type);
 	}
 	
-	/**
+		/**
 	 * Factory method to create a Node for use by the Network class.
 	 * <br>
 	 * Creates the underlying logic objects.
 	 * <br>
-	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * Note: loading tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
 	 * 
 	 * @param network Network that the Node will be added to
 	 * @param jsonNode configuration of the Node
@@ -512,6 +512,28 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws JSONException if JSON configuration is incomplete or invalid
 	 */
 	protected static Node createNode(Network network, JSONObject jsonNode) throws NodeException, JSONException {
+		return createNode(network, jsonNode, true);
+	}
+	
+	/**
+	 * Factory method to create a Node for use by the Network class.
+	 * <br>
+	 * Creates the underlying logic objects.
+	 * <br>
+	 * Note: loading tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * 
+	 * @param network Network that the Node will be added to
+	 * @param jsonNode configuration of the Node
+	 * @param withTables whether to load node tables from JSON
+	 * 
+	 * @return created Node
+	 * 
+	 * @see #setTable(JSONObject)
+	 * 
+	 * @throws NodeException if failed to create the node
+	 * @throws JSONException if JSON configuration is incomplete or invalid
+	 */
+	protected static Node createNode(Network network, JSONObject jsonNode, boolean withTables) throws NodeException, JSONException {
 		String id = jsonNode.getString(Field.id.toString());
 		String name = jsonNode.optString(Field.name.toString());
 		String description = jsonNode.optString(Field.description.toString());
@@ -563,8 +585,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			throw new NodeException("Can't mark node as input node", ex);
 		}
 		
-		
-		
 		// Create variables
 		JSONArray jsonVariables = jsonConfiguration.optJSONArray(NodeConfiguration.Variables.variables.toString());
 		if (jsonVariables != null){
@@ -579,6 +599,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					throw new NodeException("Duplicate variable names detected", ex);
 				}
 			}
+		}
+		
+		if (withTables){
+			JSONObject jsonTable = jsonConfiguration.optJSONObject(NodeConfiguration.Table.table.toString());
+			node.setTable(jsonTable);
 		}
 		
 		// Retrieve and store properties that are not used in the API but should persist through load/save

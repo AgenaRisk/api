@@ -99,7 +99,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	/**
 	 * Factory method to be called by a Model object that is trying to add a Network to itself.
 	 * <br>
-	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>node.setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * Note: loading node tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
 	 * 
 	 * @param model the Model to add a Network to
 	 * @param jsonNetwork JSONObject representing the network, including structure, tables, graphics etc
@@ -112,6 +112,26 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @throws NetworkException if failed to load a network or node or if an object not found
 	 */
 	protected static Network createNetwork(Model model, JSONObject jsonNetwork) throws JSONException, NetworkException {
+		return createNetwork(model, jsonNetwork, true);
+	}
+	
+	/**
+	 * Factory method to be called by a Model object that is trying to add a Network to itself.
+	 * <br>
+	 * Note: loading node tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * 
+	 * @param model the Model to add a Network to
+	 * @param jsonNetwork JSONObject representing the network, including structure, tables, graphics etc
+	 * @param withTables whether to load node tables from JSON
+	 * 
+	 * @return the created Network
+	 * 
+	 * @see Node#setTable(JSONObject)
+	 * 
+	 * @throws JSONException if JSON configuration is incomplete or invalid
+	 * @throws NetworkException if failed to load a network or node or if an object not found
+	 */
+	protected static Network createNetwork(Model model, JSONObject jsonNetwork, boolean withTables) throws JSONException, NetworkException {
 		String id = jsonNetwork.getString(Network.Field.id.toString());
 		String name = jsonNetwork.optString(Network.Field.name.toString());
 		String description = jsonNetwork.optString(Network.Field.description.toString());
@@ -134,7 +154,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		JSONArray jsonNodes = jsonNetwork.getJSONArray(Node.Field.nodes.toString());
 		if (jsonNodes != null){
 			for(int i = 0; i < jsonNodes.length(); i++){
-				network.createNode(jsonNodes.getJSONObject(i));
+				network.createNode(jsonNodes.getJSONObject(i), false);
 			}
 		}
 		
@@ -162,6 +182,23 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 				}
 				catch (LinkException ex){
 					throw new NetworkException("Failed to link nodes " + parent + " and " + child, ex);
+				}
+			}
+		}
+		
+		// Load node tables
+		if (withTables && jsonNodes != null){
+			for(int i = 0; i < jsonNodes.length(); i++){
+				JSONObject jsonNode = jsonNodes.getJSONObject(i);
+				Node node = network.getNode(jsonNode.getString(Node.Field.id.toString()));
+
+				JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
+				JSONObject jsonTable = jsonConfiguration.optJSONObject(NodeConfiguration.Table.table.toString());
+				try {
+					node.setTable(jsonTable);
+				}
+				catch (NodeException ex){
+					throw new NetworkException("Failed to load table for node " + node, ex);
 				}
 			}
 		}
@@ -261,7 +298,34 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	/**
 	 * Creates a Node from its JSONObject specification and adds it to this Network.
 	 * <br>
-	 * Note: this <b>does not</b> load node's table from JSON. Instead, use <code>node.setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * Note: loading node tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
+	 * 
+	 * @param jsonNode JSONObject with full Node's configuration
+	 * @param withTables whether to load node tables from JSON
+	 * 
+	 * @return the created Node
+	 * 
+	 * @see Node#setTable(JSONObject)
+	 * 
+	 * @throws NetworkException if Node creation failed (Node with given ID already exists; or JSON configuration is missing required attributes)
+	 */
+	public Node createNode(JSONObject jsonNode, boolean withTables) throws NetworkException {
+		
+		Node node;
+		try {
+			node = Node.createNode(this, jsonNode, withTables);
+		}
+		catch (NodeException | JSONException ex){
+			throw new NetworkException("Failed to create Node", ex);
+		}
+		
+		return node;
+	}
+	
+	/**
+	 * Creates a Node from its JSONObject specification and adds it to this Network.
+	 * <br>
+	 * Note: loading node tables will fail if parent nodes do not exist in the model. In that case load all nodes first without tables and then use <code>setTable(JSONObject)</code> after all nodes, states, intra and cross network links had been created.
 	 * 
 	 * @param jsonNode JSONObject with full Node's configuration
 	 * 
@@ -272,17 +336,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @throws NetworkException if Node creation failed (Node with given ID already exists; or JSON configuration is missing required attributes)
 	 */
 	public Node createNode(JSONObject jsonNode) throws NetworkException {
-		
-		Node node;
-		try {
-			node = Node.createNode(this, jsonNode);
-		}
-		catch (NodeException | JSONException ex){
-			throw new NetworkException("Failed to create Node", ex);
-		}
-		
-		return node;
-
+		return createNode(jsonNode, true);
 	}
 
 	/**
