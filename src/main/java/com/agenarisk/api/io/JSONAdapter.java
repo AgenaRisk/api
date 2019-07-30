@@ -391,7 +391,7 @@ public class JSONAdapter {
 		return jsonNetworks;
 	}
 	
-	protected static JSONObject toJSONObject(ExtendedBN ebn) throws JSONException, ExtendedBNException {
+	public static JSONObject toJSONObject(ExtendedBN ebn) throws JSONException, ExtendedBNException {
 		JSONObject jsonNetwork = new JSONObject();
 		
 		jsonNetwork.put(Network.Field.id.toString(), ebn.getConnID());
@@ -549,7 +549,7 @@ public class JSONAdapter {
 		return jsonRiskTable;
 	}
 	
-	protected static JSONObject toJSONObject(ExtendedNode en) throws JSONException {
+	public static JSONObject toJSONObject(ExtendedNode en) throws JSONException {
 		JSONObject json = new JSONObject();
 		
 		// Fields
@@ -647,7 +647,7 @@ public class JSONAdapter {
 		return jsonGraphics;
 	}
 	
-	protected static JSONObject nodeTableToJSON(ExtendedNode en) throws JSONException {
+	public static JSONObject nodeTableToJSON(ExtendedNode en) throws JSONException {
 		JSONObject jsonTable = new JSONObject();
 		
 		// Type
