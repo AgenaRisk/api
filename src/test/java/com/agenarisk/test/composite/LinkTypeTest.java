@@ -10,6 +10,7 @@ import com.agenarisk.api.model.Node;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONObject;
+import org.junit.Test;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 
 /**
@@ -19,7 +20,8 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedState;
  */
 public class LinkTypeTest {
 
-	public static void main(String[] args) throws Exception {
+	@Test
+	public void testLinkTypes() throws Exception {
 
 		Model model = Model.createModel();
 
@@ -33,7 +35,7 @@ public class LinkTypeTest {
 		model.calculate();
 	}
 
-	private static void testValidLinks(Model model) throws Exception {
+	private void testValidLinks(Model model) throws Exception {
 		Node nodeSim;
 		Network netSrc = model.createNetwork("src");
 		netSrc.createNode("n_bool", Node.Type.Boolean);
@@ -116,7 +118,7 @@ public class LinkTypeTest {
 		Node.linkNodes(nodeSrc, netDst.getNode("n_int_sim"), CrossNetworkLink.Type.State, "Medium");
 	}
 
-	private static void testFaultyInput(Model model) {
+	private void testFaultyInput(Model model) {
 		// Now test that all other types of links fail
 		model.getNetworkList().forEach(netDst -> {
 			List<Network> netParents = new ArrayList(netDst.getParents());
