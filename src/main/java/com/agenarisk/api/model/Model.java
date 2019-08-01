@@ -286,7 +286,9 @@ public class Model implements IDContainer<ModelException>, Storable {
 					JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
 					JSONObject jsonTable = jsonConfiguration.optJSONObject(NodeConfiguration.Table.table.toString());
 					try {
-						node.setTable(jsonTable);
+						if (!node.getLogicNode().isConnectableInputNode()){
+							node.setTable(jsonTable);
+						}
 					}
 					catch (NodeException ex){
 						throw new ModelException("Failed to load table for node " + node, ex);
