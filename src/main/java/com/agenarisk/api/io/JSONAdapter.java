@@ -691,7 +691,13 @@ public class JSONAdapter {
 		}
 		
 		for(ExtendedNodeFunction enf: enfs){
-			String expressionString = enf.getName().replaceAll(" ", "");
+			String expressionString = "";
+			try {
+				expressionString = enf.getName().replaceAll(" ", "");
+			}
+			catch (NullPointerException ex){
+				throw new AgenaRiskRuntimeException("Node `" + en.getName().getShortDescription() + " (" + en.getConnNodeId() + ")`" + " is expected to have expressions, but has none", ex);
+			}
 			expressionString += "(" + enf.getParameters().stream().collect(Collectors.joining(",")) + ")";
 			jsonExpressions.put(expressionString);
 		}
