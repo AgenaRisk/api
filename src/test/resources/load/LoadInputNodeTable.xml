@@ -1,0 +1,53 @@
+<model>
+
+	<networks>
+		
+		<network>
+			<id>net1</id>
+			<nodes>
+				<node>
+					<id>nn1</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<table>
+							<type>Expression</type>
+							<expressions>
+								<expression>Arithmetic(100)</expression>
+							</expressions>
+						</table>
+					</configuration>
+				</node>
+			</nodes>
+		</network>
+		
+		<network>
+			<id>net2</id>
+			<nodes>
+				<node>
+					<id>nn2</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<table>
+							<type>Expression</type>
+							<expressions>
+								<expression>Arithmetic(dynamic_New_Node)</expression>
+							</expressions>
+						</table>
+					</configuration>
+				</node>
+			</nodes>
+		</network>
+		
+	</networks>
+	
+	<links>
+		<link>
+			<sourceNetwork>net1</sourceNetwork>
+			<sourceNode>nn1</sourceNode>
+			<targetNetwork>net2</targetNetwork>
+			<targetNode>nn2</targetNode>
+			<type>Marginals</type>
+		</link>
+	</links>
+
+</model>
