@@ -186,17 +186,26 @@ public class JSONAdapter {
 				DataSet ds = mdi.getDataset();
 				
 				if (en instanceof NumericalEN){
-					JSONObject jsonSS = new JSONObject();
-					jsonSS.put(SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
-					jsonSS.put(SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
-					jsonSS.put(SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
-					jsonSS.put(SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
-					jsonSS.put(SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
-					jsonSS.put(SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
-					jsonSS.put(SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
-					jsonSS.put(SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
-					jsonSS.put(SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
-					jsonResult.put(SummaryStatistic.Field.summaryStatistics.toString(), jsonSS);
+					try {
+						JSONObject jsonSS = new JSONObject();
+						jsonSS.put(SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
+						jsonSS.put(SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
+						jsonSS.put(SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
+						jsonSS.put(SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
+						jsonSS.put(SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
+						jsonSS.put(SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
+						jsonSS.put(SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
+						jsonSS.put(SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
+						jsonSS.put(SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
+						jsonResult.put(SummaryStatistic.Field.summaryStatistics.toString(), jsonSS);
+					}
+					catch (JSONException ex){
+						if (ex.getMessage().contains("JSON does not allow non-finite numbers")){
+							throw new AgenaRiskRuntimeException("Result data is corrupt, please recalculate the model", ex);
+						}
+						
+						throw ex;
+					}
 				}
 				
 				JSONArray jsonResultValues = new JSONArray();
