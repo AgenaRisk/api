@@ -8,6 +8,7 @@ import com.agenarisk.api.exception.NodeException;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.JSONUtils;
+import com.agenarisk.api.util.Advisory;
 import com.singularsys.jep.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -768,12 +769,27 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			
 			if(tableType.equalsIgnoreCase(NodeConfiguration.TableType.Manual.toString())){
 				if (this.isSimulated()){
-					throw new NodeException("Can't set a manual NPT for a simulated node");
+					if (!Advisory.addMessageIfLinked("Node " + toStringExtra() + " is simulated, but the table data had a Manual table type. We recommend to check the expressions in this node.")) {
+						// If Advisory is linked, the invalid table will be applied as is
+						throw new NodeException("Can't set a manual NPT for a simulated node");
+					}
 				}
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.Table.expression.toString())){
 				String expression = jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()).getString(0);
-				setTableFunction(expression, allowedTokens);
+				try {
+					setTableFunction(expression, allowedTokens);
+				}
+				catch (NodeException ex){
+					if (Advisory.getCurrentThreadGroup() != null){
+						// We are in advisory mode, relax conditions for parser
+						setTableFunction(expression, null);
+						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
+					}
+					else {
+						throw ex;
+					}
+				}
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Partitioned.toString())){
 				// Get parents used for partitioning (can be only a subset of all parents)
