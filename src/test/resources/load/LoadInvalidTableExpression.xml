@@ -1,0 +1,57 @@
+<model>
+
+	<networks>
+		
+		<network>
+			<id>net1</id>
+			<nodes>
+				<node>
+					<id>nn1</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<table>
+							<type>Expression</type>
+							<expressions>
+								<expression>Arithmetic(abc)</expression>
+							</expressions>
+						</table>
+					</configuration>
+				</node>
+				
+				<node>
+					<id>nn3</id>
+					<configuration>
+						<type>Boolean</type>
+					</configuration>
+				</node>
+				
+				<node>
+					<id>nn2</id>
+					<configuration>
+						<type>ContinuousInterval</type>
+						<table>
+							<type>Partitioned</type>
+							<partitions>
+								<partition>nn3</partition>
+							</partitions>
+							<expressions>
+								<expression>Arithmetic(foo)</expression>
+								<expression>Arithmetic(bar)</expression>
+							</expressions>
+						</table>
+					</configuration>
+				</node>
+				
+			</nodes>
+			
+			<links>
+				<link>
+					<parent>nn3</parent>
+					<child>nn2</child>
+				</link>
+			</links>
+		</network>
+		
+	</networks>
+
+</model>

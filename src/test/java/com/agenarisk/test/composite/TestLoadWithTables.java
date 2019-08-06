@@ -1,7 +1,11 @@
 package com.agenarisk.test.composite;
 
+import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.model.Model;
+import com.agenarisk.api.util.Advisory;
+import com.agenarisk.api.util.JSONUtils;
 import com.agenarisk.test.TestHelper;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -27,4 +31,22 @@ public class TestLoadWithTables {
 		model.calculate();
 	}
 	
+	@Test
+	public void testLoadInvalidTables() throws Exception {
+		boolean error = false;
+		try {
+			Model model = TestHelper.loadModelFromResource("/load/LoadInvalidTableExpression.xml");
+		}
+		catch (Exception ex){
+			error = true;
+		}
+		// We expect the model loading to fail without Advisory
+		Assert.assertEquals(true, error);
+		
+		Advisory.getGroupByKey(this).linkToThread(Thread.currentThread());
+		Model model = TestHelper.loadModelFromResource("/load/LoadInvalidTableExpression.xml");
+		Assert.assertEquals("Arithmetic(abc)",model.getNetworkList().get(0).getNode("nn1").getLogicNode().getExpression().toString());
+		Assert.assertEquals("Arithmetic(foo)",model.getNetworkList().get(0).getNode("nn2").getLogicNode().getPartitionedExpressions().get(0).toString());
+		Assert.assertEquals("Arithmetic(bar)",model.getNetworkList().get(0).getNode("nn2").getLogicNode().getPartitionedExpressions().get(1).toString());
+	}
 }
