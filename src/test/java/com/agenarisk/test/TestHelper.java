@@ -1,32 +1,36 @@
 package com.agenarisk.test;
 
+import com.agenarisk.api.exception.ModelException;
+import com.agenarisk.api.io.XMLAdapter;
 import com.agenarisk.api.model.Model;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
 import org.junit.rules.TemporaryFolder;
-import uk.co.agena.minerva.util.Logger;
+import uk.co.agena.minerva.util.Environment;
 
 /**
  *
  * @author Eugene Dementiev
  */
 public class TestHelper {
+	
+	static {
+		Environment.initialize();
+	}
 	
 	private static TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
 	
@@ -85,22 +89,43 @@ public class TestHelper {
 	
 	public static Model loadModelFromResource(String resourcePath) {
 		
+		String content = "";
+		
 		try (InputStream is = TestHelper.class.getResourceAsStream(resourcePath); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-			String content = br.lines().collect(Collectors.joining("\n"));
-			
-			try {
-				return Model.createModel(new JSONObject(content));
-			}
-			catch (JSONException ex){
-				// XML?
-				return Model.createModel(XML.toJSONObject(content));
-			}
-			
-			// If neither, just fail
+			content = br.lines().collect(Collectors.joining("\n"));
 		}
 		catch (Exception ex){
-			Logger.logIfDebug("Failed to read from resource `"+resourcePath+"`: " + ex.getMessage());
-			return null;
+			throw new RuntimeException("Failed to read from resource `"+resourcePath+"`", ex);
+		}
+		
+		JSONObject json = null;
+		
+		try {
+			json = new JSONObject(content);
+		}
+		catch (JSONException ex){
+			// Failed to parse as JSON, let's try to convert to XML
+			try {
+				json = XML.toJSONObject(content);
+				Method method = XMLAdapter.class.getDeclaredMethod("convertXmlJson", Class.forName("java.lang.Object"));
+				method.setAccessible(true);
+				method.invoke(null, json);
+			}
+			catch (Exception ex2){
+				json = null;
+				throw new RuntimeException("Failed to convert XML in `"+resourcePath+"`", ex2);
+			}
+		}
+		
+		if (json == null){
+			throw new RuntimeException("Failed to extract JSON from `"+resourcePath+"`");
+		}
+		
+		try {
+			return Model.createModel(json);
+		}
+		catch(Exception ex){
+			throw new RuntimeException("Failed to create model from `"+resourcePath+"`", ex);
 		}
 		
 	}
