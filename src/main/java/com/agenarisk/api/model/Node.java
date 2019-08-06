@@ -811,7 +811,18 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				for(String expression: expressions){
 					ExtendedNodeFunction enf;
 					try {
-						enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens);
+						try {
+							enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens);
+						}
+						catch (ParseException ex){
+							if (Advisory.getCurrentThreadGroup() != null){
+								Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
+								enf = ExpressionParser.parseFunctionFromString(expression, null);
+							}
+							else {
+								throw ex;
+							}
+						}
 					}
 					catch (ParseException ex){
 						throw new NodeException("Unable to parse node function `"+expression+"`", ex);
