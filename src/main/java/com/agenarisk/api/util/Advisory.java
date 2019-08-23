@@ -67,6 +67,19 @@ public class Advisory {
 	}
 	
 	/**
+	 * Destroys an AdvisoryGroup and breaks links to other objects
+	 * 
+	 * @param aGroup AdvisoryGroup to destroy
+	 */
+	public static void destroy(AdvisoryGroup aGroup){
+		synchronized(Advisory.class){
+			aGroup.getGroupThreads().forEach(thread -> aGroup.unlinkThread(thread));
+			advisoryGroups.remove(aGroup.key);
+			aGroup.getMessages().clear();
+		}
+	}
+	
+	/**
 	 * Returns true if Thread.currentThread() is linked to an AdvisoryGroup (also creates AdvisoryMessage and adds it to that group).<br>
 	 * Otherwise returns false.
 	 * 
@@ -154,6 +167,18 @@ public class Advisory {
 				}
 				groupThreads.add(thread);
 				threadsToGroups.put(thread, this);
+			}
+		}
+		
+		/**
+		 * Unlinks provided Thread from this AdvisoryGroup
+		 * 
+		 * @param thread Thread to unlink
+		 */
+		public void unlinkThread(Thread thread){
+			synchronized(Advisory.class){
+				groupThreads.remove(thread);
+				threadsToGroups.remove(thread);
 			}
 		}
 		
