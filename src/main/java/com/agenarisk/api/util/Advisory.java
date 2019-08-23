@@ -161,9 +161,9 @@ public class Advisory {
 		 */
 		public void linkToThread(Thread thread){
 			synchronized(Advisory.class){
-				AdvisoryGroup agroup = getGroupByThread(thread);
-				if (agroup != null){
-					throw new RuntimeException("Thread is already linked to a group with key :" + agroup.getKey());
+				AdvisoryGroup aGroup = getGroupByThread(thread);
+				if (aGroup != null){
+					throw new RuntimeException("Thread is already linked to a group with key :" + aGroup.getKey());
 				}
 				groupThreads.add(thread);
 				threadsToGroups.put(thread, this);
