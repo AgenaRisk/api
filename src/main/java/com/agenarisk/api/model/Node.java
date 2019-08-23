@@ -783,7 +783,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				catch (NodeException ex){
 					if (Advisory.getCurrentThreadGroup() != null){
 						// We are in advisory mode, relax conditions for parser
-						setTableFunction(expression, null);
+						setTableFunction(expression, null, true);
 						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
 					}
 					else {
@@ -812,12 +812,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					ExtendedNodeFunction enf;
 					try {
 						try {
-							enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens);
+							enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens, false);
 						}
 						catch (ParseException ex){
 							if (Advisory.getCurrentThreadGroup() != null){
 								Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
-								enf = ExpressionParser.parseFunctionFromString(expression, null);
+								enf = ExpressionParser.parseFunctionFromString(expression, null, true);
 							}
 							else {
 								throw ex;
@@ -861,14 +861,29 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
 	 * 
 	 * @param expression function to set
-	 * @param allowedTokens list of parent IDs, variable names etc to add as parseable tokens
+	 * @param allowedTokens list of parent IDs, variable names etc to add as parseable tokens; if null, all tokens are allowed
 	 * 
 	 * @throws NodeException if function is invalid
 	 */
 	public void setTableFunction(String expression, List<String> allowedTokens) throws NodeException {
+		setTableFunction(expression, allowedTokens, false);
+	}
+	
+	/**
+	 * Sets Node function to the one provided.
+	 * <br>
+	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
+	 * 
+	 * @param expression function to set
+	 * @param allowedTokens list of parent IDs, variable names etc to add as parseable tokens; if null, all tokens are allowed
+	 * @param relaxFunctionRequirements if true, all function requirements are lifted and any number of arguments are allowed
+	 * 
+	 * @throws NodeException if function is invalid
+	 */
+	public void setTableFunction(String expression, List<String> allowedTokens, boolean relaxFunctionRequirements) throws NodeException {
 		ExtendedNodeFunction enf;
 		try {
-			enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens);
+			enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens, relaxFunctionRequirements);
 			for(String fname: ExpressionParser.parsed_functions){
 				// Restore function names to full versions with spaces
 				if (fname.replaceAll(" ", "").equalsIgnoreCase(enf.getName())){
