@@ -211,7 +211,7 @@ public class CalculationResult {
 					ds.addDataPoint(idp);
 				}
 				catch (MinervaRangeException ex){
-					throw new DataSetException("Invalid range " + label, ex);
+					throw new DataSetException("Invalid range " + label + "` in node " + node.toStringExtra(), ex);
 				}
 			}
 			else {
@@ -221,7 +221,7 @@ public class CalculationResult {
 					ds.addDataPoint(dp);
 				}
 				catch (NullPointerException ex){
-					throw new DataSetException("State `" + label + "` not found", ex);
+					throw new DataSetException("State `" + label + "` not found in node " + node.toStringExtra(), ex);
 				}
 			}
 
