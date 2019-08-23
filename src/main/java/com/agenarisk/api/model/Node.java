@@ -777,6 +777,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.Table.expression.toString())){
 				String expression = jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()).getString(0);
+				
+				if (Advisory.getCurrentThreadGroup() != null && expression.contains("?")){
+					expression = expression.replace("?", "");
+					Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contained invalid characters and were cleaned. We recommend to check the expressions in this node."));
+				}
+				
 				try {
 					setTableFunction(expression, allowedTokens);
 				}
@@ -809,6 +815,12 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				List<String> expressions = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()), String.class);
 
 				for(String expression: expressions){
+					
+					if (Advisory.getCurrentThreadGroup() != null && expression.contains("?")){
+						expression = expression.replace("?", "");
+						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contained invalid characters and were cleaned. We recommend to check the expressions in this node."));
+					}
+					
 					ExtendedNodeFunction enf;
 					try {
 						try {
