@@ -604,7 +604,7 @@ public class JSONAdapter {
 		
 		// Simulated
 		boolean simulated = false;
-		if (en instanceof ContinuousEN){
+		if (en instanceof ContinuousEN && !(en instanceof RankedEN)){
 			ContinuousEN cen = (ContinuousEN) en;
 			simulated = cen.isSimulationNode();
 			jsonConfig.putOpt(NodeConfiguration.Field.simulated.toString(), simulated?true:null);
