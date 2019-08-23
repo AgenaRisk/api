@@ -1074,7 +1074,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return detailed String representing this Node
 	 */
 	public String toStringExtra(){
-		return "`"+getNetwork().getId()+"`.`"+this.getId()+"`";
+		return "`"+getNetwork().getName()+" ("+getNetwork().getId()+")`.`"+getName()+" ("+getId()+")`";
 	}
 
 	/**
