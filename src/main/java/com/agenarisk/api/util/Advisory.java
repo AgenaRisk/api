@@ -74,7 +74,7 @@ public class Advisory {
 	public static void destroy(AdvisoryGroup aGroup){
 		synchronized(Advisory.class){
 			aGroup.getGroupThreads().forEach(thread -> aGroup.unlinkThread(thread));
-			advisoryGroups.remove(aGroup.key);
+			advisoryGroups.remove(aGroup.getKey());
 			aGroup.getMessages().clear();
 		}
 	}
@@ -163,11 +163,20 @@ public class Advisory {
 			synchronized(Advisory.class){
 				AdvisoryGroup agroup = getGroupByThread(thread);
 				if (agroup != null){
-					throw new RuntimeException("Thread is already linked to a group with key :" + agroup.key);
+					throw new RuntimeException("Thread is already linked to a group with key :" + agroup.getKey());
 				}
 				groupThreads.add(thread);
 				threadsToGroups.put(thread, this);
 			}
+		}
+		
+		/**
+		 * Getter for AdvisoryGroup key
+		 * 
+		 * @return AdvisoryGroup key
+		 */
+		protected Object getKey(){
+			return key;
 		}
 		
 		/**
