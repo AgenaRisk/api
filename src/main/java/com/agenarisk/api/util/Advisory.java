@@ -67,7 +67,7 @@ public class Advisory {
 	}
 	
 	/**
-	 * Destroys an AdvisoryGroup and breaks links to other objects
+	 * Destroys an AdvisoryGroup and breaks links to other objects.
 	 * 
 	 * @param aGroup AdvisoryGroup to destroy
 	 */
