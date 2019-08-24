@@ -17,10 +17,14 @@ import java.util.Set;
  */
 public class Advisory {
 	
-	// Maps an advisory group to some kind of key. The key could be process ID, model ID or something like that
+	/**
+	 * Maps an advisory group to some kind of key. The key could be process ID, model ID or something like that
+	 */
 	private static final Map<Object, AdvisoryGroup> advisoryGroups = Collections.synchronizedMap(new HashMap<>());
 	
-	// Maps threads to their respective AdvisoryGroups for quick lookup
+	/**
+	 * Maps threads to their respective AdvisoryGroups for quick lookup
+	 */
 	private static final Map<Thread, AdvisoryGroup> threadsToGroups = Collections.synchronizedMap(new HashMap<>());
 	
 	/**
