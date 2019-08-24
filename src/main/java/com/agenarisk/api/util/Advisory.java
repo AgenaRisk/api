@@ -43,7 +43,7 @@ public class Advisory {
 	}
 	
 	/**
-	 * Returns AdvisoryGroup to which Thread.currentThread() is linked to, or null
+	 * Returns AdvisoryGroup to which Thread.currentThread() is linked to, or null.
 	 * 
 	 * @return AdvisoryGroup for current thread
 	 */
@@ -54,7 +54,7 @@ public class Advisory {
 	}
 	
 	/**
-	 * Returns AdvisoryGroup to which the provided Thread is linked to is linked to, or null
+	 * Returns AdvisoryGroup to which the provided Thread is linked to is linked to, or null.
 	 * 
 	 * @param thread Thread to check if linked to an AdvisoryGroup
 	 * 
