@@ -27,7 +27,7 @@ Note if you are seeing the error: `Only AgenaRisk Enterprise version can run in 
 
 If you do have an enterprise key, download AgenaRisk 10 Enterprise product files:
 ~~~~
-wget -r -nd --accept-regex '.*dat|guid|aid' -P enterprise https://resources.agenarisk.com/products/enterprise/
+wget -r -nd --accept-regex '.*dat|guid|aid' -R "index.html*" -P enterprise https://resources.agenarisk.com/products/enterprise/
 ~~~~
 
 Then use a path override argument for product directory `--directoryProduct <path>`
