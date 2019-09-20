@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Advisory class allows to recover in recoverable situations and compile advisory messages instead of throwing exceptions.<br>
@@ -77,7 +78,7 @@ public class Advisory {
 	 */
 	public static void destroy(AdvisoryGroup aGroup){
 		synchronized(Advisory.class){
-			aGroup.getGroupThreads().forEach(thread -> aGroup.unlinkThread(thread));
+			aGroup.getGroupThreads().stream().collect(Collectors.toList()).forEach(thread -> aGroup.unlinkThread(thread));
 			advisoryGroups.remove(aGroup.getKey());
 			aGroup.getMessages().clear();
 		}
