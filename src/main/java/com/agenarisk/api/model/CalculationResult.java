@@ -137,7 +137,7 @@ public class CalculationResult {
 			node = dataSet.getModel().getNetwork(networkId).getNode(nodeId);
 		}
 		catch(NullPointerException ex){
-			throw new DataSetException("Network or node not found", ex);
+			throw new DataSetException("Not found node with ID `"+nodeId+"` in network with ID `"+networkId+"`", ex);
 		}
 		
 		int scenarioIndex = dataSet.getDataSetIndex();
