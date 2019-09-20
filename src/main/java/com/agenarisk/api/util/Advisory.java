@@ -130,10 +130,12 @@ public class Advisory {
 			}
 
 			agroup.getMessages().stream().forEachOrdered(amsg -> {
-				lines.add(amsg.getMessage());
+				if (amsg.getMessage() != null && !amsg.getMessage().trim().isEmpty()){
+					lines.add(amsg.getMessage());
+				}
 				Throwable cause = amsg.getCause();
 				while(cause != null){
-					if (cause.getMessage() != null && !cause.getMessage().isEmpty()){
+					if (cause.getMessage() != null && !cause.getMessage().trim().isEmpty()){
 						lines.add(cause.getMessage());
 						cause = cause.getCause();
 					}
