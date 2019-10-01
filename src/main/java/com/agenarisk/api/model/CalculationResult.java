@@ -4,6 +4,7 @@ import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.dataset.ResultInterval;
 import com.agenarisk.api.model.dataset.ResultValue;
+import com.agenarisk.api.util.Advisory;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -162,29 +163,6 @@ public class CalculationResult {
 			mdi.setOnlyUpdateOnMatchedCallSign(true);
 			mdil.getMarginalDataItems().set(scenarioIndex, mdi);
 		}
-		
-		if (jsonResult.has(SummaryStatistic.Field.summaryStatistics.toString())){
-			JSONObject jsonSS = jsonResult.getJSONObject(SummaryStatistic.Field.summaryStatistics.toString());
-			double confidenceInterval = jsonSS.optDouble(SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
-			double mean = jsonSS.optDouble(SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
-			double median = jsonSS.optDouble(SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
-			double standardDeviation = jsonSS.optDouble(SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
-			double variance = jsonSS.optDouble(SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
-			double entropy = jsonSS.optDouble(SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
-			double percentile = jsonSS.optDouble(SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
-			double lowerPercentile = jsonSS.optDouble(SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
-			double upperPercentile = jsonSS.optDouble(SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
-			
-			mdi.setConfidenceInterval(confidenceInterval);
-			mdi.setMeanValue(mean);
-			mdi.setMedianValue(median);
-			mdi.setStandardDeviationValue(standardDeviation);
-			mdi.setVarianceValue(variance);
-			mdi.setEntropyValue(entropy);
-			mdi.setPercentileValue(percentile);
-			mdi.setLowerPercentile(lowerPercentile);
-			mdi.setUpperPercentile(upperPercentile);
-		}
 				
 		uk.co.agena.minerva.util.model.DataSet ds = mdi.getDataset();
 		ds.clearDataPoints();
@@ -221,10 +199,40 @@ public class CalculationResult {
 					ds.addDataPoint(dp);
 				}
 				catch (NullPointerException ex){
-					throw new DataSetException("State `" + label + "` not found in node " + node.toStringExtra(), ex);
+					ds.clearDataPoints();
+					String message = "Failed to read results data for node " + node.toStringExtra();
+					
+					if (Advisory.getCurrentThreadGroup() != null){
+						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message, ex));
+						return;
+					}
+					throw new DataSetException(message, ex);
 				}
 			}
 
+		}
+		
+		if (jsonResult.has(SummaryStatistic.Field.summaryStatistics.toString())){
+			JSONObject jsonSS = jsonResult.getJSONObject(SummaryStatistic.Field.summaryStatistics.toString());
+			double confidenceInterval = jsonSS.optDouble(SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
+			double mean = jsonSS.optDouble(SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
+			double median = jsonSS.optDouble(SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
+			double standardDeviation = jsonSS.optDouble(SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
+			double variance = jsonSS.optDouble(SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
+			double entropy = jsonSS.optDouble(SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
+			double percentile = jsonSS.optDouble(SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
+			double lowerPercentile = jsonSS.optDouble(SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
+			double upperPercentile = jsonSS.optDouble(SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
+			
+			mdi.setConfidenceInterval(confidenceInterval);
+			mdi.setMeanValue(mean);
+			mdi.setMedianValue(median);
+			mdi.setStandardDeviationValue(standardDeviation);
+			mdi.setVarianceValue(variance);
+			mdi.setEntropyValue(entropy);
+			mdi.setPercentileValue(percentile);
+			mdi.setLowerPercentile(lowerPercentile);
+			mdi.setUpperPercentile(upperPercentile);
 		}
 	}
 	
