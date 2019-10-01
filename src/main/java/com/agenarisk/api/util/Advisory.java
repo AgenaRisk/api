@@ -139,6 +139,9 @@ public class Advisory {
 						lines.add(cause.getMessage());
 						cause = cause.getCause();
 					}
+					else {
+						cause = null;
+					}
 				}
 			});
 
