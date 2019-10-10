@@ -43,6 +43,7 @@ import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.ScenarioNotFoundException;
 import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.Logger;
+import uk.co.agena.minerva.util.StreamInterceptor;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
 
@@ -577,14 +578,23 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		// Temp
 		
+		StreamInterceptor.output_capture();
+		String outputCaptured = "";
 		try {
 			getLogicModel().calculate();
-			if (!getLogicModel().isLastPropagationSuccessful()){
-				throw new CalculationException("Calculation failed");
-			}
 		}
 		catch (ExtendedBNException | MessagePassingLinkException | PropagationException | PropagationTerminatedException ex){
+			outputCaptured = StreamInterceptor.output_release();
 			throw new CalculationException("Calculation failed", ex);
+		}
+		outputCaptured += StreamInterceptor.output_release();
+		
+		if (!getLogicModel().isLastPropagationSuccessful()){
+			String message = "Calculation failed";
+			if (outputCaptured.contains("Inconsistent evidence in risk object")){
+				message = "Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)";
+			}
+			throw new CalculationException(message);
 		}
 	}
 	
