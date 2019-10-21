@@ -43,6 +43,7 @@ public class TestLoadWithTables {
 		// We expect the model loading to fail without Advisory
 		Assert.assertEquals(true, error);
 		
+		// We now try to load with Advisory, which should succeed
 		Advisory.getGroupByKey(this).linkToThread(Thread.currentThread());
 		Model model = TestHelper.loadModelFromResource("/load/LoadInvalidTableExpression.xml");
 		Assert.assertEquals("Arithmetic(abc)",model.getNetworkList().get(0).getNode("nn1").getLogicNode().getExpression().toString());
