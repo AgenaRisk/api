@@ -122,33 +122,44 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Loads a Model from a JSON at the given file path.
+	 * Loads a Model from provided path
 	 * 
-	 * @param path file path to JSON-encoded Model
+	 * @param path path to model file
 	 * 
 	 * @return loaded Model
 	 * 
-	 * @throws ModelException if failed to read the file or if JSON was corrupt or missing required attributes
+	 * @throws ModelException if failed to read the file; or if JSON was corrupt or missing required attributes; or if CMP could not be converted to JSON
 	 */
 	public static Model loadModel(String path) throws ModelException {
 		Logger.logIfDebug("Loading model from: " + path);
 		
-		JSONObject json;
-		try {
-			json = FileAdapter.extractJSONObject(path);
+		Model model = null;
+		
+		if (path.toLowerCase().endsWith(".cmp")){
+			try {
+				model = Model.createModel(uk.co.agena.minerva.model.Model.load(path, uk.co.agena.minerva.model.Model.suppressMessages));
+			}
+			catch (Exception ex){
+				throw new ModelException("Filed to convert CMP model data", ex);
+			}
 		}
-		catch (AdapterException ex){
-			throw new ModelException("Failed to load model", ex);
+		else {
+			try {
+				JSONObject json = FileAdapter.extractJSONObject(path);
+				model = Model.createModel(json);
+			}
+			catch (AdapterException ex){
+				throw new ModelException("Model data is malformed or inacessible", ex);
+			}
+			catch (JSONException ex){
+				throw new ModelException("Model data is invalid", ex);
+			}
 		}
 		
-		Model model;
-		try {
-			model = Model.createModel(json);
+		if (model == null){
+			throw new ModelException("Failed to load model from path");
 		}
-		catch (JSONException ex){
-			throw new ModelException("Failed to read model data", ex);
-		}
-				
+	
 		Logger.logIfDebug("Model loaded");
 		
 		return model;
