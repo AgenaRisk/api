@@ -1,6 +1,5 @@
 package com.agenarisk.test;
 
-import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.io.XMLAdapter;
 import com.agenarisk.api.model.Model;
 import java.io.BufferedReader;
@@ -87,8 +86,7 @@ public class TestHelper {
 		return TEMPORARY_FOLDER;
 	}
 	
-	public static Model loadModelFromResource(String resourcePath) {
-		
+	public static String readResourceContent(String resourcePath){
 		String content = "";
 		
 		try (InputStream is = TestHelper.class.getResourceAsStream(resourcePath); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
@@ -97,6 +95,12 @@ public class TestHelper {
 		catch (Exception ex){
 			throw new RuntimeException("Failed to read from resource `"+resourcePath+"`", ex);
 		}
+		return content;
+	}
+	
+	public static Model loadModelFromResource(String resourcePath) {
+		
+		String content = readResourceContent(resourcePath);
 		
 		JSONObject json = null;
 		
