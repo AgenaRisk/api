@@ -13,12 +13,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
 import org.junit.rules.TemporaryFolder;
+import uk.co.agena.minerva.util.Config;
 import uk.co.agena.minerva.util.Environment;
 
 /**
@@ -42,6 +44,18 @@ public class TestHelper {
 //		}
 //	}
 	
+	public static Path tempFileCopyOfResource(String resourcePath) {
+		try (InputStream is = TestHelper.class.getResourceAsStream(resourcePath)) {
+			Path tempFilePath = Files.createTempFile(Paths.get(Config.getDirectoryTempAgenaRisk()),"agenarisk-test-",Arrays.stream(resourcePath.split("\\.")).reduce((a, b) -> "." + b).orElse(null));
+			Files.copy(is, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
+			tempFilePath.toFile().deleteOnExit();
+			return tempFilePath;
+
+		}
+		catch (Exception ex){
+			throw new RuntimeException("Failed to copy resource file: " + resourcePath, ex);
+		}
+	}
 	
 	public static void copyInputOuputResources(Path packagePath, String extIn, String extOut, List<String> pathsIn, List<String> pathsOut) {
 		
