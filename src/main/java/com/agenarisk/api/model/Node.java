@@ -760,7 +760,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					getLogicNode().setNPT(npt, parentNodes);
 				}
 				catch (ExtendedBNException ex){
-					throw new NodeException("Failed to extract NPT", ex);
+					if (!tableType.equalsIgnoreCase(NodeConfiguration.TableType.Manual.toString())){
+						// NPT failed to set - corrupted?						
+						// Node is not manual - we can afford to lose the NPT
+						getLogicNode().setNptReCalcRequired(true);
+						Advisory.addMessageIfLinked("Node " + toStringExtra() + " underlying table was corrupted and will need to be recalculated");
+					}
+					else {
+						throw new NodeException("Failed to extract NPT", ex);
+					}
 				}
 				catch (ArrayIndexOutOfBoundsException ex){
 					throw new NodeException("NPT may not be a square matrix", ex);
