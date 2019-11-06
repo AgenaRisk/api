@@ -595,6 +595,59 @@ public class DataSet implements Identifiable<DataSetException>{
 	}
 	
 	/**
+	 * Checks whether this DataSet overrides the value of the provided variable in the provided Node
+	 * 
+	 * @param node the Node to check
+	 * @param variableName the name of the variable
+	 * 
+	 * @return true if this DataSet overrides the value of the provided variable in the provided Node
+	 */
+	public boolean isVariableSet(Node node, String variableName){
+		List<uk.co.agena.minerva.model.scenario.Observation> obss = getLogicScenario().getObservations(node.getNetwork().getLogicNetwork().getId(), node.getLogicNode().getId());
+		return obss.stream().anyMatch(obs -> StringUtils.equalsIgnoreCase(variableName, obs.getExpressionVariableName()));
+	}
+	
+	/**
+	 * Sets a value for the provided variable in the provided Node in this DataSet to override its default value
+	 * 
+	 * @param node the Node with the variable
+	 * @param variableName the name of the variable
+	 * @param value the value of the variable to set
+	 * 
+	 * @throws com.agenarisk.api.exception.DataSetException if setting the value of the variable failed
+	 */
+	public void setVariable(Node node, String variableName, double value) throws DataSetException {
+		setObservationConstant(node, variableName, value);
+	}
+	
+	/**
+	 * Clears the variable value override in this DataSet overrides the value of the provided variable in the provided Node
+	 * 
+	 * @param node the Node with the variable
+	 * @param variableName the name of the variable
+	 */
+	public void clearVariable(Node node, String variableName){
+		
+		List<uk.co.agena.minerva.model.scenario.Observation> obss = getLogicScenario().getObservations(node.getNetwork().getLogicNetwork().getId(), node.getLogicNode().getId());
+		
+		uk.co.agena.minerva.model.scenario.Observation varObs = obss.stream().filter(obs -> StringUtils.equalsIgnoreCase(variableName, obs.getExpressionVariableName())).findFirst().orElse(null);
+		if (varObs != null){
+			getLogicScenario().removeObservation(varObs, false);
+		}
+	}
+	
+	/**
+	 * Clears all variable values from this DataSet for all Networks and Nodes
+	 */
+	public void clearVariables(){
+		List<uk.co.agena.minerva.model.scenario.Observation> toRemove = ((List<uk.co.agena.minerva.model.scenario.Observation>)getLogicScenario().getObservations())
+				.stream()
+				.filter(obs -> obs.getExpressionVariableName().isEmpty())
+				.collect(Collectors.toList());
+		toRemove.forEach(obs -> getLogicScenario().removeObservation(obs, false));
+	}
+	
+	/**
 	 * Clears an observation from a Node if it exists.
 	 * 
 	 * @param node the Node to clear the observation from
