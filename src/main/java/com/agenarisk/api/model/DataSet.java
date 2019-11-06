@@ -264,7 +264,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 */
 	public void setObservationHard(Node node, int value) throws DataSetException {
 		try {
-			setObservationHardGeneric(node, value);
+			setObservation(node, value);
 		}
 		catch(Exception ex){
 			throw new DataSetException("Failed to set observation for node " + node, ex);
@@ -287,7 +287,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 */
 	public void setObservationHard(Node node, double value) throws DataSetException {
 		try {
-			setObservationHardGeneric(node, value);
+			setObservation(node, value);
 		}
 		catch(Exception ex){
 			throw new DataSetException("Failed to set observation for node " + node, ex);
@@ -310,7 +310,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 */
 	public void setObservationHard(Node node, String state) throws DataSetException {
 		try {
-			setObservationHardGeneric(node, state);
+			setObservation(node, state);
 		}
 		catch(Exception ex){
 			throw new DataSetException("Failed to set observation for node " + node, ex);
@@ -380,7 +380,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * <br>
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
-	public void setObservationHardGeneric(Node node, Object value) throws DataSetException {
+	public void setObservation(Node node, Object value) throws DataSetException {
 		ExtendedBN ebn = node.getNetwork().getLogicNetwork();
 		ExtendedNode en = node.getLogicNode();
 		if (!node.getNetwork().getModel().equals(getModel())){
@@ -574,7 +574,7 @@ public class DataSet implements Identifiable<DataSetException>{
 				
 				// Hard observation
 				try {
-					setObservationHardGeneric(node, value);
+					setObservation(node, value);
 				}
 				catch(Exception ex){
 					throw new DataSetException("Failed to set observation for node " + node, ex);
