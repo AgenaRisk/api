@@ -284,13 +284,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Creates links from the given JSON.
 	 * <br>
-	 * Does nothing if json is null or empty.
+	 * Does nothing if JSON is null or empty.
 	 * 
 	 * @param model the model to create Links in
 	 * @param jsonLinks configuration of the Links
 	 * 
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 * @throws LinkException if a Link fails to be created
+	 * @throws NodeException if failed to create a link between nodes
 	 */
 	public static void linkNodes(Model model, JSONArray jsonLinks) throws JSONException, LinkException, NodeException {
 		if (jsonLinks == null){
