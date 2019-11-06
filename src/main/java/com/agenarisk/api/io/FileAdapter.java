@@ -31,7 +31,7 @@ public class FileAdapter {
 		
 		String fileContents;
 		try {
-			fileContents = new String(Files.readAllBytes(Paths.get(filePath)));
+			fileContents = new String(Files.readAllBytes(Paths.get(filePath))).trim();
 		}
 		catch(IOException ex){
 			throw new AdapterException("Failed to read file", ex);
