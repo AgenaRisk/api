@@ -648,6 +648,29 @@ public class DataSet implements Identifiable<DataSetException>{
 	}
 	
 	/**
+	 * Clears observations, variable values and results data from this DataSet
+	 */
+	public void clearAllData(){
+		// Clear observations and variable values
+		getLogicScenario().clearAllObservations();
+		
+		int index = getDataSetIndex();
+		
+		((Map<ExtendedNode, MarginalDataItemList>) getModel().getLogicModel().getMarginalDataStore().getNodeMarginalListMap()).values().forEach(mdil -> {
+			MarginalDataItem mdiCurrent = mdil.getMarginalDataItemAtIndex(index);
+			MarginalDataItem mdiNew = new MarginalDataItem(getId());
+			mdiNew.setVisible(getLogicScenario().isReportable());
+			mdiNew.setCallSignToUpdateOn(Integer.toString(getLogicScenario().getId()));
+			mdiNew.setOnlyUpdateOnMatchedCallSign(mdiCurrent.isOnlyUpdateOnMatchedCallSign());
+			mdiNew.setUpdateOnAllEvidenceRetracted(mdiCurrent.isUpdateOnAllEvidenceRetracted());
+			mdil.getMarginalDataItems().set(index, mdiNew);
+		});
+		
+		throw new UnsupportedOperationException("Not implemented");
+		
+	}
+	
+	/**
 	 * Clears an observation from a Node if it exists.
 	 * 
 	 * @param node the Node to clear the observation from
