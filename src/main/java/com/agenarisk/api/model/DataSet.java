@@ -332,7 +332,7 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * <br>
 	 * ∙ Value passed is an invalid observation for the given Node
 	 */
-	public void setObservationConstant(Node node, String constantName, double value) throws DataSetException {
+	protected void setObservationConstant(Node node, String constantName, double value) throws DataSetException {
 		ExtendedBN ebn = node.getNetwork().getLogicNetwork();
 		ExtendedNode en = node.getLogicNode();
 		if (!node.getNetwork().getModel().equals(getModel())){
