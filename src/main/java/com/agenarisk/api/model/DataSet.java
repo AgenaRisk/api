@@ -13,9 +13,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +35,7 @@ import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
+import uk.co.agena.minerva.model.scenario.ObservationNotFoundException;
 import uk.co.agena.minerva.model.scenario.Scenario;
 import uk.co.agena.minerva.model.scenario.ScenarioException;
 import uk.co.agena.minerva.util.model.DataPoint;
@@ -597,24 +600,40 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @param node the Node to clear the observation from
 	 */
 	public void clearObservation(Node node) {
-		throw new UnsupportedOperationException("Not implemented");
+		Observation obs = getObservation(node);
+		if (obs != null){
+			getLogicScenario().removeObservation(obs.getLogicObservation(), false);
+		}
 	}
 	
 	/**
 	 * Clears all observations from this DataSet for all Networks and Nodes
 	 */
 	public void clearObservations() {
-		throw new UnsupportedOperationException("Not implemented");
+		List<uk.co.agena.minerva.model.scenario.Observation> toRemove = ((List<uk.co.agena.minerva.model.scenario.Observation>) getLogicScenario().getObservations())
+				.stream()
+				.filter(obs -> !obs.getExpressionVariableName().isEmpty())
+				.collect(Collectors.toList());
+		toRemove.forEach(obs -> getLogicScenario().removeObservation(obs, false));
 	}
 	
 	/**
 	 * Checks whether the Node has an observation set.
+	 * 
 	 * @param node the Node to check for observations
 	 * 
 	 * @return true if there is an observation for the Node in this DataSet
 	 */
 	public boolean hasObservation(Node node){
-		throw new UnsupportedOperationException("Not implemented");
+		
+		try {
+			getLogicScenario().getObservation(node.getNetwork().getLogicNetwork().getId(), node.getLogicNode().getId());
+		}
+		catch(ObservationNotFoundException ex){
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -629,7 +648,19 @@ public class DataSet implements Identifiable<DataSetException>{
 	 * @return null if there is no observation or either HardObservation or SoftObservation
 	 */
 	public Observation getObservation(Node node) {
-		throw new UnsupportedOperationException("Not implemented");
+		uk.co.agena.minerva.model.scenario.Observation logicObservation = null;
+		try {
+			logicObservation = getLogicScenario().getObservation(node.getNetwork().getLogicNetwork().getId(), node.getLogicNode().getId());
+		}
+		catch(ObservationNotFoundException ex){
+			// Do nothing, logical observation not found
+		}
+		
+		if (logicObservation == null){
+			return null;
+		}
+		
+		return new Observation(logicObservation, this, node);
 	}
 	
 	/**
