@@ -666,8 +666,6 @@ public class DataSet implements Identifiable<DataSetException>{
 			mdil.getMarginalDataItems().set(index, mdiNew);
 		});
 		
-		throw new UnsupportedOperationException("Not implemented");
-		
 	}
 	
 	/**
