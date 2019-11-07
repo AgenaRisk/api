@@ -1,0 +1,24 @@
+{
+    "model": {
+        "networks": [
+            {
+                "id": "net",
+                "nodes": [
+                    {
+                        "id": "node",
+                        "configuration": {
+							"simulated": "true",
+                            "type": "ContinuousInterval",
+                            "table": {
+                                "type": "Expression",
+                                "expressions": [
+                                    "Normal(0,0)"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

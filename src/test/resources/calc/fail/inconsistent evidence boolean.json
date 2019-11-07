@@ -1,0 +1,69 @@
+{
+	"model": {
+		"networks": [
+			{
+				"id": "net",
+				"name": "net",
+				"nodes": [
+					{
+						"id": "a",
+						"name": "a",
+						"configuration": {
+							"type": "Boolean",
+							"table": {
+								"type": "Manual",
+								"probabilities": [
+									[1],
+									[1]
+								]
+							},
+							"states": ["False", "True"]
+						}
+					}, {
+						"id": "b",
+						"name": "b",
+						"configuration": {
+							"type": "Boolean",
+							"table": {
+								"type": "Manual",
+								"probabilities": [
+									[1, 0],
+									[0, 1]
+								]
+							},
+							"states": ["False", "True"]
+						}
+					}
+				],
+				"links": [
+					{
+						"parent": "a",
+						"child": "b"
+					}
+				]
+			}
+		],
+		"dataSets": [
+			{
+				"id": "Scenario 1",
+				"observations": [{
+						"node": "a",
+						"entries": [{
+								"weight": 1,
+								"value": "False"
+							}],
+						"network": "net"
+					}, {
+						"node": "b",
+						"entries": [{
+								"weight": 1,
+								"value": "True"
+							}],
+						"network": "net"
+					}],
+				"displayable": true,
+				"active": true
+			}
+		]
+	}
+}

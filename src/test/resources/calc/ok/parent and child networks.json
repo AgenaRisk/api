@@ -1,0 +1,82 @@
+{
+	"model": {
+		"links": [{
+				"sourceNode": "mean",
+				"sourceNetwork": "net1",
+				"targetNetwork": "net2",
+				"type": "Marginals",
+				"targetNode": "mean"
+			}],
+		"networks": [{
+				"nodes": [{
+						"configuration": {
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"nptCompiled": false,
+								"type": "Expression",
+								"expressions": ["Normal(mean,var)"]
+							}
+						},
+						"name": "normal",
+						"description": "New Node",
+						"id": "normal"
+					}, {
+						"configuration": {
+							"input": true,
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"nptCompiled": false,
+								"type": "Expression",
+								"expressions": ["Normal(0,1000000)"]
+							}
+						},
+						"name": "mean",
+						"description": "New Node",
+						"id": "mean"
+					}, {
+						"configuration": {
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"nptCompiled": false,
+								"type": "Expression",
+								"expressions": ["Normal(1000,100)"]
+							}
+						},
+						"name": "var",
+						"description": "New Node",
+						"id": "var"
+					}],
+				"name": "net2",
+				"links": [{
+						"parent": "mean",
+						"child": "normal"
+					}, {
+						"parent": "var",
+						"child": "normal"
+					}],
+				"id": "net2"
+			}, {
+				"nodes": [{
+						"configuration": {
+							"output": true,
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"nptCompiled": false,
+								"type": "Expression",
+								"expressions": ["Normal(0,1000000)"]
+							}
+						},
+						"name": "mean",
+						"description": "New Node",
+						"id": "mean"
+					}],
+				"name": "net1",
+				"links": [],
+				"id": "net1"
+			}]
+	}
+}

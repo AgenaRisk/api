@@ -1,0 +1,27 @@
+{
+	"model": {
+		"networks": [
+			{
+				"id": "net",
+				"name": "net",
+				"nodes": [
+					{
+						"id": "a",
+						"name": "a",
+						"configuration": {
+							"type": "Boolean",
+							"table": {
+								"type": "Manual",
+								"probabilities": [
+									[0],
+									[0]
+								]
+							},
+							"states": ["False", "True"]
+						}
+					}
+				]
+			}
+		]
+	}
+}

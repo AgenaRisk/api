@@ -1,0 +1,47 @@
+{
+	"model": {
+		"networks": [
+			{
+				"id": "net",
+				"name": "net",
+				"nodes": [
+					{
+						"id": "a",
+						"name": "a",
+						"configuration": {
+							"type": "Boolean",
+							"table": {
+								"type": "Manual",
+								"probabilities": [
+									[0],
+									[0]
+								]
+							},
+							"states": ["False", "True"]
+						}
+					}, {
+						"id": "b",
+						"name": "b",
+						"configuration": {
+							"type": "Boolean",
+							"table": {
+								"type": "Manual",
+								"probabilities": [
+									[1, 0],
+									[0, 1]
+								]
+							},
+							"states": ["False", "True"]
+						}
+					}
+				],
+				"links": [
+					{
+						"parent": "a",
+						"child": "b"
+					}
+				]
+			}
+		]
+	}
+}
