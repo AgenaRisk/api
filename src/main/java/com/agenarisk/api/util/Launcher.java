@@ -1,13 +1,10 @@
 package com.agenarisk.api.util;
 
-import java.io.File;
-import java.util.Arrays;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -32,11 +29,20 @@ public class Launcher {
 		OPTIONS.addOption(new Option(null, "paths", false, "print important paths"));
 		
 		OptionGroup og1 = new OptionGroup();
-		og1.addOption(Option.builder().longOpt("keyActivate").hasArg().argName("key").desc("activate with license key").build());
-		og1.addOption(new Option(null, "keyDeactivate", false, "deactivate the license"));
-		og1.addOption(Option.builder().longOpt("floatingLease").hasArgs().argName("address:port").valueSeparator(':').numberOfArgs(2).desc("add floating license server settings").build());
-		og1.addOption(new Option(null, "floatingRelease", false, "remove floating license server settings"));
+		
+		og1.addOption(Option.builder().longOpt("keyActivate").hasArg(false).desc("activate with license key").build());
+		og1.addOption(Option.builder().longOpt("keyDeactivate").hasArg(false).desc("deactivate the license").build());
+		
+		og1.addOption(Option.builder().longOpt("offlineActivationRequest").hasArg(false).desc("save offline activation request file").build());
+		og1.addOption(Option.builder().longOpt("offlineActivate").hasArg(false).desc("activate offline with license key and activation file").build());
+		og1.addOption(Option.builder().longOpt("offlineDeactivate").hasArg(false).desc("deactivate the license offline and save proof into file").build());
+				
+		og1.addOption(Option.builder().longOpt("floatingLease").numberOfArgs(2).argName("address:port").valueSeparator(':').desc("add floating license server settings").build());
+		og1.addOption(Option.builder().longOpt("floatingRelease").hasArg(false).desc("remove floating license server settings").build());
 		OPTIONS.addOptionGroup(og1);
+		
+		OPTIONS.addOption(Option.builder().longOpt("key").hasArg().argName("license key").desc("Your AgenaRisk 10 license key").build());
+		OPTIONS.addOption(Option.builder().longOpt("oPath").hasArg().argName("path").desc("Path for an offline activation file").build());
 		
 		Logger.getOptions().getOptions().stream().forEach(option -> OPTIONS.addOption(option));
 		Config.getOptions().getOptions().stream().forEach(option -> OPTIONS.addOption(option));
@@ -84,12 +90,30 @@ public class Launcher {
 		}
 		
 		if (cmd.hasOption("keyActivate")){
-			String key = cmd.getOptionValue("keyActivate");
+			String key = cmd.getOptionValue("key");
 			License.keyActivate(key);
 		}
 		
 		if (cmd.hasOption("keyDeactivate")){
 			License.keyRelease();
+		}
+		
+		if (cmd.hasOption("offlineActivationRequest")){
+			String key = cmd.getOptionValue("key");
+			String path = cmd.getOptionValue("oPath");
+			License.offlineActivationRequestSave(key, path);
+		}
+		
+		if (cmd.hasOption("offlineActivate")){
+			String key = cmd.getOptionValue("key");
+			String path = cmd.getOptionValue("oPath");
+			License.offlineActivate(key, path);
+		}
+		
+		if (cmd.hasOption("offlineDeactivate")){
+			String key = cmd.getOptionValue("key");
+			String path = cmd.getOptionValue("oPath");
+			License.offlineRelease(key, path);
 		}
 
 		if (cmd.hasOption("floatingLease")){
