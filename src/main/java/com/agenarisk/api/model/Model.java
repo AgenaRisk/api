@@ -594,7 +594,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		try {
 			getLogicModel().calculate();
 		}
-		catch (ExtendedBNException | MessagePassingLinkException | PropagationException | PropagationTerminatedException ex){
+		catch (Throwable ex){
 			outputCaptured = StreamInterceptor.output_release();
 			throw new CalculationException("Calculation failed", ex);
 		}
