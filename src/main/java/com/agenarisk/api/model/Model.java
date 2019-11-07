@@ -408,9 +408,9 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @see Node#setTable(JSONObject)
 	 * 
-	 * @throws ModelException
+	 * @throws NetworkException if failed to create the Network
 	 */
-	public Network createNetwork(JSONObject jsonNetwork) throws ModelException {
+	public Network createNetwork(JSONObject jsonNetwork) throws NetworkException {
 		return createNetwork(jsonNetwork, true);
 	}
 	
@@ -428,16 +428,16 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @see Node#setTable(JSONObject)
 	 * 
-	 * @throws ModelException
+	 * @throws NetworkException if failed to create the Network
 	 */
-	public Network createNetwork(JSONObject jsonNetwork, boolean withTables) throws ModelException {
+	public Network createNetwork(JSONObject jsonNetwork, boolean withTables) throws NetworkException {
 		Network network;
 		try {
 			// Call protected method that actually creates everything in the network
 			network = Network.createNetwork(this, jsonNetwork, withTables);
 		}
-		catch (NetworkException | JSONException ex){
-			throw new ModelException("Failed to create Network", ex);
+		catch (JSONException ex){
+			throw new NetworkException("Failed to create Network", ex);
 		}
 		
 		return network;
@@ -450,9 +450,9 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @return the Network instance added to this Model
 	 * 
-	 * @throws ModelException if a Network with this ID already exists
+	 * @throws NetworkException if a Network with this ID already exists
 	 */
-	public Network createNetwork(String id) throws ModelException {
+	public Network createNetwork(String id) throws NetworkException {
 		return createNetwork(id, id);
 	}
 	
@@ -464,12 +464,12 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @return the Network instance added to this Model
 	 * 
-	 * @throws ModelException if a Network with this ID already exists
+	 * @throws NetworkException if a Network with this ID already exists
 	 */
-	public Network createNetwork(String id, String name) throws ModelException {
+	public Network createNetwork(String id, String name) throws NetworkException {
 		synchronized (IDContainer.class){
 			if (networks.containsKey(new Id(id))){
-				throw new ModelException("Network with id `" + id + "` already exists");
+				throw new NetworkException("Network with id `" + id + "` already exists");
 			}
 			networks.put(new Id(id), null);
 		}
@@ -483,7 +483,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		catch (AgenaRiskRuntimeException ex){
 			networks.remove(new Id(id));
-			throw new ModelException("Failed to add network `" + id + "`", ex);
+			throw new NetworkException("Failed to add network `" + id + "`", ex);
 		}
 		
 		return network;
