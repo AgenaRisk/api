@@ -125,6 +125,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 
 		this.network = network;
 		this.logicNode = en;
+		
+		createDefaultStates();
 	}
 	
 	/**
@@ -1355,4 +1357,27 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return getParents().stream().map(node -> node.getLogicNode()).collect(Collectors.toList());
 	}
 	
+	
+	/**
+	 * Creates default states as appropriate for this Node's Type
+	 */
+	private void createDefaultStates(){
+		
+		switch(getType()){
+			case ContinuousInterval:
+			case IntegerInterval:
+				setStates(new String[]{
+					"-Infinity - -1",
+					"-1 - 1",
+					"1 - Infinity"
+				});
+				setTableRows(new double[][]{
+					{1},
+					{1},
+					{1}
+				});
+				
+			default:
+		}
+	}
 }
