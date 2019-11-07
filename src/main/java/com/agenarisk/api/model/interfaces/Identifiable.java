@@ -1,14 +1,12 @@
 package com.agenarisk.api.model.interfaces;
 
-import com.agenarisk.api.exception.AgenaRiskException;
-
 /**
  * Objects that have a unique ID and are members of some collection in a container class should implement this.
  * 
  * @author Eugene Dementiev
- * @param <E> the type of AgenaRiskException thrown on error
+ * @param <E> the type of Exception thrown on error
  */
-public interface Identifiable <E extends AgenaRiskException> {
+public interface Identifiable <E extends Exception> {
 	
 	/**
 	 * Returns the ID of the object.

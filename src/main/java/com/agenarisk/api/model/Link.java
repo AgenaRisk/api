@@ -113,9 +113,9 @@ public class Link implements Comparable<Link>, Storable {
 		}
 		catch (ExtendedBNException ex){
 			if (ex.getCause() instanceof CoreBNException){
-				throw new AgenaRiskRuntimeException("Logic node with ID `" + fromNode.getId() + "` or `" + toNode.getId() + "` not found in network `" + fromNode.getNetwork().getId() + "`", ex);
+				throw new LinkException("Logic node with ID `" + fromNode.getId() + "` or `" + toNode.getId() + "` not found in network `" + fromNode.getNetwork().getId() + "`", ex);
 			}
-			throw new AgenaRiskRuntimeException("CoreBN missing");
+			throw new LinkException("CoreBN missing");
 		}
 		catch (JepException ex){
 			// Do nothing as we don' care about expression validity here

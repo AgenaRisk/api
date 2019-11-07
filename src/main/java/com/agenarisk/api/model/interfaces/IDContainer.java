@@ -1,6 +1,5 @@
 package com.agenarisk.api.model.interfaces;
 
-import com.agenarisk.api.exception.AgenaRiskException;
 import com.agenarisk.api.model.field.Id;
 import java.util.Map;
 import java.util.Objects;
@@ -9,9 +8,9 @@ import java.util.Objects;
  * Classes that have a collection of some identifiable objects that have a unique ID should implement this.
  * 
  * @author Eugene Dementiev
- * @param <E> the type of AgenaRiskException thrown on error
+ * @param <E> the type of Exception thrown on error
  */
-public interface IDContainer <E extends AgenaRiskException> {
+public interface IDContainer <E extends Exception> {
 	
 	/**
 	 * Returns the map of identifiable items based on.

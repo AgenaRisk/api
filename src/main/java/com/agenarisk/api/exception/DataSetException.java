@@ -4,7 +4,7 @@ package com.agenarisk.api.exception;
  *
  * @author Eugene Dementiev
  */
-public class DataSetException extends AgenaRiskException {
+public class DataSetException extends AgenaRiskRuntimeException {
 
 	public DataSetException(String message) {
 		super(message);

@@ -1,6 +1,6 @@
 package com.agenarisk.api.model;
 
-import com.agenarisk.api.exception.AgenaRiskRuntimeException;
+import com.agenarisk.api.exception.ObservationException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,15 +60,17 @@ public class Observation {
 	 * @param logicObservation Logic observation associated with this Observation
 	 * @param dataSet DataSet that contains this Observation
 	 * @param node observed Node
+	 * 
+	 * @throws ObservationException entries are empty or not provided
 	 */
-	protected Observation(uk.co.agena.minerva.model.scenario.Observation logicObservation, DataSet dataSet, Node node) {
+	protected Observation(uk.co.agena.minerva.model.scenario.Observation logicObservation, DataSet dataSet, Node node) throws ObservationException {
 		this.node = node;
 		this.dataSet = dataSet;
 		this.logicObservation = logicObservation;
 		this.entries = compileEntriesMap();
 		
 		if (entries == null || entries.isEmpty()){
-			throw new AgenaRiskRuntimeException("Empty observation is not allowed");
+			throw new ObservationException("Empty observation is not allowed");
 		}
 	}
 	

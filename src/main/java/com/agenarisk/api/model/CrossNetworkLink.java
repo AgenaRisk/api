@@ -176,7 +176,7 @@ public class CrossNetworkLink extends Link implements Storable {
 					en2.setExtendedStates(states);
 				}
 				catch (CoreBNException ex){
-					throw new AgenaRiskRuntimeException("Failed to create states for link pass " + toStringExtra(), ex);
+					throw new LinkException("Failed to create states for link pass " + toStringExtra(), ex);
 				}
 			}
 			else {
@@ -230,7 +230,7 @@ public class CrossNetworkLink extends Link implements Storable {
 				}
 				catch (MinervaRangeException | CoreBNException ex){
 					// Should not happen
-					throw new AgenaRiskRuntimeException("Failed to create a state for input node in " + toStringExtra(), ex);
+					throw new LinkException("Failed to create a state for input node in " + toStringExtra(), ex);
 				}
 
 				// Set target node to use function equal to the constant
@@ -250,7 +250,7 @@ public class CrossNetworkLink extends Link implements Storable {
 					en2.setExtendedStates(states);
 				}
 				catch (CoreBNException ex){
-					throw new AgenaRiskRuntimeException("Failed to copy states to input node in " + toStringExtra(), ex);
+					throw new LinkException("Failed to copy states to input node in " + toStringExtra(), ex);
 				}
 			}
 

@@ -240,7 +240,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 			model.getLogicModel().removeScenario(model.getLogicModel().getScenarioAtIndex(0));
 		}
 		catch (ScenarioNotFoundException ex){
-			throw new AgenaRiskRuntimeException("Failed to init an empty model", ex);
+			throw new ModelException("Failed to init an empty model", ex);
 		}
 		
 		JSONObject jsonModel = json.getJSONObject(Field.model.toString());
