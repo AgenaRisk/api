@@ -632,26 +632,18 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @return the DataSet instance added to this Model
 	 * 
-	 * @throws ModelException if a DataSet with this ID already exists
+	 * @throws DataSetException if a DataSet with this ID already exists
 	 */
-	public DataSet createDataSet(String id) throws ModelException {
+	public DataSet createDataSet(String id) throws DataSetException {
 		synchronized (IDContainer.class){
 			if (dataSets.containsKey(new Id(id))){
-				throw new ModelException("DataSet with id `" + id + "` already exists");
+				throw new DataSetException("DataSet with id `" + id + "` already exists");
 			}
 			dataSets.put(new Id(id), null);
 		}
 		
-		DataSet dataset;
-		
-		try {
-			dataset = DataSet.createDataSet(this, id);
+		DataSet dataset = DataSet.createDataSet(this, id);
 			dataSets.put(new Id(id), dataset);
-		}
-		catch (AgenaRiskRuntimeException ex){
-			dataSets.remove(new Id(id));
-			throw new ModelException("Failed to add DataSet `" + id + "`", ex);
-		}
 		
 		return dataset;
 	}
