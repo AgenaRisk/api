@@ -9,6 +9,7 @@
 					<id>nn1</id>
 					<configuration>
 						<type>ContinuousInterval</type>
+						<simulated>true</simulated>
 						<table>
 							<type>Expression</type>
 							<expressions>
