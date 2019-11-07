@@ -721,6 +721,29 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
+	 * Resets the node NPT to a uniform table.
+	 * 
+	 * @return false if operation failed, true otherwise
+	 */
+	public final boolean setTableUniform(){
+		try {
+			float[][] nptCurrent = getLogicNode().getNPT();
+			double[][] nptNew = new double[nptCurrent[0].length][nptCurrent.length];
+
+			for (double[] row: nptNew){
+				Arrays.fill(row, 1.0);
+			}
+			MathsHelper.normaliseMatrix(nptNew);
+			getLogicNode().setNPT(nptNew, getParentExtendedNodes());
+		}
+		catch (Exception ex){
+			Logger.printThrowableIfDebug(ex);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
 	 * Replaces the Node's probability table with one specified in the given JSON.
 	 * <br>
 	 * This must be used after all parents states and incoming links had been created.
