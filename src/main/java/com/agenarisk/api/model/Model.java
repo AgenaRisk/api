@@ -11,6 +11,7 @@ import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.exception.NodeException;
 import com.agenarisk.api.io.FileAdapter;
 import com.agenarisk.api.io.JSONAdapter;
+import com.agenarisk.api.io.XMLAdapter;
 import com.agenarisk.api.io.stub.Audit;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
@@ -22,6 +23,10 @@ import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.JSONUtils;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -31,11 +36,7 @@ import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import uk.co.agena.minerva.model.MessagePassingLinkException;
-import uk.co.agena.minerva.model.PropagationException;
-import uk.co.agena.minerva.model.PropagationTerminatedException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
-import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.questionnaire.Answer;
 import uk.co.agena.minerva.model.questionnaire.Question;
@@ -608,7 +609,11 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Saves the Model to a file path specified in the old CMP format.
+	 * Saves the Model to a file path specified.<br>
+	 * Output format is determined by path extension:<br>
+	 * • AgenaRisk 7 CMP for "cmp"<br>
+	 * • XML for "xml"<br>
+	 * • JSON for everything else<br>
 	 * 
 	 * @param path the file path to save to
 	 * 
@@ -616,9 +621,25 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public void save(String path) throws FileIOException {
 		try {
-			getLogicModel().save(path);
+			if (path.toLowerCase().endsWith(".cmp")){
+				getLogicModel().save(path);
+			}
+			else {
+				JSONObject json = JSONAdapter.toJSONObject(logicModel);
+				
+				String content;
+				
+				if (path.toLowerCase().endsWith(".xml")){
+					content = XMLAdapter.toXMLString(json);
+				}
+				else {
+					content = json.toString();
+				}
+				
+				Files.write(Paths.get(path), content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			}
 		}
-		catch (FileHandlingException ex){
+		catch (FileHandlingException | AdapterException | IOException | JSONException ex){
 			throw new FileIOException("Failed to save the model", ex);
 		}
 	}
