@@ -683,7 +683,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		int sizeGiven = columns.length * columns[0].length;
 		
-		List<ExtendedNode> parentNodes = getParents().stream().map(node -> node.getLogicNode()).collect(Collectors.toList());
+		List<ExtendedNode> parentNodes = getParentExtendedNodes();
 		
 		AtomicInteger sizeExpected = new AtomicInteger(1);
 		parentNodes.stream().forEachOrdered(n -> sizeExpected.set(sizeExpected.get() * n.getExtendedStates().size()));
@@ -1322,4 +1322,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		this.logicNode = logicNode;
 	}
+	
+	/**
+	 * Builds and returns a list of ExtendedNode parents.
+	 * 
+	 * @return list of ExtendedNode parents
+	 */
+	private List<ExtendedNode> getParentExtendedNodes(){
+		return getParents().stream().map(node -> node.getLogicNode()).collect(Collectors.toList());
+	}
+	
 }
