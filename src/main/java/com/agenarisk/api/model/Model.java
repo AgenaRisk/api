@@ -583,11 +583,9 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public void calculate() throws CalculationException {
 
-		// Temp
-		if (getLogicModel().getScenarioList().getScenarios().isEmpty()){
-			getLogicModel().addScenario("Scenario 1");
+		if (dataSets.isEmpty()){
+			createDataSet("Scenario 1");
 		}
-		// Temp
 		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
@@ -643,7 +641,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		
 		DataSet dataset = DataSet.createDataSet(this, id);
-			dataSets.put(new Id(id), dataset);
+		dataSets.put(new Id(id), dataset);
 		
 		return dataset;
 	}
