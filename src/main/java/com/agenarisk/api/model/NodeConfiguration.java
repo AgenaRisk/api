@@ -160,11 +160,11 @@ public class NodeConfiguration {
 	/**
 	 * NPT in JSON is given by rows, while ExtendedNode expects an array of columns, so we will need to invert it.
 	 *
-	 * @param jsonNPT
+	 * @param jsonNPT JSON NPT to extract from
 	 *
 	 * @return 2D array where first dimension are the columns and second dimension are the cells
 	 *
-	 * @throws JSONException
+	 * @throws JSONException upon failure
 	 */
 	protected static double[][] extractNPTColumns(JSONArray jsonNPT) throws JSONException {
 		int rows = jsonNPT.length();
@@ -183,7 +183,7 @@ public class NodeConfiguration {
 	/**
 	 * Replaces Node states with 3 default interval states.
 	 *
-	 * @param node
+	 * @param node node for which to set states
 	 */
 	protected static void setDefaultIntervalStates(Node node) {
 		ContinuousEN cien = (ContinuousEN) node.getLogicNode();

@@ -105,7 +105,7 @@ public class JSONUtils {
 	 * @param parentKey the key of the 2D array in grandParent (in the example - "probs")
 	 * @param elementKey the elementKey to be omitted (in the example - "cell")
 	 * 
-	 * @throws JSONException 
+	 * @throws JSONException on failure
 	 */
 	public static void convertTo2DArray(JSONObject grandParent, String parentKey, String elementKey) throws JSONException{
 		// E.g. table (obj), probabilities(arr), cell(string/arr)
@@ -157,7 +157,7 @@ public class JSONUtils {
 	 * @param parentKey - the key under which to put the resulting array, in the example - "nodes"
 	 * @param childKey - the key to omit (and wrap contents into array if necessary), in the example - "node"
 	 * 
-	 * @throws JSONException 
+	 * @throws JSONException on failure
 	 */
 	public static void convertToJSONArray(JSONObject grandParent, String parentKey, String childKey) throws JSONException {
 		
@@ -259,8 +259,8 @@ public class JSONUtils {
 	 * <br>
 	 * If an element is a String value of a number, the ".0" will be stripped from the end before comparison.
 	 * 
-	 * @param jo1
-	 * @param jo2
+	 * @param jo1 a JSONObject
+	 * @param jo2 a second JSONObject to compare to jo1
 	 * 
 	 * @return true if all leaf objects are equal (case insensitive for Strings), false otherwise
 	 * 
@@ -312,8 +312,8 @@ public class JSONUtils {
 	 * <br>
 	 * If an element is a String value of a number, the ".0" will be stripped from the end before comparison.
 	 * 
-	 * @param ja1
-	 * @param ja2
+	 * @param ja1 a JSONArray
+	 * @param ja2 another JSONArray to compare with
 	 * 
 	 * @return true if all leaf objects are equal (case insensitive for Strings), false otherwise
 	 * 

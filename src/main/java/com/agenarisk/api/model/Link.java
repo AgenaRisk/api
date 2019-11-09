@@ -199,7 +199,7 @@ public class Link implements Comparable<Link>, Storable {
 	/**
 	 * Stores Link's graphics.
 	 * 
-	 * @param graphics 
+	 * @param graphics the graphics json to store
 	 */
 	protected void setGraphics(JSONObject graphics) {
 		this.graphics = graphics;

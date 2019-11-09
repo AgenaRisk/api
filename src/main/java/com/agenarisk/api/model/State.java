@@ -168,7 +168,7 @@ public class State {
 	
 	/**
 	 * Computes a label for a logical state.
-	 * <br/>
+	 * <br>
 	 * Returns a range if the node is not Ranked and the state has an associated range. The range is in format: <b>lower - upper</b>.
 	 * <br>
 	 * Otherwise returns state short name.
