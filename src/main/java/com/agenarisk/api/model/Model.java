@@ -649,6 +649,92 @@ public class Model implements IDContainer<ModelException>, Storable {
 			throw new FileIOException("Failed to save the model", ex);
 		}
 	}
+	
+	/**
+	 * Returns the Model as a minimal JSON.<br>
+	 * Keeps only elements essential for a clean calculation.<br>
+	 * Drops: Graphics, RiskTable, DataSets, compiled non-manual NPTs, names, notes and descriptions.<br>
+	 * 
+	 * @param keepMeta Keep meta, names, notes and descriptions of Model, Networks and Nodes
+	 * 
+	 * @return minimal JSON
+	 * 
+	 * @throws AdapterException if conversion to JSON fails
+	 */
+	public JSONObject getMinimalJson(boolean keepMeta) throws AdapterException {
+		
+		JSONObject json = JSONAdapter.toJSONObject(logicModel);
+		
+		try {
+
+			JSONObject jsonModel = json.optJSONObject(Model.Field.model.toString());
+			jsonModel.remove(DataSet.Field.dataSets.toString());
+			jsonModel.remove(RiskTable.Field.riskTable.toString());
+			jsonModel.remove(Audit.Field.audit.toString());
+			if (!keepMeta){
+				jsonModel.remove(Meta.Field.meta.toString());
+			}
+
+			JSONUtils.traverse(json, (obj -> {
+				if (obj instanceof JSONObject){
+					JSONObject jo = ((JSONObject) obj);
+					if (!keepMeta){
+						if (jo.has(Network.Field.id.toString())){
+							// If the object has an ID, we can remove its name and description
+							jo.remove(Network.Field.name.toString());
+							jo.remove(Network.Field.description.toString());
+						}
+						jo.remove(Meta.Field.meta.toString());
+					}
+
+					// Remove graphics from all objects
+					jo.remove(Graphics.Field.graphics.toString());
+
+					jo.remove(Network.ModificationLog.modificationLog.toString());
+
+					if (jo.has(NodeConfiguration.Field.configuration.toString()) && jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).has(NodeConfiguration.Table.table.toString())){
+						// Object is node with configuration and table
+						JSONObject jsonTable = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optJSONObject(NodeConfiguration.Table.table.toString());
+						String tableType = jsonTable.optString(NodeConfiguration.Table.type.toString());
+						if (!Objects.equals(tableType, NodeConfiguration.TableType.Manual.toString())){
+							// Non-manual table, can remove compiled NPTs
+							jsonTable.remove(NodeConfiguration.Table.nptCompiled.toString());
+							jsonTable.remove(NodeConfiguration.Table.probabilities.toString());
+						}
+					}
+				}
+			}));
+		}
+		catch (NullPointerException | JSONException ex){
+			Logger.printThrowableIfDebug(ex);
+			return JSONAdapter.toJSONObject(logicModel);
+		}
+		
+		return json;
+	}
+	
+	/**
+	 * Saves the Model as a minimal JSON.<br>
+	 * Keeps only elements essential for a clean calculation.<br>
+	 * Drops: Graphics, RiskTable, DataSets, compiled non-manual NPTs, names, notes and descriptions.<br>
+	 * 
+	 * @param path the file path to save to
+	 * @param keepMeta Keep meta, names, notes and descriptions of Model, Networks and Nodes
+	 * 
+	 * @throws FileIOException if saving fails
+	 */
+	public void saveMinimal(String path, boolean keepMeta) throws FileIOException {
+		try {
+			
+			JSONObject json = getMinimalJson(keepMeta);
+			Files.write(Paths.get(path), json.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			
+		}
+		catch (AdapterException | NullPointerException | IOException ex){
+			throw new FileIOException("Failed to save the model", ex);
+		}
+		
+	}
 
 	/**
 	 * Creates a new DataSet and adds it to this Model.
