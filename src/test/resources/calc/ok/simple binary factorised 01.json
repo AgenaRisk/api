@@ -1,0 +1,74 @@
+{
+	"model": {
+		"networks": [
+			{
+				"id": "net",
+				"nodes": [
+					{
+						"id": "a",
+						"configuration": {
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"type": "Expression",
+								"expressions": [
+									"Normal(b+c+d, 1)"
+								]
+							}
+						}
+					}, {
+						"id": "b",
+						"configuration": {
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"type": "Expression",
+								"expressions": [
+									"Arithmetic(0)"
+								]
+							}
+						}
+					}, {
+						"id": "c",
+						"configuration": {
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"type": "Expression",
+								"expressions": [
+									"Arithmetic(0)"
+								]
+							}
+						}
+					}, {
+						"id": "d",
+						"configuration": {
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"type": "Expression",
+								"expressions": [
+									"Arithmetic(0)"
+								]
+							}
+						}
+					}
+				],
+				"links": [
+					{
+						"parent": "b",
+						"child": "a"
+					},
+					{
+						"parent": "c",
+						"child": "a"
+					},
+					{
+						"parent": "d",
+						"child": "a"
+					}
+				]
+			}
+		]
+	}
+}
