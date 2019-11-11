@@ -622,7 +622,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public void save(String path) throws FileIOException {
 		try {
 			if (path.toLowerCase().endsWith(".cmp")){
-				getLogicModel().save(path);
+				getLogicModel().saveWithGraphics(path);
 			}
 			else {
 				JSONObject json = JSONAdapter.toJSONObject(logicModel);
