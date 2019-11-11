@@ -147,7 +147,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 				model = Model.createModel(uk.co.agena.minerva.model.Model.load(path, uk.co.agena.minerva.model.Model.suppressMessages));
 			}
 			catch (Exception ex){
-				throw new ModelException("Filed to convert CMP model data", ex);
+				throw new ModelException("Failed to convert CMP model data", ex);
 			}
 		}
 		else {
