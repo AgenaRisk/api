@@ -166,7 +166,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		if (model == null){
 			throw new ModelException("Failed to load model from path");
 		}
-	
+		
 		if (model.getDataSets().isEmpty()){
 			Logger.logIfDebug("Model has no DataSets, adding one automatically");
 			model.createDataSet("Scenario 1");
@@ -615,6 +615,13 @@ public class Model implements IDContainer<ModelException>, Storable {
 			if (outputCaptured.contains("Inconsistent evidence in risk object")){
 				message = "Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)";
 			}
+			
+			if (outputCaptured.contains("node has sum zero probability")){
+				message = outputCaptured.replaceFirst("(?s).*(?=(The entire node probability table for))", "");
+				message = message.replaceFirst("(?s)(?<=(\\[Normal cannot have zero variance\\]\\.)).*", "");
+				message = message.replaceAll("<br/?>", "\n");
+			}
+			
 			throw new CalculationException(message);
 		}
 	}
