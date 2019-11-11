@@ -146,7 +146,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 			network = model.createNetwork(id, name);
 			network.setDescription(description);
 		}
-		catch (ModelException ex){
+		catch (NetworkException ex){
 			throw new NetworkException("Failed to add a network to model", ex);
 		}
 		

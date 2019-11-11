@@ -483,7 +483,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		catch (AgenaRiskRuntimeException ex){
 			networks.remove(new Id(id));
-			throw new NetworkException("Failed to add network `" + id + "`", ex);
+			throw new NetworkException("Error in AgenaRisk Core `" + id + "`", ex);
 		}
 		
 		return network;
