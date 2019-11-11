@@ -135,6 +135,11 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public static Model loadModel(String path) throws ModelException {
 		Logger.logIfDebug("Loading model from: " + path);
 		
+		if (path.matches("^\".*\"$")){
+			// Strip surrounding quotes
+			path = path.substring(1, path.length()-1);
+		}
+		
 		Model model = null;
 		
 		if (path.toLowerCase().endsWith(".cmp")){
