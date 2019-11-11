@@ -167,6 +167,11 @@ public class Model implements IDContainer<ModelException>, Storable {
 			throw new ModelException("Failed to load model from path");
 		}
 	
+		if (model.getDataSets().isEmpty()){
+			Logger.logIfDebug("Model has no DataSets, adding one automatically");
+			model.createDataSet("Scenario 1");
+		}
+	
 		Logger.logIfDebug("Model loaded");
 		
 		return model;
