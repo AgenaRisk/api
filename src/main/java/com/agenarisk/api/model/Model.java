@@ -726,7 +726,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Saves the Model as a minimal JSON.<br>
+	 * Saves the Model as a light-weight JSON.<br>
 	 * Keeps only elements essential for a clean calculation.<br>
 	 * Drops: Graphics, RiskTable, DataSets, compiled non-manual NPTs, names, notes and descriptions.<br>
 	 * 
@@ -735,7 +735,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * 
 	 * @throws FileIOException if saving fails
 	 */
-	public void saveMinimal(String path, boolean keepMeta) throws FileIOException {
+	public void saveEssentials(String path, boolean keepMeta) throws FileIOException {
 		try {
 			
 			JSONObject json = getMinimalJson(keepMeta);
