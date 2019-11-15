@@ -142,7 +142,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		Model model = null;
 		
-		if (path.toLowerCase().endsWith(".cmp")){
+		if (path.toLowerCase().endsWith(".cmp") || path.toLowerCase().endsWith(".ast")){
 			try {
 				model = Model.createModel(uk.co.agena.minerva.model.Model.load(path, uk.co.agena.minerva.model.Model.suppressMessages));
 			}
