@@ -182,8 +182,16 @@ public class JSONAdapter {
 				jsonResult.put(CalculationResult.Field.network.toString(), ebn.getConnID());
 				jsonResult.put(CalculationResult.Field.node.toString(), en.getConnNodeId());
 				
-				MarginalDataItem mdi = model.getMarginalDataStore().getMarginalDataItemListForNode(ebn, en).getMarginalDataItemAtIndex(scenarioIndex);
-				DataSet ds = mdi.getDataset();
+				MarginalDataItem mdi;
+				DataSet ds;
+				try {
+					mdi = model.getMarginalDataStore().getMarginalDataItemListForNode(ebn, en).getMarginalDataItemAtIndex(scenarioIndex);
+					ds = mdi.getDataset();
+				}
+				catch(NullPointerException ex){
+					Logger.logIfDebug("No MDI or DataSet for `" + ebn.getConnID() + "`.`" + en.getConnNodeId() + "` during API1 to API2 conversion");
+					continue;
+				}
 				
 				if (en instanceof NumericalEN){
 					try {
