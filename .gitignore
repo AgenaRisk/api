@@ -3,3 +3,7 @@
 /lib/
 /nb-configuration.xml
 /nbproject/
+nb-configuration.xml
+.project
+.classpath
+.settings
