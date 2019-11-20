@@ -8,6 +8,7 @@ import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.Identifiable;
+import com.agenarisk.api.util.Advisory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -153,14 +154,30 @@ public class DataSet implements Identifiable<DataSetException>{
 			}
 					
 			for (int i = 0; i < jsonObservations.length(); i++) {
-				try {
 					JSONObject jsonObservation = jsonObservations.optJSONObject(i);
+				try {
 					dataSet.setObservation(jsonObservation);
 				}
-				catch (JSONException | DataSetException ex){
+				catch (Exception ex){
+					if (Advisory.getCurrentThreadGroup() != null){
+						String networkId = jsonObservation.optString(Observation.Field.network.toString());
+						String nodeId = jsonObservation.optString(Observation.Field.node.toString());
+
+						String message = "Failed loading observation";
+						if (nodeId != null){
+							message += " for node `" + nodeId + "`";
+
+							if (networkId != null){
+								message += " in network `" + networkId + "`";
+							}
+						}
+						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message, ex));
+					}
+					else {
 					someFailed = true;
 				}
 			}
+		}
 		}
 		
 		if (someFailed){

@@ -136,9 +136,16 @@ public class CalculationResult {
 		
 		try {
 			node = dataSet.getModel().getNetwork(networkId).getNode(nodeId);
+			node.getId(); // Trigger NPE
+			
 		}
 		catch(NullPointerException ex){
-			throw new DataSetException("Not found node with ID `"+nodeId+"` in network with ID `"+networkId+"`", ex);
+			String message = "Not found node with ID `"+nodeId+"` in network with ID `"+networkId+"`";
+			if (Advisory.getCurrentThreadGroup() != null){
+				Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message, ex));
+				return;
+			}
+			else throw new DataSetException(message, ex);
 		}
 		
 		int scenarioIndex = dataSet.getDataSetIndex();
