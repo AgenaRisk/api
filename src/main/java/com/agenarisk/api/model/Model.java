@@ -143,7 +143,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 		Model model = null;
 		
 		Path filePath = Paths.get(path);
-		if (!Files.isRegularFile(filePath) || Files.isReadable(filePath)){
+		if (!Files.isRegularFile(filePath) || !Files.isReadable(filePath)){
 			throw new ModelException("File does not exist or is not readable: " + filePath.toAbsolutePath());
 		}
 		
