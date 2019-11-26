@@ -891,7 +891,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Sets Node function to the one provided.
+	 * Sets Node function to the one provided. Will use node parent IDs and expression variables as allowed tokens.
 	 * <br>
 	 * Resets Node table partitioning and sets Table type to NodeConfiguration.TableType.Expression.
 	 * 
@@ -900,7 +900,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws NodeException if function is invalid
 	 */
 	public void setTableFunction(String expression) throws NodeException {
-		setTableFunction(expression, new ArrayList<>());
+		List<String> allowedTokens = new ArrayList<>();
+		
+		List<String> parentIDs = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getId()).collect(Collectors.toList());
+		List<String> variableNames = getLogicNode().getExpressionVariables().getAllVariableNames();
+		
+		allowedTokens.addAll(parentIDs);
+		allowedTokens.addAll(variableNames);
+		
+		setTableFunction(expression, allowedTokens);
 	}
 	
 	/**
