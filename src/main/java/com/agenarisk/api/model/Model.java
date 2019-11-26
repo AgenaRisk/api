@@ -67,7 +67,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * ID-Network map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
 	 */
-	public final Map<Id, Network> networks = Collections.synchronizedMap(new LinkedHashMap<>());
+	private final Map<Id, Network> networks = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * ID-DataSet map of this Model
