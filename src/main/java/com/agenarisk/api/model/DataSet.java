@@ -156,7 +156,7 @@ public class DataSet implements Identifiable<DataSetException>{
 			}
 					
 			for (int i = 0; i < jsonObservations.length(); i++) {
-					JSONObject jsonObservation = jsonObservations.optJSONObject(i);
+				JSONObject jsonObservation = jsonObservations.optJSONObject(i);
 				try {
 					dataSet.setObservation(jsonObservation);
 				}
@@ -176,10 +176,10 @@ public class DataSet implements Identifiable<DataSetException>{
 						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message, ex));
 					}
 					else {
-					someFailed = true;
+						someFailed = true;
+					}
 				}
 			}
-		}
 		}
 		
 		if (someFailed){
