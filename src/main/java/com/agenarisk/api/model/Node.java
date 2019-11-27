@@ -3,6 +3,7 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.model.interfaces.Named;
 import com.agenarisk.api.model.interfaces.Networked;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
+import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.NodeException;
 import com.agenarisk.api.model.interfaces.Identifiable;
@@ -1081,31 +1082,53 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Changes the Node into a simulated node subject to conditions.
+	 * Enables calculation simulation for the Node (only possible for ContinuousInterval or IntegerInterval nodes).
 	 * <br>
-	 * Only ContinuousInterval and IntegerInterval nodes can be simulated.
-	 * <br>
-	 * This action replaces States with dynamic states.
+	 * All current states will be replaced by dynamic states.
 	 * 
-	 * @param simulated whether the node should be simulated or not
-	 * 
-	 * @throws NodeException if Node type can not be simulated
-	 * 
-	 * @return true if the Node has been changed or false if it already was simulated
+	 * @return true if action was performed, false if no action was permitted or required
 	 */
-	public boolean setSimulated(boolean simulated) throws NodeException {
-		if (isSimulated()){
+	public boolean convertToSimulated() throws NodeException {
+		boolean canSimulate = getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN);
+		
+		if (!canSimulate || isSimulated()){
 			return false;
 		}
 		
-		if (getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN)){
 			NodeConfiguration.setDefaultIntervalStates(this);
 			ContinuousEN cien = (ContinuousEN)this.getLogicNode();
 			cien.setSimulationNode(true);
+		
 			return true;
 		}
 		
-		throw new NodeException("Simulation is non-applicable to node type of "+toStringExtra()+" can not be simulated");
+	/**
+	 * Disables simulation and converts dynamic states from the results of the provided DataSet into static permanent states.
+	 * 
+	 * @param dataSet DataSet to use for creating static states from results
+	 * 
+	 * @return true if action was performed, false if no action was permitted or required
+	 * 
+	 * @throws DataSetException if states could not be created from the DataSet results
+	 */
+	public boolean convertToStatic(com.agenarisk.api.model.DataSet dataSet) throws DataSetException {
+		
+		boolean canSimulate = getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN);
+		
+		if (!canSimulate || !isSimulated()){
+			return false;
+		}
+		
+		ContinuousEN cien = (ContinuousEN)this.getLogicNode();
+	
+		try {
+			DataSet ds = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode()).getMarginalDataItemAtIndex(0).getDataset();
+			ContinuousEN.ConvertToNonSimulation(cien, ds);
+		}
+		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | ArrayIndexOutOfBoundsException ex){
+			throw new DataSetException("Failed to convert results to static states for node " + toStringExtra(), ex);
+		}
+		return true;
 	}
 	
 	/**

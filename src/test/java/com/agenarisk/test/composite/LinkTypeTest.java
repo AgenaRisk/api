@@ -42,14 +42,14 @@ public class LinkTypeTest {
 		netSrc.createNode("n_cont", Node.Type.ContinuousInterval);
 
 		nodeSim = netSrc.createNode("n_cont_sim", Node.Type.ContinuousInterval);
-		nodeSim.setSimulated(true);
+		nodeSim.convertToSimulated();
 		nodeSim.setTableFunction("Arithmetic(1)");
 
 		netSrc.createNode("n_disc", Node.Type.DiscreteReal);
 		netSrc.createNode("n_int", Node.Type.IntegerInterval);
 
 		nodeSim = netSrc.createNode("n_int_sim", Node.Type.IntegerInterval);
-		nodeSim.setSimulated(true);
+		nodeSim.convertToSimulated();
 		nodeSim.setTableFunction("Arithmetic(1)");
 
 		netSrc.createNode("n_lab", Node.Type.Labelled);
