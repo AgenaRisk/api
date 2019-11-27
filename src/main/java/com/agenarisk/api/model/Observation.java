@@ -4,9 +4,14 @@ import com.agenarisk.api.exception.ObservationException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
+import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
+import uk.co.agena.minerva.model.extendedbn.LabelledEN;
+import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.model.DataPoint;
 
@@ -150,5 +155,61 @@ public class Observation {
 	
 	public String toString(){
 		return new JSONObject(entries).toString();
+	}
+	
+	/**
+	 * Creates a JSONObject representation of this Observation
+	 * 
+	 * @return JSONObject equivalent of this Observation
+	 */
+	public JSONObject toJson(){
+		JSONObject jsonObservation = new JSONObject();
+		jsonObservation.put(com.agenarisk.api.model.Observation.Field.network.toString(), node.getNetwork().getId());
+		jsonObservation.put(com.agenarisk.api.model.Observation.Field.node.toString(), node.getId());
+		
+		if (!logicObservation.getExpressionVariableName().isEmpty()){
+			jsonObservation.put(com.agenarisk.api.model.Observation.Field.constantName.toString(), logicObservation.getExpressionVariableName());
+		}
+		
+		JSONArray jsonEntries = new JSONArray();
+		
+		ExtendedNode en = node.getLogicNode();
+		
+		if (en instanceof RankedEN || en instanceof LabelledEN || en instanceof DiscreteRealEN){
+			// Hard / Soft observation with arc dataset
+			// Can be linked to a specific state
+			for(DataPoint dp: (List<DataPoint>) logicObservation.getDataSet().getDataPoints()){
+				JSONObject jsonEntry = new JSONObject();
+				
+				String value = logicObservation.getUserEnteredAnswer();
+				ExtendedState es = null;
+				try {
+					es = en.getExtendedState(dp.getConnObjectId());
+				}
+				catch (ExtendedStateNotFoundException ex){
+					// Ignore this error and use user answer as value instead
+				}
+				if (es != null){
+					value = es.getName().getShortDescription();
+				}
+				
+				jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), value);
+				jsonEntry.put(com.agenarisk.api.model.Observation.Field.weight.toString(), dp.getValue());
+				jsonEntries.put(jsonEntry);
+			}
+		}
+		else {
+			// Hard observation with specific value
+			// Not linked to a specific state
+			JSONObject jsonEntry = new JSONObject();
+			String observationAnswer = logicObservation.getUserEnteredAnswer();
+			
+			jsonEntry.put(com.agenarisk.api.model.Observation.Field.value.toString(), observationAnswer);
+			jsonEntry.put(com.agenarisk.api.model.Observation.Field.weight.toString(), 1);
+			jsonEntries.put(jsonEntry);
+		}
+		
+		jsonObservation.put(com.agenarisk.api.model.Observation.Field.entries.toString(), jsonEntries);
+		return jsonObservation;
 	}
 }
