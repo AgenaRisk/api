@@ -1095,13 +1095,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			return false;
 		}
 		
-			NodeConfiguration.setDefaultIntervalStates(this);
-			ContinuousEN cien = (ContinuousEN)this.getLogicNode();
-			cien.setSimulationNode(true);
+		NodeConfiguration.setDefaultIntervalStates(this);
+		ContinuousEN cien = (ContinuousEN)this.getLogicNode();
+		cien.setSimulationNode(true);
 		
-			return true;
-		}
-		
+		return true;
+	}
+	
 	/**
 	 * Disables simulation and converts dynamic states from the results of the provided DataSet into static permanent states.
 	 * 
