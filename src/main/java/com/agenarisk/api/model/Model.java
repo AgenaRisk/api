@@ -1152,4 +1152,21 @@ public class Model implements IDContainer<ModelException>, Storable {
 		return dataSets.get(new Id(id));
 	}
 	
+	/**
+	 * Removes the provided DataSet from the model
+	 * 
+	 * @param dataSet DataSet to remove
+	 * 
+	 * @return true if the DataSet was removed
+	 */
+	public boolean removeDataSet(DataSet dataSet){
+		try {
+			this.logicModel.removeScenario(dataSet.getLogicScenario());
+			this.dataSets.remove(new Id(dataSet.getId()));
+		}
+		catch (ScenarioNotFoundException ex){
+			return false;
+		}
+		return true;
+	}
 }
