@@ -730,6 +730,22 @@ public class DataSet implements Identifiable<DataSetException>{
 	}
 	
 	/**
+	 * Returns all observations in this DataSet for all Networks and Nodes.
+	 * 
+	 * @return Set of all Observations
+	 */
+	public Set<Observation> getObservations(){
+		Set<Observation> observations = new LinkedHashSet<>();
+		getModel().getNetworks().values().forEach(net -> {
+			net.getNodes().values().stream()
+					.filter(node -> hasObservation(node))
+					.map(node -> getObservation(node))
+					.collect(Collectors.toCollection(() -> observations));
+		});
+		return observations;
+	}
+	
+	/**
 	 * Returns a view of the observation for the given node if there is one.
 	 * <br>
 	 * Note that this is just a view of the observation and any changes to it will not affect anything beyond this particular view.
