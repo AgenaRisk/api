@@ -829,4 +829,40 @@ public class DataSet implements Identifiable<DataSetException>{
 		}
 		return index;
 	}
+	
+	/**
+	 * Creates a JSONObject representation of this DataSet
+	 * 
+	 * @return JSONObject equivalent of this DataSet
+	 */
+	public JSONObject toJson(){
+		JSONObject jsonDataSet = new JSONObject();
+		
+		// ID
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.id.toString(), getId());
+		
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.active.toString(), getLogicScenario().isReportable());
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.displayable.toString(), getLogicScenario().isDisplayOnRiskGraphs());
+		
+		// Observations
+		JSONArray jsonObservations = new JSONArray();
+		
+		getObservations().stream().forEach(obs -> {
+			jsonObservations.put(obs.toJson());
+		});
+		
+		jsonDataSet.put(com.agenarisk.api.model.Observation.Field.observations.toString(), jsonObservations);
+		
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.active.toString(), logicScenario.isReportable());
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.displayable.toString(), logicScenario.isDisplayOnRiskGraphs());
+		
+		// Results
+		JSONArray jsonResults = new JSONArray();
+		getCalculationResults().stream().forEach(cr -> {
+			jsonResults.put(cr.toJson());
+		});
+		jsonDataSet.put(com.agenarisk.api.model.CalculationResult.Field.results.toString(), jsonResults);
+		
+		return jsonDataSet;
+	}
 }
