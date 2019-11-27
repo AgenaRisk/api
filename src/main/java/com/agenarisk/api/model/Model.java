@@ -68,6 +68,38 @@ public class Model implements IDContainer<ModelException>, Storable {
 		model
 	}
 	
+	public static enum ExportFlags {
+		/**
+		 * Keep meta, audit, names, notes and descriptions of Model, Networks and Nodes
+		 */
+		KEEP_META,
+		
+		/**
+		 * Keep DataSet results
+		 */
+		KEEP_RESULTS,
+		
+		/**
+		 * Keep DataSet observations
+		 */
+		KEEP_OBSERVATIONS,
+		
+		/**
+		 * Keep Risk Table
+		 */
+		KEEP_RISK_TABLE,
+		
+		/**
+		 * Keep Graphics
+		 */
+		KEEP_GRAPHICS,
+		
+		/**
+		 * Will copy the first DataSet with observations only to the root of the JSON structure so it can be submitted to AgenaRisk Cloud
+		 */
+		CLOUD_DATASET
+	}
+	
 	/**
 	 * ID-Network map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
@@ -675,32 +707,67 @@ public class Model implements IDContainer<ModelException>, Storable {
 	/**
 	 * Returns the Model as a minimal JSON.<br>
 	 * Keeps only elements essential for a clean calculation.<br>
-	 * Drops: Graphics, RiskTable, DataSets, compiled non-manual NPTs, names, notes and descriptions.<br>
 	 * 
-	 * @param keepMeta Keep meta, names, notes and descriptions of Model, Networks and Nodes
+	 * @param flags flags specifying which attributes to keep
 	 * 
 	 * @return minimal JSON
 	 * 
 	 * @throws AdapterException if conversion to JSON fails
 	 */
-	public JSONObject getMinimalJson(boolean keepMeta) throws AdapterException {
+	public JSONObject export(ExportFlags... flags) throws AdapterException {
 		
 		JSONObject json = JSONAdapter.toJSONObject(logicModel);
+		
+		EnumSet<ExportFlags> xflags = EnumSet.copyOf(Arrays.asList(flags));
 		
 		try {
 
 			JSONObject jsonModel = json.optJSONObject(Model.Field.model.toString());
+			JSONArray jsonDataSets = jsonModel.optJSONArray(DataSet.Field.dataSets.toString());
+
+			if (jsonDataSets != null){
+				
+				if (jsonDataSets.length() > 0 && xflags.contains(ExportFlags.CLOUD_DATASET)){
+					// If there are data sets and cloud flag set, copy the first data set without results to root json
+					JSONObject jDataSet = jsonDataSets.optJSONObject(0);
+					json.put(DataSet.Field.dataSet.toString(), jDataSet);
+					jDataSet = json.getJSONObject(DataSet.Field.dataSet.toString());
+					jDataSet.remove(CalculationResult.Field.results.toString());
+				}
+				
+				if (!xflags.contains(ExportFlags.KEEP_RESULTS) && !xflags.contains(ExportFlags.KEEP_OBSERVATIONS)){
+					// If there are data sets but we are not keeping results nor observations, remove all data sets
 			jsonModel.remove(DataSet.Field.dataSets.toString());
+				}
+				else {
+					jsonDataSets.forEach(o -> {
+						if (o instanceof JSONObject){
+							JSONObject jDataSet = (JSONObject) o;
+							if (!xflags.contains(ExportFlags.KEEP_RESULTS)){
+								jDataSet.remove(CalculationResult.Field.results.toString());
+							}
+							
+							if (!xflags.contains(ExportFlags.KEEP_OBSERVATIONS)){
+								jDataSet.remove(Observation.Field.observations.toString());
+							}
+						}
+					});
+				}
+			}
+			
+			if (!xflags.contains(ExportFlags.KEEP_RISK_TABLE)){
 			jsonModel.remove(RiskTable.Field.riskTable.toString());
+			}
+			
+			if (!xflags.contains(ExportFlags.KEEP_META)){
 			jsonModel.remove(Audit.Field.audit.toString());
-			if (!keepMeta){
 				jsonModel.remove(Meta.Field.meta.toString());
 			}
 
 			JSONUtils.traverse(json, (obj -> {
 				if (obj instanceof JSONObject){
 					JSONObject jo = ((JSONObject) obj);
-					if (!keepMeta){
+					if (!xflags.contains(ExportFlags.KEEP_META)){
 						if (jo.has(Network.Field.id.toString())){
 							// If the object has an ID, we can remove its name and description
 							jo.remove(Network.Field.name.toString());
@@ -710,7 +777,9 @@ public class Model implements IDContainer<ModelException>, Storable {
 					}
 
 					// Remove graphics from all objects
+					if (!xflags.contains(ExportFlags.KEEP_GRAPHICS)){
 					jo.remove(Graphics.Field.graphics.toString());
+					}
 
 					jo.remove(Network.ModificationLog.modificationLog.toString());
 
@@ -748,7 +817,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public void saveEssentials(String path, boolean keepMeta) throws FileIOException {
 		try {
 			
-			JSONObject json = getMinimalJson(keepMeta);
+			JSONObject json = export(Model.ExportFlags.CLOUD_DATASET);
 			Files.write(Paths.get(path), json.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			
 		}
