@@ -1125,8 +1125,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			DataSet ds = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode()).getMarginalDataItemAtIndex(0).getDataset();
 			ContinuousEN.ConvertToNonSimulation(cien, ds);
 		}
-		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | ArrayIndexOutOfBoundsException ex){
-			throw new DataSetException("Failed to convert results to static states for node " + toStringExtra(), ex);
+		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | IndexOutOfBoundsException ex){
+			throw new DataSetException("Failed to convert results to static states for node " + toStringExtra() + " from DataSet " + dataSet.getId(), ex);
 		}
 		return true;
 	}
