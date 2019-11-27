@@ -1169,4 +1169,19 @@ public class Model implements IDContainer<ModelException>, Storable {
 		}
 		return true;
 	}
+	
+	/**
+	 * Make all states of dynamically discretized nodes static as they currently are in the provided DataSet.
+	 * 
+	 * @param dataSet DataSet to use for creating static states from results
+	 */
+	public void convertToStatic(DataSet dataSet){
+		getNetworks().values().forEach(network -> {
+			network.getNodes().values().forEach(node -> {
+				if (node.isSimulated()){
+					node.convertToStatic(dataSet);
+				}
+			});
+		});
+	}
 }
