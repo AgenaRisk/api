@@ -737,7 +737,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 				
 				if (!xflags.contains(ExportFlags.KEEP_RESULTS) && !xflags.contains(ExportFlags.KEEP_OBSERVATIONS)){
 					// If there are data sets but we are not keeping results nor observations, remove all data sets
-			jsonModel.remove(DataSet.Field.dataSets.toString());
+					jsonModel.remove(DataSet.Field.dataSets.toString());
 				}
 				else {
 					jsonDataSets.forEach(o -> {
@@ -756,11 +756,11 @@ public class Model implements IDContainer<ModelException>, Storable {
 			}
 			
 			if (!xflags.contains(ExportFlags.KEEP_RISK_TABLE)){
-			jsonModel.remove(RiskTable.Field.riskTable.toString());
+				jsonModel.remove(RiskTable.Field.riskTable.toString());
 			}
 			
 			if (!xflags.contains(ExportFlags.KEEP_META)){
-			jsonModel.remove(Audit.Field.audit.toString());
+				jsonModel.remove(Audit.Field.audit.toString());
 				jsonModel.remove(Meta.Field.meta.toString());
 			}
 
@@ -778,7 +778,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 
 					// Remove graphics from all objects
 					if (!xflags.contains(ExportFlags.KEEP_GRAPHICS)){
-					jo.remove(Graphics.Field.graphics.toString());
+						jo.remove(Graphics.Field.graphics.toString());
 					}
 
 					jo.remove(Network.ModificationLog.modificationLog.toString());
