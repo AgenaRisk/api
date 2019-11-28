@@ -153,8 +153,14 @@ public class Observation {
 		return entries;
 	}
 	
+	/**
+	 * Returns a JSON String representing this Observation.
+	 * 
+	 * @return JSON String representing this Observation
+	 */
+	@Override
 	public String toString(){
-		return new JSONObject(entries).toString();
+		return toJson().toString();
 	}
 	
 	/**
