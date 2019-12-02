@@ -680,4 +680,22 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		this.logicNetwork = logicNetwork;
 	}
 	
+	/**
+	 * Removes the provided node from the model, severing its links to other Nodes and then removing it from its Network.
+	 * 
+	 * @param node Node to remove
+	 * 
+	 * @throws NodeException if the operation fails
+	 */
+	public void removeNode(Node node) throws NodeException {
+		try {
+			node.getParents().forEach(np -> Node.unlinkNodes(node, np));
+			node.getChildren().forEach(nc -> Node.unlinkNodes(node, nc));
+			nodes.remove(new Id(node.getId()));
+			getLogicNetwork().removeExtendedNode(node.getLogicNode());
+		}
+		catch (ExtendedBNException ex){
+			throw new NodeException("Failed to remove node " + node.toStringExtra(), ex);
+		}
+	}
 }
