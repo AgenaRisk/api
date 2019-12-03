@@ -22,6 +22,7 @@ import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
+import com.agenarisk.api.tools.SensitivityAnalyserException;
 import com.agenarisk.api.util.JSONUtils;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,6 +52,7 @@ import uk.co.agena.minerva.model.scenario.ScenarioNotFoundException;
 import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.StreamInterceptor;
+import uk.co.agena.minerva.util.binaryfactorisation.BinaryBNConverter;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
 
@@ -636,6 +638,8 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @throws CalculationException if calculation failed
 	 */
 	public void calculate() throws CalculationException {
+		
+		Logger.logIfDebug("Calculating all DataSets");
 
 		if (dataSets.isEmpty()){
 			createDataSet("Scenario 1");
@@ -1150,6 +1154,40 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 */
 	public DataSet getDataSet(String id){
 		return dataSets.get(new Id(id));
+	}
+	
+	/**
+	 * Performs binary factorization on the model if there are any simulation nodes with more than 3 parents
+	 * @return 
+	 */
+	public boolean factorize() throws ModelException{
+		
+//		BinaryBNConverter converter = new BinaryBNConverter(getLogicModel());
+//		converter.convertBNList(BNList, logicModel, factorizeFlag);
+//		
+		// Calculate the model and see if it was binary factorised
+		try {
+			calculate();
+		}
+		catch (CalculationException ex){
+			throw new ModelException("Calculation failed during factorization checks: " + ex.getMessage(), ex);
+		}
+		
+		if (getLogicModel().getFactorizedBFModelPath() != null){
+			// Model was factorised, so we are going to use this version of the model
+			// Need to remap model objects
+			Model tempModel;
+			try {
+				tempModel = Model.loadModel(getLogicModel().getFactorizedBFModelPath());
+			}
+			catch(ModelException ex){
+				throw new ModelException("Failed to load factorized model" + ex.getMessage(), ex);
+			}
+		}
+		
+		
+		
+		return false;
 	}
 	
 	/**
