@@ -425,12 +425,8 @@ public class DataSet implements Identifiable<DataSetException>{
 		}
 		else if (en instanceof ContinuousIntervalEN || en instanceof IntegerIntervalEN){
 			try {
-				if (en instanceof ContinuousIntervalEN){
-					Double.valueOf(String.valueOf(value));
-				}
-				if (en instanceof IntegerIntervalEN){
-					Integer.valueOf(String.valueOf(value));
-				}
+				// Validate input as a number. We don't really care double or int because direct observations ignore states
+				Double.valueOf(String.valueOf(value));
 			}
 			catch (NumberFormatException ex){
 				throw new DataSetException("Invalid observation value - not a number", ex);
