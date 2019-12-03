@@ -141,10 +141,12 @@ public class Model implements IDContainer<ModelException>, Storable {
 		
 		try {
 			logicModel = uk.co.agena.minerva.model.Model.createEmptyModel(outputMode);
-			// Remove the default network and data set
+			// Remove the default network
 			logicModel.removeExtendedBNs(logicModel.getExtendedBNAtIndex(0), true);
+			// Remove the default data set
+			logicModel.removeScenario(logicModel.getScenarioAtIndex(0));
 		}
-		catch (uk.co.agena.minerva.model.ModelException ex){
+		catch (uk.co.agena.minerva.model.ModelException | ScenarioNotFoundException ex){
 			throw new AgenaRiskRuntimeException("Failed to initialise the model", ex);
 		}
 	}
@@ -290,14 +292,6 @@ public class Model implements IDContainer<ModelException>, Storable {
 	public static Model createModel(JSONObject json) throws ModelException, JSONException {
 		
 		Model model = createModel();
-		
-		// Remove the default data set
-		try {
-			model.getLogicModel().removeScenario(model.getLogicModel().getScenarioAtIndex(0));
-		}
-		catch (ScenarioNotFoundException ex){
-			throw new ModelException("Failed to init an empty model", ex);
-		}
 		
 		JSONObject jsonModel = json.getJSONObject(Field.model.toString());
 		
