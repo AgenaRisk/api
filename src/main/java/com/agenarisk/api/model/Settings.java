@@ -3,7 +3,7 @@ package com.agenarisk.api.model;
 import org.json.JSONObject;
 
 /**
- * This is a stub class that only contains field values for input/output to XML and JSON format.
+ * This is a stub class for Model calculation settings.
  * 
  * @author Eugene Dementiev
  */
