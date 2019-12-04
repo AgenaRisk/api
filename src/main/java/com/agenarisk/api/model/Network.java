@@ -12,7 +12,6 @@ import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;
 import com.agenarisk.api.model.field.Id;
-import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import java.util.ArrayList;
@@ -30,13 +29,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
+import com.agenarisk.api.model.interfaces.IdContainer;
 
 /**
  * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1.
  * 
  * @author Eugene Dementiev
  */
-public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IDContainer<NetworkException>, Storable, Named {
+public class Network implements Networked<Network>, Comparable<Network>, Identifiable<NetworkException>, IdContainer<NetworkException>, Storable, Named {
 	
 	/**
 	 * This is set of fields for input/output to XML and JSON format
@@ -260,7 +260,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @throws NetworkException if Node creation failed
 	 */
 	public Node createNode(String id, String name, Node.Type type) throws NetworkException {
-		synchronized (IDContainer.class){
+		synchronized (IdContainer.class){
 			if (nodes.containsKey(new Id(id))){
 				throw new NetworkException("Node with id `" + id + "` already exists");
 			}

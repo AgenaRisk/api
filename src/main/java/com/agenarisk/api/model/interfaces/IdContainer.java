@@ -10,7 +10,7 @@ import java.util.Objects;
  * @author Eugene Dementiev
  * @param <E> the type of Exception thrown on error
  */
-public interface IDContainer <E extends Exception> {
+public interface IdContainer <E extends Exception> {
 	
 	/**
 	 * Returns the map of identifiable items based on.
@@ -51,7 +51,7 @@ public interface IDContainer <E extends Exception> {
 	 */
 	@Deprecated
 	default <I extends Identifiable> boolean changeContainedId(I identifiable, String id) throws E {
-		synchronized (IDContainer.class){
+		synchronized (IdContainer.class){
 			
 			Map map = getIdMap(identifiable.getClass());
 			

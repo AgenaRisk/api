@@ -19,7 +19,6 @@ import com.agenarisk.api.io.stub.Picture;
 import com.agenarisk.api.io.stub.RiskTable;
 import com.agenarisk.api.io.stub.Text;
 import com.agenarisk.api.model.field.Id;
-import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.JSONUtils;
@@ -54,13 +53,14 @@ import uk.co.agena.minerva.util.StreamInterceptor;
 import uk.co.agena.minerva.util.binaryfactorisation.BinaryBNConverter;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
+import com.agenarisk.api.model.interfaces.IdContainer;
 
 /**
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
  * 
  * @author Eugene Dementiev
  */
-public class Model implements IDContainer<ModelException>, Storable {
+public class Model implements IdContainer<ModelException>, Storable {
 	
 	/**
 	 * This is set of fields for input/output to XML and JSON format
@@ -515,7 +515,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @throws NetworkException if a Network with this ID already exists
 	 */
 	public Network createNetwork(String id, String name) throws NetworkException {
-		synchronized (IDContainer.class){
+		synchronized (IdContainer.class){
 			if (networks.containsKey(new Id(id))){
 				throw new NetworkException("Network with id `" + id + "` already exists");
 			}
@@ -834,7 +834,7 @@ public class Model implements IDContainer<ModelException>, Storable {
 	 * @throws DataSetException if a DataSet with this ID already exists
 	 */
 	public DataSet createDataSet(String id) throws DataSetException {
-		synchronized (IDContainer.class){
+		synchronized (IdContainer.class){
 			if (dataSets.containsKey(new Id(id))){
 				throw new DataSetException("DataSet with id `" + id + "` already exists");
 			}
