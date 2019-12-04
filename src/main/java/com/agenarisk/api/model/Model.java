@@ -559,10 +559,17 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * Creates a JSON representing this Network, ready for file storage.
 	 * 
 	 * @return JSONObject representing this Network
+	 * 
+	 * @throws AgenaRiskRuntimeException if failed to convert model to JSON
 	 */
 	@Override
 	public JSONObject toJson() {
-		throw new UnsupportedOperationException("Not supported yet.");
+		try {
+			return JSONAdapter.toJSONObject(logicModel);
+		}
+		catch (AdapterException | JSONException ex){
+			throw new AgenaRiskRuntimeException("Failed to convert model to JSON", ex);
+		}
 	}
 
 	/**
