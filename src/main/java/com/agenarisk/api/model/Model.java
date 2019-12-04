@@ -538,6 +538,24 @@ public class Model implements IdContainer<ModelException>, Storable {
 	}
 	
 	/**
+	 * Removes provided Network from this Model, breaks any existing links to and from this Network.
+	 * 
+	 * @param net Network to remove
+	 */
+	public void removeNetwork(Network net){
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
+	/**
+	 * Removes provided Network from this Model, breaks any existing links to and from this Network.
+	 * 
+	 * @param netId ID of the Network to remove
+	 */
+	public void removeNetwork(String netId){
+		removeNetwork(getNetwork(netId));
+	}
+	
+	/**
 	 * Creates a JSON representing this Network, ready for file storage.
 	 * 
 	 * @return JSONObject representing this Network
