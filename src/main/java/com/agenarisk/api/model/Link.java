@@ -1,6 +1,5 @@
 package com.agenarisk.api.model;
 
-import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.singularsys.jep.JepException;
