@@ -6,6 +6,7 @@ import uk.co.agena.minerva.model.extendedbn.ContinuousIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
+import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
 import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.LabelledEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
@@ -136,7 +137,14 @@ public class State {
 	 * @return state with given label or null if such state does not exist
 	 */
 	protected static State getState(Node node, String label) {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			ExtendedNode en = node.getLogicNode();
+			ExtendedState es = en.getExtendedStateWithShortDesc(label);
+			return new State(node, es);
+		}
+		catch (ExtendedStateNotFoundException ex){
+			throw new StateException("State `" + label + "` not found in node `" + node.toStringExtra() + "`", ex);
+		}
 	}
 
 	/**
