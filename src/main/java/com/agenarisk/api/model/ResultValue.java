@@ -41,7 +41,7 @@ public class ResultValue {
 	 * @param label entry label (state or range)
 	 * @param value probability mass value
 	 */
-	public ResultValue(CalculationResult result, String label, double value) {
+	protected ResultValue(CalculationResult result, String label, double value) {
 		this.result = result;
 		this.label = label;
 		this.value = value;

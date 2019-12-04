@@ -23,7 +23,7 @@ public class ResultInterval extends ResultValue {
 	 * @param lowerBound lower bound of the range
 	 * @param upperBound upper bound of the range
 	 */
-	public ResultInterval(CalculationResult calculationResult, String label, double value, double lowerBound, double upperBound) {
+	protected ResultInterval(CalculationResult calculationResult, String label, double value, double lowerBound, double upperBound) {
 		super(calculationResult, (label == null)?computeLabel(lowerBound, upperBound):label, value);
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
