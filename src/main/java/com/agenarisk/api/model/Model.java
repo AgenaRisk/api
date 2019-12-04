@@ -653,6 +653,17 @@ public class Model implements IdContainer<ModelException>, Storable {
 	/**
 	 * Triggers propagation in this model for all Networks and DataSets.
 	 * 
+	 * @param dataSets DataSets to calculate
+	 * 
+	 * @throws CalculationException if calculation failed
+	 */
+	public void calculate(Set<DataSet> dataSets) throws CalculationException {
+		throw new UnsupportedOperationException("Not supported yet");
+	}
+	
+	/**
+	 * Triggers propagation in this model for all Networks and DataSets.
+	 * 
 	 * @throws CalculationException if calculation failed
 	 */
 	public void calculate() throws CalculationException {
