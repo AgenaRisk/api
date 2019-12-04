@@ -54,7 +54,7 @@ import uk.co.agena.minerva.util.model.Note;
 import uk.co.agena.minerva.util.model.Variable;
 
 /**
- * JSONAdapter enables encoding of a model as JSON.
+ * JSONAdapter enables encoding of an API1 model as JSON.
  * 
  * @author Eugene Dementiev
  */
