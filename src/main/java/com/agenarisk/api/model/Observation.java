@@ -1,6 +1,7 @@
 package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.ObservationException;
+import com.agenarisk.api.model.interfaces.Storable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ import uk.co.agena.minerva.util.model.DataPoint;
  * 
  * @author Eugene Dementiev
  */
-public class Observation {
+public class Observation implements Storable {
 	
 	/**
 	 * This is set of fields for input/output to XML and JSON format

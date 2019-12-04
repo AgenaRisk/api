@@ -4,6 +4,7 @@ import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.dataset.ResultInterval;
 import com.agenarisk.api.model.dataset.ResultValue;
+import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.Advisory;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -32,7 +33,7 @@ import uk.co.agena.minerva.util.model.MinervaRangeException;
  * 
  * @author Eugene Dementiev
  */
-public class CalculationResult {
+public class CalculationResult implements Storable {
 	
 	/**
 	 * This is set of fields for input/output to XML and JSON format

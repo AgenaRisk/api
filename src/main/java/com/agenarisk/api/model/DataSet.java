@@ -5,6 +5,7 @@ import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.Identifiable;
+import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.Advisory;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,7 +40,7 @@ import uk.co.agena.minerva.util.model.NameDescription;
  * 
  * @author Eugene Dementiev
  */
-public class DataSet implements Identifiable<DataSetException>{
+public class DataSet implements Identifiable<DataSetException>, Storable {
 	
 	/**
 	 * This is set of fields for input/output to XML and JSON format
