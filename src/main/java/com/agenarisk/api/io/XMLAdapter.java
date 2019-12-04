@@ -28,7 +28,8 @@ import org.json.JSONObject;
 import org.json.XML;
 
 /**
- *
+ * Converts AgenaRisk Model JSON structure into an equivalent AgenaRisk Model XML structure and vice-versa.
+ * 
  * @author Eugene Dementiev
  */
 public class XMLAdapter {
