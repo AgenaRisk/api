@@ -1026,39 +1026,38 @@ public class Model implements IdContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Creates a CrossNetworkLink of given Type.
-	 * <br>
-	 * Type can not be CrossNetworkLink.Type.State, use createCrossNetworkLink(Node, Node, String) instead.
+	 * Creates a Link between two nodes in same or different Networks.
 	 * 
-	 * @param source source Node of the link
-	 * @param target target Node of the link
-	 * @param type type of the message for the link to pass
+	 * @param source Node to link from
+	 * @param target Node to link to
+	 * @param type type of CrossNetworkLink; Type can not be CrossNetworkLink.Type.State, use createCrossNetworkLink(Node, Node, String) instead
 	 * 
-	 * @throws ModelException if both Nodes are in the same Network; invalid Type given, or source Node already has incoming links
+	 * @return created Link
+	 * 
+	 * @throws LinkException if Link already exists, or a cross network link is being created with invalid arguments
 	 */
-	public void createLink(Node source, Node target, CrossNetworkLink.Type type) throws ModelException {
-		throw new UnsupportedOperationException("Not implemented");
+	public Link createLink(Node source, Node target, CrossNetworkLink.Type type) throws LinkException {
+		return Node.linkNodes(source, source, type);
 	}
 	
 	/**
 	 * Creates a CrossNetworkLink of given Type.
-	 * <br>
- 	 * Type can not be CrossNetworkLink.Type.State, use createCrossNetworkLink(Node, Node, String) instead.
 	 *
 	 * @param sourceNetworkId ID of source Network of the link
 	 * @param sourceNodeId ID of source Node of the link
 	 * @param targetNetworkId ID of target Network of the link
 	 * @param targetNodeId ID of target Node of the link
-	 * @param type type of the message for the link to pass
+	 * @param type type of the message for the link to pass; Type can not be CrossNetworkLink.Type.State, use createCrossNetworkLink(Node, Node, String) instead
 	 * 
-	 * @throws ModelException if both Nodes are in the same Network; invalid Type given, or source Node already has incoming links
-	 * @throws NullPointerException if Network with this ID does not exist
+	 * @return created Link
+	 * 
+	 * @throws LinkException if both Nodes are in the same Network; invalid Type given, or source Node already has incoming links or if Network with this ID does not exist
 	 */
-	public void createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, CrossNetworkLink.Type type) throws ModelException {
+	public Link createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, CrossNetworkLink.Type type) throws LinkException {
 		Node source = getNetwork(sourceNetworkId).getNode(sourceNodeId);
 		Node target = getNetwork(targetNetworkId).getNode(targetNodeId);
 		
-		createLink(source, target, type);
+		return createLink(source, target, type);
 	}
 	
 	/**
@@ -1068,10 +1067,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @param target target Node of the link
 	 * @param state the state from source Node for the link to pass to target Node
 	 * 
-	 * @throws ModelException if both Nodes are in the same Network; invalid state given, or source Node already has incoming links
+	 * @return created Link
+	 * 
+	 * @throws LinkException if both Nodes are in the same Network; invalid state given, or source Node already has incoming links
 	 */
-	public void createLink(Node source, Node target, State state) throws ModelException {
-		throw new UnsupportedOperationException("Not implemented");
+	public Link createLink(Node source, Node target, State state) throws LinkException {
+		return Node.linkNodes(source, target, CrossNetworkLink.Type.State, state.getLabel());
 	}
 	
 	/**
@@ -1083,14 +1084,16 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @param targetNodeId ID of target Node of the link
 	 * @param stateLabel the label of the state from source Node for the link to pass to target Node
 	 * 
+	 * @return created Link
+	 * 
 	 * @throws ModelException if both Nodes are in the same Network; invalid state given, or source Node already has incoming links
 	 * @throws NullPointerException if Network with this ID does not exist
 	 */
-	public void createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, String stateLabel) throws ModelException {
+	public Link createLink(String sourceNetworkId, String sourceNodeId, String targetNetworkId, String targetNodeId, String stateLabel) throws ModelException {
 		Node source = getNetwork(sourceNetworkId).getNode(sourceNodeId);
 		Node target = getNetwork(targetNetworkId).getNode(targetNodeId);
 		
-		createLink(source, target, source.getState(stateLabel));
+		return Node.linkNodes(source, target, CrossNetworkLink.Type.State, stateLabel);
 	}
 
 	/**
