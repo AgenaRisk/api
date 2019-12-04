@@ -1,7 +1,5 @@
 package com.agenarisk.api.model;
 
-import com.agenarisk.api.model.CalculationResult;
-
 /**
  * ResultInterval represents a range with a lower and upper boundaries with a probability mass allocated to it.
  * 
