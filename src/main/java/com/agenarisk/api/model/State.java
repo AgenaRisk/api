@@ -206,5 +206,9 @@ public class State {
 		
 		this.logicState = logicState;
 	}
-
+	
+	@Override
+	public String toString(){
+		return getLabel();
+	}
 }
