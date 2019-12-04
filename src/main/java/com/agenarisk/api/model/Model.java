@@ -1150,38 +1150,41 @@ public class Model implements IdContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Performs binary factorization on the model if there are any simulation nodes with more than 3 parents
+	 * Performs binary factorization on the model if there are any simulation nodes with more than 3 parents.
+	 * 
 	 * @return 
 	 */
 	public boolean factorize() throws ModelException{
-		
-//		BinaryBNConverter converter = new BinaryBNConverter(getLogicModel());
-//		converter.convertBNList(BNList, logicModel, factorizeFlag);
-//		
-		// Calculate the model and see if it was binary factorised
-		try {
-			calculate();
-		}
-		catch (CalculationException ex){
-			throw new ModelException("Calculation failed during factorization checks: " + ex.getMessage(), ex);
-		}
-		
-		if (getLogicModel().getFactorizedBFModelPath() != null){
-			// Model was factorised, so we are going to use this version of the model
-			// Need to remap model objects
-			Model tempModel;
-			try {
-				tempModel = Model.loadModel(getLogicModel().getFactorizedBFModelPath());
-			}
-			catch(ModelException ex){
-				throw new ModelException("Failed to load factorized model" + ex.getMessage(), ex);
-			}
-		}
-		
-		
-		
-		return false;
+		throw new UnsupportedOperationException("Not implemented");
 	}
+//		
+////		BinaryBNConverter converter = new BinaryBNConverter(getLogicModel());
+////		converter.convertBNList(BNList, logicModel, factorizeFlag);
+////		
+//		// Calculate the model and see if it was binary factorised
+//		try {
+//			calculate();
+//		}
+//		catch (CalculationException ex){
+//			throw new ModelException("Calculation failed during factorization checks: " + ex.getMessage(), ex);
+//		}
+//		
+//		if (getLogicModel().getFactorizedBFModelPath() != null){
+//			// Model was factorised, so we are going to use this version of the model
+//			// Need to remap model objects
+//			Model tempModel;
+//			try {
+//				tempModel = Model.loadModel(getLogicModel().getFactorizedBFModelPath());
+//			}
+//			catch(ModelException ex){
+//				throw new ModelException("Failed to load factorized model" + ex.getMessage(), ex);
+//			}
+//		}
+//		
+//		
+//		
+//		return false;
+//	}
 	
 	/**
 	 * Removes the provided DataSet from the model
