@@ -1334,7 +1334,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return JSONObject representing this Node
 	 */
 	@Override
-	public JSONObject toJSONObject() {
+	public JSONObject toJson() {
 //		if (json.has(Ref.META)){
 //			node.meta = json.optJSONObject(Ref.META);
 //		}

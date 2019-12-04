@@ -14,5 +14,5 @@ public interface Storable {
 	 * 
 	 * @return JSONObject representation of this object
 	 */
-	abstract public JSONObject toJSONObject();
+	abstract public JSONObject toJson();
 }

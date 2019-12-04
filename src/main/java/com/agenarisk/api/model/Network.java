@@ -623,7 +623,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * @return JSONObject representing this Network
 	 */
 	@Override
-	public JSONObject toJSONObject() {
+	public JSONObject toJson() {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 

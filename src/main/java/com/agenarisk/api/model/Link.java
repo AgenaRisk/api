@@ -211,7 +211,7 @@ public class Link implements Comparable<Link>, Storable {
 	 * @return JSONObject representing this Link
 	 */
 	@Override
-	public JSONObject toJSONObject() {
+	public JSONObject toJson() {
 		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }
