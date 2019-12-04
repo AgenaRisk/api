@@ -13,7 +13,7 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.Observation;
 import com.agenarisk.api.model.State;
-import com.agenarisk.api.model.dataset.ResultValue;
+import com.agenarisk.api.model.ResultValue;
 import com.agenarisk.api.util.JSONUtils;
 import java.util.Arrays;
 import java.util.Collections;

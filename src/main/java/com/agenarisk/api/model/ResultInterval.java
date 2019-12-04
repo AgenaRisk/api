@@ -1,4 +1,4 @@
-package com.agenarisk.api.model.dataset;
+package com.agenarisk.api.model;
 
 import com.agenarisk.api.model.CalculationResult;
 

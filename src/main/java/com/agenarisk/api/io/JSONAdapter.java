@@ -14,7 +14,7 @@ import com.agenarisk.api.model.Link;
 import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.State;
-import com.agenarisk.api.model.dataset.ResultValue;
+import com.agenarisk.api.model.ResultValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

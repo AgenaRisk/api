@@ -2,8 +2,6 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.io.stub.SummaryStatistic;
-import com.agenarisk.api.model.dataset.ResultInterval;
-import com.agenarisk.api.model.dataset.ResultValue;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.Advisory;
 import java.util.Collection;
