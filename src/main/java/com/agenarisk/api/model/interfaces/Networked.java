@@ -6,26 +6,12 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * An interface for objects that can be connected into a Network of objects (e.g. Nodes can be connected within a Network, or Networks can be connected within a Model).
+ * An interface for objects that can be connected into a network of objects (e.g. Nodes can be connected within a Network, or Networks can be connected within a Model).
  * 
  * @author Eugene Dementiev
  * @param <N> specific class implementing Networked, e.g. Network or Node
  */
 public interface Networked<N extends Networked> {
-	
-	/**
-	 * Builds and returns a set of parents, which is valid at the time of request. This set will not reflect any membership changes made afterwards.
-	 * 
-	 * @return a set of Networked parents
-	 */
-	public Set<N> getParents();
-	
-	/**
-	 * Builds and returns a set of children, which is valid at the time of request. This set will not reflect any membership changes made afterwards.
-	 * 
-	 * @return a set of Networked children
-	 */
-	public Set<N> getChildren();
 	
 	/**
 	 * Checks recursively whether any of the links are incoming from the provided ancestor.
@@ -46,6 +32,20 @@ public interface Networked<N extends Networked> {
 	default public boolean hasDescendant(N descendant){
 		return getChildren().stream().anyMatch((n) -> (Objects.equals(n, descendant) || n.hasDescendant(descendant)));
 	}
+	
+	/**
+	 * Builds and returns a set of parents, which is valid at the time of request. This set will not reflect any membership changes made afterwards.
+	 * 
+	 * @return a set of Networked parents
+	 */
+	public Set<N> getParents();
+	
+	/**
+	 * Builds and returns a set of children, which is valid at the time of request. This set will not reflect any membership changes made afterwards.
+	 * 
+	 * @return a set of Networked children
+	 */
+	public Set<N> getChildren();
 	
 	/**
 	 * Returns a copy of the list of incoming Links. The membership is only guaranteed to be valid at the time of request and is not maintained.
