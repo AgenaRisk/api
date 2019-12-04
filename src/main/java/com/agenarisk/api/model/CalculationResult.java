@@ -397,6 +397,7 @@ public class CalculationResult implements Storable {
 	 * 
 	 * @return JSON
 	 */
+	@Override
 	public JSONObject toJson(){
 		JSONObject json = new JSONObject();
 		json.put(Field.node.toString(), node.getId());
