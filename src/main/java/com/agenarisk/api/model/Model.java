@@ -22,7 +22,6 @@ import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.IDContainer;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
-import com.agenarisk.api.tools.SensitivityAnalyserException;
 import com.agenarisk.api.util.JSONUtils;
 import java.io.IOException;
 import java.nio.file.Files;
