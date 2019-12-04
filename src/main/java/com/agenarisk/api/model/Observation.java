@@ -117,15 +117,15 @@ public class Observation implements Storable {
 	}
 	
 	private Map<Object, Double> compileEntriesMap(){
-		Map<Object, Double> entries = new LinkedHashMap<>();
+		Map<Object, Double> map = new LinkedHashMap<>();
 
 		switch(node.getType()){
 			case ContinuousInterval:
-				entries.put(Double.valueOf(logicObservation.getUserEnteredAnswer()), 1d);
+				map.put(Double.valueOf(logicObservation.getUserEnteredAnswer()), 1d);
 				break;
 
 			case IntegerInterval:
-				entries.put(Double.valueOf(logicObservation.getUserEnteredAnswer()).intValue(), 1d);
+				map.put(Double.valueOf(logicObservation.getUserEnteredAnswer()).intValue(), 1d);
 				break;
 
 			case DiscreteReal:
@@ -146,12 +146,12 @@ public class Observation implements Storable {
 					if (es != null){
 						key = es.getName().getShortDescription();
 					}
-					entries.put(key, dp.getValue());
+					map.put(key, dp.getValue());
 				}
 				break;
 		}
 		
-		return entries;
+		return map;
 	}
 	
 	/**
