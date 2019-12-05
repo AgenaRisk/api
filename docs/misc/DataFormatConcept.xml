@@ -53,7 +53,14 @@
 						
 						<type>
 							<!--Corresponds to Node Type in ARD and to one of concrete implementations of  uk.co.agena.minerva.model.extendedbn.ExtendedNode in ARC-->
-							<!--Values defined in Ref.NODE_TYPE-->
+							<!--Possible values:
+							Boolean
+							Labelled
+							Ranked
+							DiscreteReal
+							ContinuousInterval
+							IntegerInterval
+							-->
 						</type>
 						
 						<simulated>
@@ -98,7 +105,11 @@
 							
 							<type>
 								<!--Corresponds to NPT Editing Mode in ARD and uk.co.agena.minerva.model.extendedbn.ExtendedNode.functionMode in ARC-->
-								<!--NPT type as in Ref.TABLE_TYPE-->
+								<!--Possible values:
+								Manual
+								Expression
+								Partitioned
+								-->
 								<!--"Manual" value is invalid if definition.simulated is "True"-->
 							</type>
 							
@@ -300,7 +311,17 @@
 			</targetNode>
 			
 			<type>
-				<!--Type of the information passed by the link as specified in Ref.LINK_TYPE-->
+				<!--Type of the information passed by the link-->
+				<!--Possible values:
+				Marginals
+				Mean
+				Median
+				Variance
+				StandardDeviation
+				LowerPercentile
+				UpperPercentile
+				State
+				-->
 			</type>
 			
 			<passState>
