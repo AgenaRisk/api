@@ -565,7 +565,7 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 		
 		for (int i = 0; i < jsonEntries.length(); i++) {
 			JSONObject jsonEntry = jsonEntries.getJSONObject(i);
-			String value = jsonEntry.getString(Observation.Field.value.toString());
+			String value = jsonEntry.get(Observation.Field.value.toString())+"";
 			Double weight = jsonEntry.getDouble(Observation.Field.weight.toString());
 			
 			if (jsonEntries.length() == 1){
