@@ -1411,4 +1411,27 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			default:
 		}
 	}
+	
+	/**
+	 * Returns the type of the table configured for the Node.<br>
+	 * Possible values are:<br>
+	 * • Manual<br>
+	 * • Expression<br>
+	 * • Partitioned
+	 * 
+	 * @return table type of the Node
+	 */
+	public NodeConfiguration.TableType getTableType(){
+		switch(logicNode.getFunctionMode()){
+			default:
+			case ExtendedNode.EDITABLE_NPT:
+				return NodeConfiguration.TableType.Manual;
+				
+			case ExtendedNode.EDITABLE_NODE_FUNCTION:
+				return NodeConfiguration.TableType.Expression;
+				
+			case ExtendedNode.EDITABLE_PARENT_STATE_FUNCTIONS:
+				return NodeConfiguration.TableType.Partitioned;
+		}
+	}
 }
