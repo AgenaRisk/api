@@ -274,8 +274,28 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
 	public static Model createModel(JSONObject json) throws ModelException, JSONException {
-		
 		Model model = createModel();
+		model.absorb(json);
+		return model;
+	}
+	
+	/**
+	 * Creates all the Model structure from the provided JSONObject.
+	 * <br>
+	 * Creates all member components.
+	 * <br>
+	 * If a DataSet with the provided ID already exists, it will append a number to that ID to make it unique.
+	 * <br>
+	 * If an observation in DataSet fails to be set, it is ignored and results for that DataSet are not loaded.
+	 * 
+	 * @param json JSONObject representing this model, including structure, tables, graphics etc
+	 * 
+	 * @throws ModelException if failed to create any of the components
+	 * @throws JSONException if JSON structure is invalid or inconsistent
+	 */
+	protected void absorb(JSONObject json) throws ModelException, JSONException {
+		
+		Model model = this;
 		
 		JSONObject jsonModel = json.getJSONObject(Field.model.toString());
 		
@@ -301,7 +321,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		// Create networks
 		JSONArray jsonNetworks = jsonModel.optJSONArray(Network.Field.networks.toString());
 		if (jsonNetworks == null){
-			return model;
+			return;
 		}
 			
 		for(int i = 0; i < jsonNetworks.length(); i++){
@@ -402,7 +422,6 @@ public class Model implements IdContainer<ModelException>, Storable {
 			pair.getKey().getLogicNode().setNptReCalcRequired(nptReCalcRequired);
 		}
 		
-		return model;
 	}
 	
 	/**
