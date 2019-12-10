@@ -1257,4 +1257,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 			});
 		});
 	}
+	/**
+	 * Returns Model Settings object.
+	 * 
+	 * @return Model Settings object
+	 */
+	public Settings getSettings(){
+		return new Settings(this);
+	}
 }

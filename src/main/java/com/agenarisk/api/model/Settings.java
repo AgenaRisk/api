@@ -1,14 +1,15 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.model.interfaces.Storable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This is a stub class for Model calculation settings.
+ * This is a class for Model calculation settings.
  * 
  * @author Eugene Dementiev
  */
-public class Settings {
+public class Settings implements Storable {
 	
 	/**
 	 * This is set of fields for input/output to XML and JSON format
@@ -25,6 +26,13 @@ public class Settings {
 		parameterLearningLogging
 	}
 	
+	/**
+	 * Utility method to load settings from the provided JSON to the provided Model.<br>
+	 * For any missing fields, current model settings (or defaults) will be used.
+	 * 
+	 * @param model Model to load settings to
+	 * @param jsonSettings JSON to load settings from
+	 */
 	public static void loadSettings(Model model, JSONObject jsonSettings) {
 		if (jsonSettings == null){
 			return;
@@ -40,6 +48,15 @@ public class Settings {
 		logicModel.setEMLogging(jsonSettings.optBoolean(Field.parameterLearningLogging.toString(), logicModel.isEMLogging()));
 	}
 	
+	/**
+	 * Utility method to build a JSON equivalent of settings from the provided API1 model
+	 * 
+	 * @param model API1 model
+	 * 
+	 * @return JSON equivalent of the Settings
+	 * 
+	 * @throws JSONException 
+	 */
 	public static JSONObject toJson(uk.co.agena.minerva.model.Model model) throws JSONException {
 		JSONObject jsonSettings = new JSONObject();
 		jsonSettings.put(Settings.Field.iterations.toString(), model.getSimulationNoOfIterations());
@@ -53,4 +70,119 @@ public class Settings {
 		return jsonSettings;
 	}
 	
+	private final Model model;
+	
+	protected Settings(Model model){
+		this.model = model;
+	}
+
+	/**
+	 * Returns maximum number of iterations during model calculation.
+	 * 
+	 * @return maximum number of iterations during model calculation
+	 */
+	public int getIterations() {
+		return model.getLogicModel().getSimulationNoOfIterations();
+	}
+
+	/**
+	 * Sets maximum number of iterations during model calculation.
+	 * 
+	 * @param iterations maximum number of iterations during model calculation
+	 */
+	public void setIterations(int iterations) {
+		model.getLogicModel().setSimulationNoOfIterations(iterations);
+	}
+
+	/**
+	 * Gets simulation entropy error convergence threshold.
+	 * 
+	 * @return simulation entropy error convergence threshold
+	 */
+	public double getConvergence() {
+		return model.getLogicModel().getSimulationEntropyConvergenceTolerance();
+	}
+
+	/**
+	 * Sets simulation entropy error convergence threshold
+	 * 
+	 * @param convergence simulation entropy error convergence threshold
+	 */
+	public void setConvergence(double convergence) {
+		model.getLogicModel().setSimulationEntropyConvergenceTolerance(convergence);
+	}
+
+	/**
+	 * Gets simulation evidence tolerance percent.
+	 * 
+	 * @return simulation evidence tolerance percent
+	 */
+	public double getTolerance() {
+		return model.getLogicModel().getSimulationEvidenceTolerancePercent();
+	}
+
+	/**
+	 * Sets simulation evidence tolerance percent.
+	 * 
+	 * @param tolerance simulation evidence tolerance percent
+	 */
+	public void setTolerance(double tolerance) {
+		model.getLogicModel().setSimulationEntropyConvergenceTolerance(tolerance);
+	}
+
+	/**
+	 * Gets ranked node sample size.
+	 * 
+	 * @return ranked node sample size
+	 */
+	public int getSampleSize() {
+		return model.getLogicModel().getSampleSize();
+	}
+
+	/**
+	 * Sets ranked node sample size.
+	 * 
+	 * @param sampleSize 
+	 */
+	public void setSampleSize(int sampleSize) {
+		model.getLogicModel().setSampleSize(sampleSize);
+	}
+
+	/**
+	 * Checks whether tails are discretized during simulated calculation.
+	 * 
+	 * @return true if tails are discretized during simulated calculation, false otherwise
+	 */
+	public boolean isDiscretizeTails() {
+		return model.getLogicModel().isSimulationTails();
+	}
+
+	/**
+	 * Sets whether tails are discretized during simulated calculation.
+	 * 
+	 * @param discretizeTails whether tails are discretized during simulated calculation
+	 */
+	public void setDiscretizeTails(boolean discretizeTails) {
+		model.getLogicModel().setSimulationTails(discretizeTails);
+	}
+	
+	/**
+	 * Returns a JSON representation of the Model settings.
+	 * 
+	 * @return JSONObject equivalent of Model settings
+	 */
+	@Override
+	public JSONObject toJson() {
+		return toJson(model.getLogicModel());
+	}
+	
+	/**
+	 * Applies Model settings from JSON.
+	 * 
+	 * @param jsonSettings JSONObject equivalent of Model settings
+	 */
+	public void fromJson(JSONObject jsonSettings){
+		loadSettings(model, jsonSettings);
+	}
+
 }
