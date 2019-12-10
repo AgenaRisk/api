@@ -127,27 +127,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 	/**
 	 * Constructor for Model class.
 	 * <br>
-	 * The Model is created with a default empty Network and a DataSet
+	 * Any default logic Network and DataSet are removed
 	 * <br>
 	 * To be used by Model factory method.
 	 */
 	private Model(){
-		
-		String outputMode = "system";
-		if (Environment.isGuiMode()){
-			outputMode = "all";
-		}
-		
-		try {
-			logicModel = uk.co.agena.minerva.model.Model.createEmptyModel(outputMode);
-			// Remove the default network
-			logicModel.removeExtendedBNs(logicModel.getExtendedBNAtIndex(0), true);
-			// Remove the default data set
-			logicModel.removeScenario(logicModel.getScenarioAtIndex(0));
-		}
-		catch (uk.co.agena.minerva.model.ModelException | ScenarioNotFoundException ex){
-			throw new AgenaRiskRuntimeException("Failed to initialise the model", ex);
-		}
+		initLogicModel();
 	}
 	
 	/**
@@ -1257,6 +1242,27 @@ public class Model implements IdContainer<ModelException>, Storable {
 			});
 		});
 	}
+	/**
+	 * Replaces the logic model with a new one and removes default network and dataset
+	 */
+	private void initLogicModel(){
+		String outputMode = "system";
+		if (Environment.isGuiMode()){
+			outputMode = "all";
+		}
+		
+		try {
+			logicModel = uk.co.agena.minerva.model.Model.createEmptyModel(outputMode);
+			// Remove the default network
+			logicModel.removeExtendedBNs(logicModel.getExtendedBNAtIndex(0), true);
+			// Remove the default data set
+			logicModel.removeScenario(logicModel.getScenarioAtIndex(0));
+		}
+		catch (uk.co.agena.minerva.model.ModelException | ScenarioNotFoundException ex){
+			throw new AgenaRiskRuntimeException("Failed to initialise the model", ex);
+		}
+	}
+	
 	/**
 	 * Returns Model Settings object.
 	 * 
