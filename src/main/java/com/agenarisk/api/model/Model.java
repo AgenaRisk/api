@@ -1242,6 +1242,21 @@ public class Model implements IdContainer<ModelException>, Storable {
 			});
 		});
 	}
+	
+	/**
+	 * Reset the model by removing all Networks, Links, DataSets etc
+	 */
+	public void reset(){
+		networks.clear();
+		dataSets.clear();
+		jsonTexts = null;
+		jsonPictures = null;
+		jsonGraphics = null;
+		jsonMeta = null;
+		jsonAudit = null;
+		initLogicModel();
+	}
+	
 	/**
 	 * Replaces the logic model with a new one and removes default network and dataset
 	 */
