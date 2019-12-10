@@ -165,10 +165,11 @@ public class Observation implements Storable {
 	}
 	
 	/**
-	 * Creates a JSONObject representation of this Observation
+	 * Creates a JSONObject representation of this Observation.
 	 * 
 	 * @return JSONObject equivalent of this Observation
 	 */
+	@Override
 	public JSONObject toJson(){
 		JSONObject jsonObservation = new JSONObject();
 		jsonObservation.put(com.agenarisk.api.model.Observation.Field.network.toString(), node.getNetwork().getId());

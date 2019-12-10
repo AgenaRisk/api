@@ -201,4 +201,72 @@ public class DataSetTest {
 	public void testGetDataSetIndex() {
 	}
 	
+	@Test
+	public void testGetters() throws Exception {
+		model = TestHelper.loadModelFromResource("/common/simpleABMultiplier.json");
+		DataSet ds = model.createDataSet("ds");
+		Network net = model.getNetworkList().get(0);
+		Node a = net.getNode("A");
+		Node b = net.getNode("B");
+		
+		ds.setObservation(a, 1);
+		ds.setVariableObservation(b, "b_multiplier", 2);
+		
+		assertEquals(ds.getObservationsAndVariables().size(), 2);
+		assertEquals(ds.getObservations().size(), 1);
+		assertEquals(ds.getVariableObservations().size(), 1);
+		assertEquals(ds.getObservationsAndVariables(a).size(), 1);
+		assertNotNull(ds.getObservation(a));
+		assertNull(ds.getObservation(b));
+		assertEquals(ds.getObservationsAndVariables(b).size(), 1);
+		assertEquals(ds.getVariableObservations(b).size(), 1);
+		assertNotNull(ds.getVariableObservation(b, "b_multiplier"));
+		
+		ds.clearObservation(a);
+		assertEquals(ds.getObservationsAndVariables().size(), 1);
+		assertEquals(ds.getObservations().size(), 0);
+		assertEquals(ds.getVariableObservations().size(), 1);
+		assertEquals(ds.getObservationsAndVariables(a).size(), 0);
+		assertNull(ds.getObservation(a));
+		
+		ds.setObservation(b, 5);
+		assertEquals(ds.getObservationsAndVariables().size(), 2);
+		assertEquals(ds.getObservations().size(), 1);
+		assertEquals(ds.getVariableObservations().size(), 1);
+		assertEquals(ds.getObservationsAndVariables(a).size(), 0);
+		assertNull(ds.getObservation(a));
+		assertNotNull(ds.getObservation(b));
+		assertEquals(ds.getObservationsAndVariables(b).size(), 2);
+		assertEquals(ds.getVariableObservations(b).size(), 1);
+		
+		ds.clearAllData();
+		assertEquals(ds.getObservationsAndVariables().size(), 0);
+		assertEquals(ds.getObservations().size(), 0);
+		assertEquals(ds.getVariableObservations().size(), 0);
+		assertEquals(ds.getObservationsAndVariables(a).size(), 0);
+		assertNull(ds.getObservation(a));
+		assertEquals(ds.getObservationsAndVariables(b).size(), 0);
+		assertNull(ds.getObservation(b));
+		assertNull(ds.getVariableObservation(b, "b_multiplier"));
+		
+		ds.setObservation(a, 1);
+		ds.setVariableObservation(b, "b_multiplier", 2);
+		ds.clearObservations();
+		assertEquals(ds.getObservationsAndVariables().size(), 1);
+		assertEquals(ds.getObservations().size(), 0);
+		assertEquals(ds.getVariableObservations().size(), 1);
+		assertEquals(ds.getObservationsAndVariables(a).size(), 0);
+		assertEquals(ds.getObservationsAndVariables(b).size(), 1);
+		
+		ds.setObservation(a, 1);
+		ds.setVariableObservation(b, "b_multiplier", 2);
+		ds.clearVariableObservations();
+		assertEquals(ds.getObservationsAndVariables().size(), 1);
+		assertEquals(ds.getObservations().size(), 1);
+		assertEquals(ds.getVariableObservations().size(), 0);
+		assertEquals(ds.getObservationsAndVariables(a).size(), 1);
+		assertEquals(ds.getObservationsAndVariables(b).size(), 0);
+		
+	}
+	
 }

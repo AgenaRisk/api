@@ -7,6 +7,7 @@ import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.Advisory;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -599,14 +600,14 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 	}
 	
 	/**
-	 * Checks whether this DataSet overrides the value of the provided variable in the provided Node
+	 * Checks whether the provided variable in the provided node is observed in this DataSet.
 	 * 
 	 * @param node the Node to check
 	 * @param variableName the name of the variable
 	 * 
-	 * @return true if this DataSet overrides the value of the provided variable in the provided Node
+	 * @return true if the VariableObserved exists in this DataSet
 	 */
-	public boolean isVariableSet(Node node, String variableName){
+	public boolean hasVariableObservation(Node node, String variableName){
 		List<uk.co.agena.minerva.model.scenario.Observation> obss = getLogicScenario().getObservations(node.getNetwork().getLogicNetwork().getId(), node.getLogicNode().getId());
 		return obss.stream().anyMatch(obs -> StringUtils.equalsIgnoreCase(variableName, obs.getExpressionVariableName()));
 	}
@@ -620,53 +621,128 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 	 * 
 	 * @throws com.agenarisk.api.exception.DataSetException if setting the value of the variable failed
 	 */
-	public void setVariable(Node node, String variableName, double value) throws DataSetException {
+	public void setVariableObservation(Node node, String variableName, double value) throws DataSetException {
 		setObservationConstant(node, variableName, value);
 	}
 	
 	/**
-	 * Clears the variable value override in this DataSet overrides the value of the provided variable in the provided Node
+	 * Returns a view of VariableObservations for the provided Node.
+	 * <br>
+	 * Note that this is just a view of the observation and any changes to it will not affect anything beyond this particular view.
+	 * <br>
+	 * To change an observation, use setVariableObservation() method.
+	 * 
+	 * @param node the observed Node
+	 * 
+	 * @return a set of VariableObservations
+	 */
+	public Set<VariableObservation> getVariableObservations(Node node){
+		LinkedHashSet<VariableObservation> varObss = new LinkedHashSet<>();
+		
+		((List<uk.co.agena.minerva.model.scenario.Observation>)getLogicScenario().getObservations(node.getNetwork().getLogicNetwork().getId(), node.getLogicNode().getId()))
+				.stream()
+				.filter(obs -> obs.getExpressionVariableName() != null && !obs.getExpressionVariableName().isEmpty())
+				.map(obs -> new VariableObservation(obs, this, node))
+				.collect(Collectors.toCollection(() -> varObss));
+		
+		return varObss;
+	}
+	
+	/**
+	 * Returns a view of the VariableObservation for the provided Node and variable name if there is one.
+	 * <br>
+	 * Note that this is just a view of the observation and any changes to it will not affect anything beyond this particular view.
+	 * <br>
+	 * To change an observation, use setVariableObservation() method.
+	 * 
+	 * @param node the observed Node
+	 * @param variableName the variable name
+	 * 
+	 * @return a VariableObservation or null
+	 */
+	public VariableObservation getVariableObservation(Node node, String variableName){
+		return getVariableObservations(node).stream().filter(obs -> StringUtils.equalsIgnoreCase(variableName, obs.getVariableName())).findFirst().orElse(null);
+	}
+	
+	/**
+	 * Returns all VariableObservations in this DataSet for all Networks and Nodes.
+	 * 
+	 * @return a set of VariableObservations
+	 */
+	public Set<VariableObservation> getVariableObservations(){
+		Set<VariableObservation> varObss = new LinkedHashSet<>();
+		
+		getModel().getNetworks().values().forEach(net -> {
+			net.getNodes()
+					.values()
+					.stream()
+					.forEach(node -> {
+						varObss.addAll(getVariableObservations(node));
+					});
+		});
+		return varObss;
+	}
+	
+	/**
+	 * Clears the VariableObservation of the provided name in this DataSet for the provided Node.
 	 * 
 	 * @param node the Node with the variable
 	 * @param variableName the name of the variable
 	 */
-	public void clearVariable(Node node, String variableName){
-		
-		List<uk.co.agena.minerva.model.scenario.Observation> obss = getLogicScenario().getObservations(node.getNetwork().getLogicNetwork().getId(), node.getLogicNode().getId());
-		
-		uk.co.agena.minerva.model.scenario.Observation varObs = obss.stream().filter(obs -> StringUtils.equalsIgnoreCase(variableName, obs.getExpressionVariableName())).findFirst().orElse(null);
+	public void clearVariableObservation(Node node, String variableName){
+		VariableObservation varObs = getVariableObservation(node, variableName);
 		if (varObs != null){
-			getLogicScenario().removeObservation(varObs, false);
+			getLogicScenario().removeObservation(varObs.getLogicObservation(), false);
 		}
 	}
 	
 	/**
-	 * Clears all variable values from this DataSet for all Networks and Nodes
+	 * Clears all VariableObservations from this DataSet for the provided Node.
+	 * 
+	 * @param node Node to clear VariableObservations from
 	 */
-	public void clearVariables(){
-		List<uk.co.agena.minerva.model.scenario.Observation> toRemove = ((List<uk.co.agena.minerva.model.scenario.Observation>)getLogicScenario().getObservations())
-				.stream()
-				.filter(obs -> obs.getExpressionVariableName().isEmpty())
-				.collect(Collectors.toList());
-		toRemove.forEach(obs -> getLogicScenario().removeObservation(obs, false));
+	public void clearVariableObservations(Node node){
+		getVariableObservations(node).forEach(obs -> {
+			getLogicScenario().removeObservation(obs.getLogicObservation(), false);
+		});
 	}
 	
 	/**
-	 * Clears observations, variable values and results data from this DataSet
+	 * Clears all VariableObservations from this DataSet for all Networks and Nodes.
+	 */
+	public void clearVariableObservations(){
+		ArrayList<uk.co.agena.minerva.model.scenario.Observation> obss = new ArrayList<>(getLogicScenario().getObservations());
+		obss.stream()
+				.filter(obs -> !obs.getExpressionVariableName().isEmpty())
+				.forEach(obs -> getLogicScenario().removeObservation(obs, false));
+	}
+	
+	/**
+	 * Clears Observations, VariableObservations and CalculationResults data from this DataSet.
 	 */
 	public void clearAllData(){
 		// Clear observations and variable values
-		getLogicScenario().clearAllObservations();
+		getLogicScenario().clearAllObservations(false);
 		
 		int index = getDataSetIndex();
 		
 		((Map<ExtendedNode, MarginalDataItemList>) getModel().getLogicModel().getMarginalDataStore().getNodeMarginalListMap()).values().forEach(mdil -> {
-			MarginalDataItem mdiCurrent = mdil.getMarginalDataItemAtIndex(index);
 			MarginalDataItem mdiNew = new MarginalDataItem(getId());
 			mdiNew.setVisible(getLogicScenario().isReportable());
 			mdiNew.setCallSignToUpdateOn(Integer.toString(getLogicScenario().getId()));
-			mdiNew.setOnlyUpdateOnMatchedCallSign(mdiCurrent.isOnlyUpdateOnMatchedCallSign());
-			mdiNew.setUpdateOnAllEvidenceRetracted(mdiCurrent.isUpdateOnAllEvidenceRetracted());
+			
+			if (mdil.getMarginalDataItems().size()-1 >= index){
+				MarginalDataItem mdiCurrent = mdil.getMarginalDataItemAtIndex(index);
+				mdiNew.setOnlyUpdateOnMatchedCallSign(mdiCurrent.isOnlyUpdateOnMatchedCallSign());
+				mdiNew.setUpdateOnAllEvidenceRetracted(mdiCurrent.isUpdateOnAllEvidenceRetracted());
+			}
+			else {
+				// Create elements up to this index
+				for (int i = mdil.getMarginalDataItems().size(); i <= index; i++){
+					mdil.getMarginalDataItems().add(null);
+				}
+			}
+			
 			mdil.getMarginalDataItems().set(index, mdiNew);
 		});
 		
@@ -675,7 +751,7 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 	/**
 	 * Clears an observation from a Node if it exists.
 	 * 
-	 * @param node the Node to clear the observation from
+	 * @param node the Node to clear the Observation from
 	 */
 	public void clearObservation(Node node) {
 		Observation obs = getObservation(node);
@@ -685,14 +761,13 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 	}
 	
 	/**
-	 * Clears all observations from this DataSet for all Networks and Nodes
+	 * Clears all non-variable observations from this DataSet for all Networks and Nodes
 	 */
 	public void clearObservations() {
-		List<uk.co.agena.minerva.model.scenario.Observation> toRemove = ((List<uk.co.agena.minerva.model.scenario.Observation>) getLogicScenario().getObservations())
-				.stream()
-				.filter(obs -> !obs.getExpressionVariableName().isEmpty())
-				.collect(Collectors.toList());
-		toRemove.forEach(obs -> getLogicScenario().removeObservation(obs, false));
+		ArrayList<uk.co.agena.minerva.model.scenario.Observation> obss = new ArrayList<>(getLogicScenario().getObservations());
+		obss.stream()
+				.filter(obs -> obs.getExpressionVariableName() == null || obs.getExpressionVariableName().isEmpty())
+				.forEach(obs -> getLogicScenario().removeObservation(obs, false));
 	}
 	
 	/**
@@ -715,9 +790,37 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 	}
 	
 	/**
+	 * Returns all Observations and VariableObservations in this DataSet for the provided Node.
+	 * 
+	 * @param node the observed Node
+	 * 
+	 * @return a set of Observations and VariableObservations
+	 */
+	public Set<Observation> getObservationsAndVariables(Node node){
+		Set<Observation> observations = new LinkedHashSet<>();
+		if (hasObservation(node)){
+			observations.add(getObservation(node));
+		}
+		observations.addAll(getVariableObservations(node));
+		return observations;
+	}
+	
+	/**
+	 * Returns all Observations and VariableObservations in this DataSet for all Networks and Nodes.
+	 * 
+	 * @return a set of Observations and VariableObservations
+	 */
+	public Set<Observation> getObservationsAndVariables(){
+		Set<Observation> observations = new LinkedHashSet<>();
+		observations.addAll(getObservations());
+		observations.addAll(getVariableObservations());
+		return observations;
+	}
+	
+	/**
 	 * Returns all observations in this DataSet for all Networks and Nodes.
 	 * 
-	 * @return Set of all Observations
+	 * @return a Set of all Observations
 	 */
 	public Set<Observation> getObservations(){
 		Set<Observation> observations = new LinkedHashSet<>();
