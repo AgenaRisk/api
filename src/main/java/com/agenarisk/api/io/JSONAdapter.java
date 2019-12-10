@@ -76,7 +76,7 @@ public class JSONAdapter {
 		jsonModel.put(Link.Field.links.toString(), modelLinksToJSON(model));
 		
 		// Settings
-		jsonModel.put(Settings.Field.settings.toString(), modelSettingsToJSON(model));
+		jsonModel.put(Settings.Field.settings.toString(), Settings.toJson(model));
 
 		// Scenarios
 		jsonModel.put(com.agenarisk.api.model.DataSet.Field.dataSets.toString(), modelScenariosToJSON(model));
@@ -96,19 +96,6 @@ public class JSONAdapter {
 		// Graphics
 		
 		return json;
-	}
-	
-	protected static JSONObject modelSettingsToJSON(Model model) throws JSONException {
-		JSONObject jsonSettings = new JSONObject();
-		jsonSettings.put(Settings.Field.iterations.toString(), model.getSimulationNoOfIterations());
-		jsonSettings.put(Settings.Field.convergence.toString(), model.getSimulationEntropyConvergenceTolerance());
-		jsonSettings.put(Settings.Field.tolerance.toString(), model.getSimulationEvidenceTolerancePercent());
-		jsonSettings.put(Settings.Field.sampleSize.toString(), model.getSampleSize());
-		jsonSettings.put(Settings.Field.sampleSizeRanked.toString(), model.getRankedSampleSize());
-		jsonSettings.put(Settings.Field.discreteTails.toString(), model.isSimulationTails());
-		jsonSettings.put(Settings.Field.simulationLogging.toString(), model.isSimulationLogging());
-		jsonSettings.put(Settings.Field.parameterLearningLogging.toString(), model.isEMLogging());
-		return jsonSettings;
 	}
 	
 	protected static JSONArray modelScenariosToJSON(Model model) throws JSONException {
