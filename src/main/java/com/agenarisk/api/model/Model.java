@@ -54,6 +54,9 @@ import uk.co.agena.minerva.util.binaryfactorisation.BinaryBNConverter;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import com.agenarisk.api.model.interfaces.IdContainer;
+import com.singularsys.jep.JepException;
+import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 
 /**
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
@@ -1193,41 +1196,96 @@ public class Model implements IdContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Performs binary factorization on the model if there are any simulation nodes with more than 3 parents.
+	 * Performs binary factorization on the model if there are any simulation nodes with more than 3 parents.<br>
+	 * This involves the model being recreated from scratch and all previously held references to pre-existing objects in the Model will become invalid and should be released.
 	 * 
-	 * @return 
+	 * @return false if no factorization was required, true if successfully factorized
+	 * 
+	 * @throws com.agenarisk.api.exception.ModelException if failed to factorize
 	 */
 	public boolean factorize() throws ModelException{
-		throw new UnsupportedOperationException("Not implemented");
+		
+		BinaryBNConverter converter = new BinaryBNConverter(getLogicModel());
+		
+		// List of networks to process (those that need factorisation and its ancestors); array of flags to indicate which networks are being factorised
+		List<Network> networksList = getNetworkList();
+		List<ExtendedBN> bnList = new ArrayList<>();
+		Boolean[] factorizeFlags = new Boolean[networks.size()];
+		boolean factorizeAny = false;
+		
+		for(int i = 0; i < networks.size(); i++){
+			Network net = networksList.get(i);
+			try {
+				net.getLogicNetwork().checkExpressions();
+			}
+			catch (ExtendedBNException | JepException ex){
+				throw new ModelException("Can't factorize the model due to invalid expression", ex);
+			}
+				
+			bnList.add(net.getLogicNetwork());
+			boolean factorize = net.getNodes().values().stream().anyMatch(node -> {
+				if (!node.isSimulated() || node.getLinksIn().size() <= 2){
+					// Only factorize simulated nodes
+					// If 2 parents or less no need to factorize at all
+					return false;
+				}
+				
+				if (!node.getTableType().equals(NodeConfiguration.TableType.Expression)){
+					// Only factorize nodes with a single expression - not a manual NPT and not a partitioned expression
+					return false;
+				}
+				
+				if (node.getLogicNode() instanceof ContinuousEN){
+					ContinuousEN cien = (ContinuousEN)node.getLogicNode();
+					if (cien.checkExpressionToDetectComplexFunction()){
+						// The node contains an expression that can't be factorized
+						return false;
+					}
+				}
+				
+				// At this point there are more than 2 parents
+				// The NPT type is expression
+				// All parents are intervals (sim or non-sim) because otherwise the node would have to be partitioned expression
+				
+				Set<Node> parents = node.getParents();
+				
+				// Only factorize if the number of simulated parents is more than 2
+				return parents.stream().filter(Node::isSimulated).count() > 2;
+				
+			});			
+			factorizeFlags[i] = factorize;
+			if (factorize){
+				factorizeAny = true;
+			}
+		}
+		
+		if (!factorizeAny){
+			return false;
+		}
+		
+		JSONObject settingsOriginal = Settings.toJson(logicModel);
+		
+		try {
+			// Call to perform actual factorization (a factorized model is saved to disk)
+			converter.convertBNList(bnList, logicModel, factorizeFlags);
+			
+			// Load the factorized version from disk and convert to JSON
+			uk.co.agena.minerva.model.Model binaryModel = uk.co.agena.minerva.model.Model.load(logicModel.getFactorizedBFModelPath());
+			JSONObject jsonBinary = JSONAdapter.toJSONObject(binaryModel);
+			
+			// Reset the current model and rebuild from the JSON structure
+			// We do this to preserve the reference to this object and keep using this instance
+			reset();
+			absorb(jsonBinary);
+			
+			Settings.loadSettings(this, settingsOriginal);
+		}
+		catch (Exception ex){
+			throw new ModelException("Failed to factorize", ex);
+		}
+		
+		return true;
 	}
-//		
-////		BinaryBNConverter converter = new BinaryBNConverter(getLogicModel());
-////		converter.convertBNList(BNList, logicModel, factorizeFlag);
-////		
-//		// Calculate the model and see if it was binary factorised
-//		try {
-//			calculate();
-//		}
-//		catch (CalculationException ex){
-//			throw new ModelException("Calculation failed during factorization checks: " + ex.getMessage(), ex);
-//		}
-//		
-//		if (getLogicModel().getFactorizedBFModelPath() != null){
-//			// Model was factorised, so we are going to use this version of the model
-//			// Need to remap model objects
-//			Model tempModel;
-//			try {
-//				tempModel = Model.loadModel(getLogicModel().getFactorizedBFModelPath());
-//			}
-//			catch(ModelException ex){
-//				throw new ModelException("Failed to load factorized model" + ex.getMessage(), ex);
-//			}
-//		}
-//		
-//		
-//		
-//		return false;
-//	}
 	
 	/**
 	 * Removes the provided DataSet from the model
