@@ -1,0 +1,73 @@
+{
+	"model": {
+		"networks": [
+			{
+				"id": "net1",
+				"nodes": [
+					{
+						"id": "n1n1",
+						"configuration": {
+							"type": "Boolean"
+						}
+					},
+					{
+						"id": "n1n2",
+						"configuration": {
+							"type": "Boolean"
+						}
+					}
+				],
+				"links": [
+					{
+						"parent": "n1n1",
+						"child": "n1n2"
+					}
+				]
+			},
+			{
+				"id": "net2",
+				"nodes": [
+					{
+						"id": "n2n1",
+						"configuration": {
+							"type": "Boolean"
+						}
+					},
+					{
+						"id": "n2n2",
+						"configuration": {
+							"type": "Boolean"
+						}
+					},
+					{
+						"id": "n2n3",
+						"configuration": {
+							"type": "Boolean"
+						}
+					}
+				],
+				"links": [
+					{
+						"parent": "n2n1",
+						"child": "n2n2"
+					},
+					{
+						"parent": "n2n1",
+						"child": "n2n3"
+					}
+				]
+			}
+		],
+		
+		"links": [
+			{
+				"sourceNetwork": "net1",
+				"targetNetwork": "net2",
+				"sourceNode": "n1n1",
+				"targetNode": "n2n1",
+				"type": "Marginals"
+			}
+		]
+
+	}
+}
