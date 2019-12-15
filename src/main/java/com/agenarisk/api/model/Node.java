@@ -409,6 +409,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			
 			boolean crossNetworkLink = !Objects.equals(fromNode.getNetwork(), toNode.getNetwork());
 			
+			if (toNode.isConnectedInput()){
+				// Can't link to an input Node that already has a Link coming in
+				throw new LinkException("Node " + fromNode.toStringExtra() + " already has an incoming cross network link");
+			}
+			
 			if (crossNetworkLink){
 				
 				if (!toNode.getLinksIn().isEmpty()){
