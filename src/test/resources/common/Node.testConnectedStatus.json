@@ -5,16 +5,10 @@
 				"id": "net1",
 				"nodes": [
 					{
-						"id": "n1n1",
-						"configuration": {
-							"type": "Boolean"
-						}
+						"id": "n1n1"
 					},
 					{
-						"id": "n1n2",
-						"configuration": {
-							"type": "Boolean"
-						}
+						"id": "n1n2"
 					}
 				],
 				"links": [
@@ -28,22 +22,13 @@
 				"id": "net2",
 				"nodes": [
 					{
-						"id": "n2n1",
-						"configuration": {
-							"type": "Boolean"
-						}
+						"id": "n2n1"
 					},
 					{
-						"id": "n2n2",
-						"configuration": {
-							"type": "Boolean"
-						}
+						"id": "n2n2"
 					},
 					{
-						"id": "n2n3",
-						"configuration": {
-							"type": "Boolean"
-						}
+						"id": "n2n3"
 					}
 				],
 				"links": [
