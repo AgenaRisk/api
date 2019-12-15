@@ -554,8 +554,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			name = id;
 		}
 		
-		JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
-		String typeString = jsonConfiguration.getString(NodeConfiguration.Field.type.toString());
+		JSONObject jsonConfiguration = jsonNode.optJSONObject(NodeConfiguration.Field.configuration.toString());
+		if (jsonConfiguration == null){
+			jsonConfiguration = new JSONObject();
+		}
+		String typeString = jsonConfiguration.optString(NodeConfiguration.Field.type.toString(), Node.Type.Boolean.toString());
 		Type type = Type.valueOf(typeString);
 		
 		Node node;

@@ -352,7 +352,16 @@ public class Model implements IdContainer<ModelException>, Storable {
 					JSONObject jsonNode = jsonNodes.getJSONObject(j);
 					Node node = network.getNode(jsonNode.getString(Node.Field.id.toString()));
 					
-					JSONObject jsonConfiguration = jsonNode.getJSONObject(NodeConfiguration.Field.configuration.toString());
+					JSONObject jsonConfiguration = jsonNode.optJSONObject(NodeConfiguration.Field.configuration.toString());
+					
+					if (!node.isSimulated() && !node.isConnectedInput()){
+						node.setTableUniform();
+					}
+					
+					if (jsonConfiguration == null){
+						continue;
+					}
+					
 					JSONObject jsonTable = jsonConfiguration.optJSONObject(NodeConfiguration.Table.table.toString());
 					try {
 						if (!node.getLogicNode().isConnectableInputNode()){
