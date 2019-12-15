@@ -1439,4 +1439,26 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				return NodeConfiguration.TableType.Partitioned;
 		}
 	}
+	
+	/**
+	 * Returns true if this Node has an incoming link from another Network.
+	 * 
+	 * @return true if this Node has an incoming link from another Network
+	 */
+	public boolean isConnectedInput(){
+		return getLinksIn().stream().anyMatch(link -> {
+			return !Objects.equals(getNetwork(),link.getFromNode().getNetwork());
+		});
+	}
+	
+	/**
+	 * Returns true if this Node has an outgoing link to another Network.
+	 * 
+	 * @return true if this Node has an outgoing link to another Network
+	 */
+	public boolean isConnectedOutput(){
+		return getLinksOut().stream().anyMatch(link -> {
+			return !Objects.equals(getNetwork(),link.getToNode().getNetwork());
+		});
+	}
 }
