@@ -35,6 +35,7 @@ import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeGraphics;
 import com.agenarisk.api.model.field.Id;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import uk.co.agena.minerva.util.Logger;
@@ -1464,4 +1465,37 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			return !Objects.equals(getNetwork(),link.getToNode().getNetwork());
 		});
 	}
+	
+	/**
+	 * Builds and returns a set of ancestors for this Node.<br>
+	 * Does not include itself.<br>
+	 * Does not follow cross-network links (only includes Nodes in the same Network)
+	 * 
+	 * @return HashSet of ancestors for this Node
+	 */
+	public Set<Node> getAncestors(){
+		Set set = new HashSet();
+		getParents().stream().filter(n -> Objects.equals(getNetwork(), n.getNetwork())).forEach(n -> {
+			set.add(n);
+			set.addAll(n.getAncestors());
+		});
+		return set;
+	}
+	
+	/**
+	 * Builds and returns a set of descendants for this Node.<br>
+	 * Does not include itself.<br>
+	 * Does not follow cross-network links (only includes Nodes in the same Network)
+	 * 
+	 * @return HashSet of descendants for this Node
+	 */
+	public Set<Node> getDescendants(){
+		Set set = new HashSet();
+		getChildren().stream().filter(n -> Objects.equals(getNetwork(), n.getNetwork())).forEach(n -> {
+			set.add(n);
+			set.addAll(n.getDescendants());
+		});
+		return set;
+	}
+
 }

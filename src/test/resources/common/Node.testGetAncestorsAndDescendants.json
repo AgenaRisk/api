@@ -5,22 +5,68 @@
 				"id": "net1",
 				"nodes": [
 					{
-						"id": "n1n1",
-						"configuration": {
-							"type": "Boolean"
-						}
+						"id": "n1"
 					},
 					{
-						"id": "n1n2",
-						"configuration": {
-							"type": "Boolean"
-						}
+						"id": "n2"
+					},
+					{
+						"id": "n3"
+					},
+					{
+						"id": "n4"
+					},
+					{
+						"id": "n5"
+					},
+					{
+						"id": "n6"
+					},
+					{
+						"id": "n7"
 					}
 				],
+				
 				"links": [
 					{
-						"parent": "n1n1",
-						"child": "n1n2"
+						"parent": "n1",
+						"child": "n2"
+					},
+					{
+						"parent": "n1",
+						"child": "n4"
+					},
+					{
+						"parent": "n2",
+						"child": "n3"
+					},
+					{
+						"parent": "n2",
+						"child": "n5"
+					},
+					{
+						"parent": "n3",
+						"child": "n6"
+					},
+					{
+						"parent": "n4",
+						"child": "n5"
+					},
+					{
+						"parent": "n4",
+						"child": "n7"
+					},
+					{
+						"parent": "n5",
+						"child": "n6"
+					},
+					{
+						"parent": "n5",
+						"child": "n7"
+					},
+					{
+						"parent": "n6",
+						"child": "n7"
 					}
 				]
 			},
@@ -28,32 +74,7 @@
 				"id": "net2",
 				"nodes": [
 					{
-						"id": "n2n1",
-						"configuration": {
-							"type": "Boolean"
-						}
-					},
-					{
-						"id": "n2n2",
-						"configuration": {
-							"type": "Boolean"
-						}
-					},
-					{
-						"id": "n2n3",
-						"configuration": {
-							"type": "Boolean"
-						}
-					}
-				],
-				"links": [
-					{
-						"parent": "n2n1",
-						"child": "n2n2"
-					},
-					{
-						"parent": "n2n1",
-						"child": "n2n3"
+						"id": "n1"
 					}
 				]
 			}
@@ -63,11 +84,10 @@
 			{
 				"sourceNetwork": "net1",
 				"targetNetwork": "net2",
-				"sourceNode": "n1n1",
-				"targetNode": "n2n1",
+				"sourceNode": "n7",
+				"targetNode": "n1",
 				"type": "Marginals"
 			}
 		]
-
 	}
 }
