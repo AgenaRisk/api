@@ -1,7 +1,6 @@
 package com.agenarisk.api.model;
 
 import com.agenarisk.api.model.interfaces.Storable;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
