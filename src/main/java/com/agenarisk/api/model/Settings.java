@@ -54,10 +54,8 @@ public class Settings implements Storable {
 	 * @param model API1 model
 	 * 
 	 * @return JSON equivalent of the Settings
-	 * 
-	 * @throws JSONException 
 	 */
-	public static JSONObject toJson(uk.co.agena.minerva.model.Model model) throws JSONException {
+	public static JSONObject toJson(uk.co.agena.minerva.model.Model model) {
 		JSONObject jsonSettings = new JSONObject();
 		jsonSettings.put(Settings.Field.iterations.toString(), model.getSimulationNoOfIterations());
 		jsonSettings.put(Settings.Field.convergence.toString(), model.getSimulationEntropyConvergenceTolerance());
@@ -142,7 +140,7 @@ public class Settings implements Storable {
 	/**
 	 * Sets ranked node sample size.
 	 * 
-	 * @param sampleSize 
+	 * @param sampleSize ranked node sample size
 	 */
 	public void setSampleSize(int sampleSize) {
 		model.getLogicModel().setSampleSize(sampleSize);
