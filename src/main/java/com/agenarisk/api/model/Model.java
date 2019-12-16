@@ -31,11 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
@@ -835,9 +833,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 					if (jo.has(NodeConfiguration.Field.configuration.toString()) && jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).has(NodeConfiguration.Table.table.toString())){
 						// Object is node with configuration and table
 						JSONObject jsonTable = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optJSONObject(NodeConfiguration.Table.table.toString());
-						String tableType = jsonTable.optString(NodeConfiguration.Table.type.toString());
-						if (!Objects.equals(tableType, NodeConfiguration.TableType.Manual.toString())){
-							// Non-manual table, can remove compiled NPTs
+						boolean simulationNode = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optBoolean(NodeConfiguration.Field.simulated.toString(), false);
+						boolean inputNode = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optBoolean(NodeConfiguration.Field.input.toString(), false);
+						if (simulationNode || inputNode){
+							// Simulation or input node, can remove compiled NPTs
+							Logger.logIfDebug("Wiping table for " + jo.getString("id"));
 							jsonTable.remove(NodeConfiguration.Table.nptCompiled.toString());
 							jsonTable.remove(NodeConfiguration.Table.probabilities.toString());
 						}
