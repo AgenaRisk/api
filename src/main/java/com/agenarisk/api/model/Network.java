@@ -698,4 +698,25 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 			throw new NodeException("Failed to remove node " + node.toStringExtra(), ex);
 		}
 	}
+	
+	/**
+	 * Regenerates Node NPTs in the Network, in descending order of the number of ancestors a Node has, starting from the root(s) of the Network.<br>
+	 * Skips simulated and input nodes.
+	 * 
+	 * @throws NetworkException if regeneration fails in the logic
+	 */
+	protected void regenerateNPTs() throws NetworkException {
+		
+		nodes.values().stream().filter(n -> !n.isSimulated() && !n.isConnectedInput()).sorted((n1, n2) -> {
+			return n1.getAncestors().size() - n2.getAncestors().size();
+		}).forEach(n -> {
+			try {
+				getLogicNetwork().regenerateNPT(n.getLogicNode());
+			}
+			catch (Exception ex){
+				throw new NetworkException("Failed to regenerate NPT for Node " + n.toStringExtra(), ex);
+			}
+		});
+	}
+	
 }
