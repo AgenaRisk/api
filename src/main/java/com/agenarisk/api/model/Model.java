@@ -765,7 +765,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		
 		JSONObject json = JSONAdapter.toJSONObject(logicModel);
 		
-		EnumSet<ExportFlags> xflags = EnumSet.copyOf(Arrays.asList(flags));
+		EnumSet<ExportFlags> xflags = (flags.length > 0) ? EnumSet.copyOf(Arrays.asList(flags)) : EnumSet.noneOf(ExportFlags.class);
 		
 		try {
 
