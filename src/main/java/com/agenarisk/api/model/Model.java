@@ -1315,11 +1315,15 @@ public class Model implements IdContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Make all states of dynamically discretized nodes static as they currently are in the provided DataSet.
+	 * Make all states of dynamically discretized nodes static as they currently are in the provided DataSet.<br>
+	 * No action will be performed if no nodes are simulated.<br>
+	 * Any VariableObservations in the DataSet will replace current Node variable defaults and will be replaced from the DataSet observations.
 	 * 
 	 * @param dataSet DataSet to use for creating static states from results
+	 * 
+	 * @throws NodeException upon failure
 	 */
-	public void convertToStatic(DataSet dataSet){
+	public void convertToStatic(DataSet dataSet) throws NodeException{
 		getNetworks().values().forEach(network -> {
 			network.getNodes().values().forEach(node -> {
 				if (node.isSimulated()){
