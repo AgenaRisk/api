@@ -53,6 +53,7 @@ import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import com.agenarisk.api.model.interfaces.IdContainer;
 import com.singularsys.jep.JepException;
+import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 
@@ -95,6 +96,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 		 * Keep Graphics
 		 */
 		KEEP_GRAPHICS,
+		
+		/**
+		 * Keep tables for simulation nodes
+		 */
+		KEEP_TABLES,
 		
 		/**
 		 * Will copy the first DataSet with observations only to the root of the JSON structure so it can be submitted to AgenaRisk Cloud
@@ -833,11 +839,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 					if (jo.has(NodeConfiguration.Field.configuration.toString()) && jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).has(NodeConfiguration.Table.table.toString())){
 						// Object is node with configuration and table
 						JSONObject jsonTable = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optJSONObject(NodeConfiguration.Table.table.toString());
-						boolean simulationNode = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optBoolean(NodeConfiguration.Field.simulated.toString(), false);
+						String tableType = jsonTable.optString(NodeConfiguration.Table.type.toString());
 						boolean inputNode = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optBoolean(NodeConfiguration.Field.input.toString(), false);
-						if (simulationNode || inputNode){
-							// Simulation or input node, can remove compiled NPTs
-							Logger.logIfDebug("Wiping table for " + jo.getString("id"));
+						
+						if (!inputNode && !Objects.equals(tableType, NodeConfiguration.TableType.Manual.toString()) && !xflags.contains(ExportFlags.KEEP_TABLES)){
+							// Non-manual table, can remove compiled NPTs
 							jsonTable.remove(NodeConfiguration.Table.nptCompiled.toString());
 							jsonTable.remove(NodeConfiguration.Table.probabilities.toString());
 						}
