@@ -3,7 +3,6 @@ package com.agenarisk.api.model;
 import com.agenarisk.api.model.interfaces.Named;
 import com.agenarisk.api.model.interfaces.Networked;
 import com.agenarisk.api.exception.AgenaRiskRuntimeException;
-import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.NodeException;
 import com.agenarisk.api.model.interfaces.Identifiable;
@@ -43,8 +42,11 @@ import uk.co.agena.minerva.util.helpers.MathsHelper;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
+import uk.co.agena.minerva.util.model.MinervaVariableException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import uk.co.agena.minerva.util.model.Range;
+import uk.co.agena.minerva.util.model.Variable;
+import uk.co.agena.minerva.util.model.VariableList;
 import uk.co.agena.minerva.util.nptgenerator.ExpressionParser;
 
 /**
@@ -1112,15 +1114,16 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Disables simulation and converts dynamic states from the results of the provided DataSet into static permanent states.
+	 * Disables simulation and converts dynamic states from the results of the provided DataSet into static permanent states.<br>
+	 * Any VariableObservations in the DataSet will replace current Node variable defaults and will be replaced from the DataSet observations.
 	 * 
 	 * @param dataSet DataSet to use for creating static states from results
 	 * 
 	 * @return true if action was performed, false if no action was permitted or required
 	 * 
-	 * @throws DataSetException if states could not be created from the DataSet results
+	 * @throws NodeException if states could not be created from the DataSet results
 	 */
-	public boolean convertToStatic(com.agenarisk.api.model.DataSet dataSet) throws DataSetException {
+	public boolean convertToStatic(com.agenarisk.api.model.DataSet dataSet) throws NodeException {
 		
 		boolean canSimulate = getLogicNode() instanceof ContinuousEN && !(getLogicNode() instanceof RankedEN);
 		
@@ -1133,9 +1136,18 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		try {
 			DataSet ds = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode()).getMarginalDataItemAtIndex(0).getDataset();
 			ContinuousEN.ConvertToNonSimulation(cien, ds);
+			for (VariableObservation vo: dataSet.getVariableObservations(this)){
+				String voName = vo.getVariableName();
+				double varVal = vo.getVariableValue();
+				VariableList logicVarList = getLogicNode().getExpressionVariables();
+				Variable logicVar = logicVarList.getVariable(voName);
+				logicVarList.updateVariable(logicVar, voName, varVal);
+				
+			};
+			
 		}
-		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | IndexOutOfBoundsException ex){
-			throw new DataSetException("Failed to convert results to static states for node " + toStringExtra() + " from DataSet " + dataSet.getId(), ex);
+		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | IndexOutOfBoundsException | MinervaVariableException ex){
+			throw new NodeException("Failed to convert results to static states for node " + toStringExtra() + " from DataSet " + dataSet.getId(), ex);
 		}
 		return true;
 	}
