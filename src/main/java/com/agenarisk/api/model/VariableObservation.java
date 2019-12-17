@@ -49,5 +49,24 @@ public class VariableObservation extends Observation {
 		json.put(Observation.Field.constantName.toString(), getVariableName());
 		return json;
 	}
+	
+	/**
+	 * Returns the value of this VariableObservation as a single double or zero if no value is set.
+	 * 
+	 * @return value of this VariableObservation
+	 */
+	public double getVariableValue(){
+		Object valueKey = getEntries().keySet().stream().findFirst().orElseGet(()->{return 0d;});
+		if (valueKey instanceof Double){
+			return (Double) valueKey;
+		}
+		try {
+			double value = Double.parseDouble(valueKey+"");
+			return value;
+		}
+		catch (NumberFormatException ex){
+			return 0d;
+		}
+	}
 
 }
