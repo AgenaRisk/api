@@ -18,7 +18,6 @@ public class Settings implements Storable {
 		iterations,
 		convergence,
 		tolerance,
-		sampleSize,
 		sampleSizeRanked,
 		discreteTails,
 		simulationLogging,
@@ -40,7 +39,6 @@ public class Settings implements Storable {
 		logicModel.setSimulationNoOfIterations(jsonSettings.optInt(Field.iterations.toString(), logicModel.getSimulationNoOfIterations()));
 		logicModel.setSimulationEntropyConvergenceTolerance(jsonSettings.optDouble(Field.convergence.toString(), logicModel.getSimulationEntropyConvergenceTolerance()));
 		logicModel.setSimulationEvidenceTolerancePercent(jsonSettings.optDouble(Field.tolerance.toString(), logicModel.getSimulationEvidenceTolerancePercent()));
-		logicModel.setSampleSize(jsonSettings.optInt(Field.sampleSize.toString(), logicModel.getSampleSize()));
 		logicModel.setRankedSampleSize(jsonSettings.optInt(Field.sampleSizeRanked.toString(), logicModel.getRankedSampleSize()));
 		logicModel.setSimulationTails(jsonSettings.optBoolean(Field.discreteTails.toString(), logicModel.isSimulationTails()));
 		logicModel.setSimulationLogging(jsonSettings.optBoolean(Field.simulationLogging.toString(), logicModel.isSimulationLogging()));
@@ -59,7 +57,6 @@ public class Settings implements Storable {
 		jsonSettings.put(Settings.Field.iterations.toString(), model.getSimulationNoOfIterations());
 		jsonSettings.put(Settings.Field.convergence.toString(), model.getSimulationEntropyConvergenceTolerance());
 		jsonSettings.put(Settings.Field.tolerance.toString(), model.getSimulationEvidenceTolerancePercent());
-		jsonSettings.put(Settings.Field.sampleSize.toString(), model.getSampleSize());
 		jsonSettings.put(Settings.Field.sampleSizeRanked.toString(), model.getRankedSampleSize());
 		jsonSettings.put(Settings.Field.discreteTails.toString(), model.isSimulationTails());
 		jsonSettings.put(Settings.Field.simulationLogging.toString(), model.isSimulationLogging());
@@ -133,7 +130,7 @@ public class Settings implements Storable {
 	 * @return ranked node sample size
 	 */
 	public int getSampleSize() {
-		return model.getLogicModel().getSampleSize();
+		return model.getLogicModel().getRankedSampleSize();
 	}
 
 	/**
@@ -142,7 +139,7 @@ public class Settings implements Storable {
 	 * @param sampleSize ranked node sample size
 	 */
 	public void setSampleSize(int sampleSize) {
-		model.getLogicModel().setSampleSize(sampleSize);
+		model.getLogicModel().setRankedSampleSize(sampleSize);
 	}
 
 	/**
