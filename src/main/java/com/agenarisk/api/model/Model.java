@@ -685,6 +685,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * Triggers propagation in this model for all Networks and DataSets.
 	 * 
 	 * @throws CalculationException if calculation failed
+	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
 	 */
 	public void calculate() throws CalculationException {
 		
@@ -708,13 +709,14 @@ public class Model implements IdContainer<ModelException>, Storable {
 		if (!getLogicModel().isLastPropagationSuccessful()){
 			String message = "Calculation failed";
 			if (outputCaptured.contains("Inconsistent evidence in risk object")){
-				message = "Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)";
+				throw new InconsistentEvidenceException("Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)");
 			}
 			
 			if (outputCaptured.contains("node has sum zero probability")){
 				message = outputCaptured.replaceFirst("(?s).*(?=(The entire node probability table for))", "");
 				message = message.replaceFirst("(?s)(?<=(\\[Normal cannot have zero variance\\]\\.)).*", "");
 				message = message.replaceAll("<br/?>", "\n");
+				throw new InconsistentEvidenceException(message);
 			}
 			
 			throw new CalculationException(message);
