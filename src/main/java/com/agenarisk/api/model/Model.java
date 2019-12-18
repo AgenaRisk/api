@@ -1222,7 +1222,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 */
 	public boolean factorize() throws ModelException{
 		
-		BinaryBNConverter converter = new BinaryBNConverter(getLogicModel());
+		BinaryBNConverter converter = new BinaryBNConverter(getLogicModel(), false);
 		
 		// List of networks to process (those that need factorisation and its ancestors); array of flags to indicate which networks are being factorised
 		List<Network> networksList = getNetworkList();
