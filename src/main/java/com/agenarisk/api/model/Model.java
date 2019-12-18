@@ -1384,4 +1384,31 @@ public class Model implements IdContainer<ModelException>, Storable {
 	public Settings getSettings(){
 		return new Settings(this);
 	}
+	
+	/**
+	 * Checks whether the model had been successfully calculated and requires no calculation at this time.<br>
+	 * Model is considered calculated if all Networks had been calculated.
+	 * 
+	 * @return true if the model is in a calculated state and requires no further calculation
+	 */
+	public boolean isCalculated(){
+		if (!getLogicModel().isLastPropagationSuccessful()){
+			return false;
+		}
+		
+		// Check modification log
+		for(Network net: networks.values()){
+			try {
+				boolean netModified = net.getLogicNetwork().getModificationLog().getModificationItems().isEmpty();
+				if (netModified){
+					return false;
+				}
+			}
+			catch (NullPointerException ex){
+				// Not modified, ignore
+			}
+		}
+		
+		return true;
+	}
 }
