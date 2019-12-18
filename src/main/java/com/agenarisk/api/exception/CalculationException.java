@@ -1,7 +1,8 @@
 package com.agenarisk.api.exception;
 
 /**
- *
+ * Thrown when a calculation fails.
+ * 
  * @author Eugene Dementiev
  */
 public class CalculationException extends AgenaRiskException {
