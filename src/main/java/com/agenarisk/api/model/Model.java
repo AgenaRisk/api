@@ -5,6 +5,7 @@ import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.exception.FileIOException;
+import com.agenarisk.api.exception.InconsistentEvidenceException;
 import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NetworkException;
