@@ -4,7 +4,6 @@ import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.Advisory;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
