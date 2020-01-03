@@ -39,6 +39,8 @@ public class Launcher {
 				
 		og1.addOption(Option.builder().longOpt("floatingLease").numberOfArgs(2).argName("address:port").valueSeparator(':').desc("add floating license server settings").build());
 		og1.addOption(Option.builder().longOpt("floatingRelease").hasArg(false).desc("remove floating license server settings").build());
+		
+		og1.addOption(Option.builder().longOpt("licenseSummary").hasArg(false).desc("print license summary").build());
 		OPTIONS.addOptionGroup(og1);
 		
 		OPTIONS.addOption(Option.builder().longOpt("key").hasArg().argName("license key").desc("Your AgenaRisk 10 license key").build());
@@ -123,6 +125,11 @@ public class Launcher {
 		
 		if (cmd.hasOption("floatingRelease")){
 			License.floatingLicenseRelease();
+		}
+		
+		if (cmd.hasOption("licenseSummary")){
+			System.out.println("License summary:");
+			System.out.println(License.getSummary().toString(10));
 		}
 	}
 }
