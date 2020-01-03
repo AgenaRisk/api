@@ -285,8 +285,8 @@ public class CalculationResult implements Storable {
 	 * 
 	 * @return Result Values
 	 */
-	public Collection<ResultValue> getResultValues() {
-		return resultValues.values();
+	public List<ResultValue> getResultValues() {
+		return resultValues.values().stream().collect(Collectors.toList());
 	}
 	
 	/**
@@ -439,5 +439,16 @@ public class CalculationResult implements Storable {
 	 */
 	public String toString(int indentFactor){
 		return toJson().toString(indentFactor);
+	}
+	
+	/**
+	 * Returns the underlying API1 MarginalDataItem object. 
+	 * 
+	 * @return underlying logic result
+	 * 
+	 * @deprecated Will be affected by module architecture in the future and should not be used.
+	 */
+	public MarginalDataItem getLogicCalculationResult(){
+		return logicResult;
 	}
 }
