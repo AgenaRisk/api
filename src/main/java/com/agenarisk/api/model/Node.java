@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.helpers.MathsHelper;
 import uk.co.agena.minerva.util.model.DataSet;
@@ -1375,6 +1376,16 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	public State getState(String label) {
 		return State.getState(this, label);
+	}
+	
+	/**
+	 * Returns a representation of Node's states at the time of the request.<br>
+	 * The list will not be updated to reflect any changes, and no changes to the list or the States will be reflected in the Model.
+	 * 
+	 * @return representation of Node's states
+	 */
+	public List<State> getStates(){
+		return ((List<ExtendedState>) getLogicNode().getExtendedStates()).stream().map(es -> State.getState(this, es.getName().getShortDescription())).collect(Collectors.toList());
 	}
 	
 	/**
