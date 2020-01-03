@@ -166,11 +166,13 @@ public class State {
 	}
 
 	/**
-	 * Gets the underlying logic state.
+	 * Returns the underlying API1 State object.
 	 * 
 	 * @return underlying logic state
+	 * 
+	 * @deprecated Will be affected by module architecture in the future and should not be used.
 	 */
-	protected ExtendedState getLogicState() {
+	public ExtendedState getLogicState() {
 		return logicState;
 	}
 	
@@ -199,7 +201,7 @@ public class State {
 	}
 
 	/**
-	 * Links this State to an underlying Minerva State object. Should only be used while wrapping a new Model around the Minerva Model.
+	 * Links this State to an underlying API1 State object. Should only be used while wrapping a new Model around the Minerva Model.
 	 * 
 	 * @param logicState the logical state
 	 */
