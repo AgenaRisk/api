@@ -689,17 +689,29 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
 	 */
 	public void calculate() throws CalculationException {
-		
 		Logger.logIfDebug("Calculating all DataSets");
-
+		
 		if (dataSets.isEmpty()){
 			createDataSet("Scenario 1");
 		}
 		
+		calculate(getDataSetList());
+	}
+	
+	/**
+	 * Triggers propagation in this model for provided DataSets and all Networks.
+	 * 
+	 * @param dataSets DataSets to calculate
+	 * 
+	 * @throws CalculationException if calculation failed
+	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
+	 */
+	public void calculate(List<DataSet> dataSets) throws CalculationException {
+		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		try {
-			getLogicModel().calculate();
+			getLogicModel().propagateDDAlgorithm(dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()), null, true, true);
 		}
 		catch (Throwable ex){
 			outputCaptured = StreamInterceptor.output_release();
