@@ -377,6 +377,8 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	 * Using logic objects directly is <b>unsafe</b> and is likely to break something.
 	 * 
 	 * @return the underlying logical ExtendedBN network
+	 * 
+	 * @deprecated Will be made module-restricted in the future.
 	 */
 	public final ExtendedBN getLogicNetwork() {
 		return logicNetwork;

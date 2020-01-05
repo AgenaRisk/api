@@ -198,8 +198,10 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 	 * Returns the underlying logical ExtendedBN network.
 	 * 
 	 * @return the underlying logical ExtendedBN network
+	 * 
+	 * @deprecated Will be made module-restricted in the future.
 	 */
-	protected final Scenario getLogicScenario() {
+	public final Scenario getLogicScenario() {
 		return logicScenario;
 	}
 
