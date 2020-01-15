@@ -54,6 +54,7 @@ import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import com.agenarisk.api.model.interfaces.IdContainer;
 import com.singularsys.jep.JepException;
+import java.util.Collection;
 import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
@@ -674,17 +675,6 @@ public class Model implements IdContainer<ModelException>, Storable {
 	/**
 	 * Triggers propagation in this model for all Networks and DataSets.
 	 * 
-	 * @param dataSets DataSets to calculate
-	 * 
-	 * @throws CalculationException if calculation failed
-	 */
-	public void calculate(Set<DataSet> dataSets) throws CalculationException {
-		throw new UnsupportedOperationException("Not supported yet");
-	}
-	
-	/**
-	 * Triggers propagation in this model for all Networks and DataSets.
-	 * 
 	 * @throws CalculationException if calculation failed
 	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
 	 */
@@ -695,7 +685,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			createDataSet("Scenario 1");
 		}
 		
-		calculate(getDataSetList());
+		calculate(getDataSets().values());
 	}
 	
 	/**
@@ -706,7 +696,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws CalculationException if calculation failed
 	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
 	 */
-	public void calculate(List<DataSet> dataSets) throws CalculationException {
+	public void calculate(Collection<DataSet> dataSets) throws CalculationException {
 		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
