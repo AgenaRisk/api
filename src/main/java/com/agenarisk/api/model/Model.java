@@ -698,6 +698,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 */
 	public void calculate(Collection<DataSet> dataSets) throws CalculationException {
 		
+		getNetworks().values().stream().forEach(net -> {
+			// Force all networks to recalculate
+			String s = "Calculation requested";
+			net.getLogicNetwork().addModificationLogItem(new NameDescription(s, s));
+		});
+		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		try {
