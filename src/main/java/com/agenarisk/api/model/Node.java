@@ -29,6 +29,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedStateNumberingException;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import com.agenarisk.api.exception.NetworkException;
+import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeGraphics;
@@ -51,7 +52,7 @@ import uk.co.agena.minerva.util.model.VariableList;
 import uk.co.agena.minerva.util.nptgenerator.ExpressionParser;
 
 /**
- * Node class represents an equivalent to a Node in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1.
+ * Node class represents a node in the Network.
  * 
  * @author Eugene Dementiev
  */
@@ -1175,13 +1176,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Returns toStringExtra().
+	 * Returns JSON equivalent of this Node as a String.
 	 * 
-	 * @return toStringExtra()
+	 * @return String version of this Node
 	 */
 	@Override
 	public String toString(){
-		return toStringExtra();
+		return toJson().toString();
 	}
 	
 	/**
@@ -1357,14 +1358,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 */
 	@Override
 	public JSONObject toJson() {
-//		if (json.has(Ref.META)){
-//			node.meta = json.optJSONObject(Ref.META);
-//		}
-//		
-//		if (json.has(Ref.GRAPHICS)){
-//			node.graphics = json.optJSONObject(Ref.GRAPHICS);
-//		}
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		JSONObject json = JSONAdapter.toJSONObject(logicNode);
+		json.put(Graphics.Field.graphics.toString(), jsonGraphics);
+		json.put(Meta.Field.meta.toString(), jsonMeta);
+		return json;
 	}
 	
 	/**
