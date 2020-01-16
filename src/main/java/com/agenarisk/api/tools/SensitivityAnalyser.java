@@ -3,6 +3,7 @@ package com.agenarisk.api.tools;
 import com.agenarisk.api.exception.SensitivityAnalyserException;
 import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.exception.CalculationException;
+import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.exception.InconsistentEvidenceException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NodeException;
@@ -13,6 +14,7 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.ResultValue;
 import com.agenarisk.api.model.State;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,8 +41,6 @@ public class SensitivityAnalyser {
 	private final LinkedHashSet<Node> sensitivityNodes = new LinkedHashSet<>();
 	private DataSet dataSet;
 
-	private final JSONObject jsonConfig;
-
 	private boolean sumsMean = false;
 	private boolean sumsMedian = false;
 	private boolean sumsVariance = false;
@@ -62,6 +62,11 @@ public class SensitivityAnalyser {
 	 * Maps nodes to their original calculation results
 	 */
 	private Map<Node, CalculationResult> bufResultsOriginal = new HashMap<>();
+	
+	/**
+	 * Maps Nodes to their respective calculated SA values
+	 */
+	private final Map<Node, LinkedHashMap<State, CalculationResult>> bufTargetResultsSubjective = new HashMap<>();
 
 	/**
 	 * Maps Nodes to their respective calculated SA values
@@ -76,7 +81,7 @@ public class SensitivityAnalyser {
 	/**
 	 * Statistics limited within set percentiles. Values outside of percentiles are set to Double.NaN.
 	 */
-	private final Map<Node, LinkedHashMap<BufferedStatisticKey, Double>> bufferedStatsLim = new HashMap<>();
+	private final Map<Node, LinkedHashMap<BufferedStatisticKey, Double>> bufSAStatsLim = new HashMap<>();
 
 	/**
 	 * Constructor for Sensitivity Analysis tool.<br>
@@ -84,13 +89,11 @@ public class SensitivityAnalyser {
 	 * If no DataSet or Network are specified, the first one of each will be used.<br>
 	 * 
 	 * @param model Model to run analysis on
-	 * @param sensitivityAnalyserConfiguration configuration to override defaults for analysis
+	 * @param jsonConfig configuration to override defaults for analysis
 	 * 
 	 * @throws SensitivityAnalyserException upon failure
 	 */
-	public SensitivityAnalyser(Model model, JSONObject sensitivityAnalyserConfiguration) throws SensitivityAnalyserException {
-		JSONObject json = sensitivityAnalyserConfiguration;
-		this.jsonConfig = json;
+	public SensitivityAnalyser(Model model, JSONObject jsonConfig) throws SensitivityAnalyserException {
 
 		if (model == null) {
 			throw new SensitivityAnalyserException("Model not provided");
@@ -98,7 +101,7 @@ public class SensitivityAnalyser {
 
 		// Create a copy of the original model
 		try {
-			model = Model.createModel(model.export(Model.ExportFlags.KEEP_OBSERVATIONS));
+			model = Model.createModel(model.export(Model.ExportFlags.KEEP_OBSERVATIONS, Model.ExportFlags.KEEP_META));
 		}
 		catch (AdapterException | JSONException | ModelException ex) {
 			throw new SensitivityAnalyserException("Initialization failed", ex);
@@ -115,10 +118,10 @@ public class SensitivityAnalyser {
 		this.model = model;
 
 		// Get model settings
-		model.getSettings().fromJson(json.optJSONObject("modelSettings"));
+		model.getSettings().fromJson(jsonConfig.optJSONObject("modelSettings"));
 
 		// Get report settings
-		JSONObject jsonReportSettings = json.optJSONObject("reportSettings");
+		JSONObject jsonReportSettings = jsonConfig.optJSONObject("reportSettings");
 
 		if (jsonReportSettings != null) {
 			sumsMean = jsonReportSettings.optBoolean("sumsMean", false);
@@ -140,8 +143,8 @@ public class SensitivityAnalyser {
 		}
 
 		// Get DataSet
-		if (json.has("dataSet")) {
-			dataSet = model.getDataSet(json.optString("dataSet", ""));
+		if (jsonConfig.has("dataSet")) {
+			dataSet = model.getDataSet(jsonConfig.optString("dataSet", ""));
 		}
 		else {
 			dataSet = model.getDataSetList().get(0);
@@ -154,7 +157,7 @@ public class SensitivityAnalyser {
 
 		// Get target Node
 		Network network;
-		JSONObject jsonTarget = json.getJSONObject("target");
+		JSONObject jsonTarget = jsonConfig.getJSONObject("target");
 		if (jsonTarget.has("network")) {
 			network = model.getNetwork(jsonTarget.getString("network"));
 		}
@@ -168,7 +171,7 @@ public class SensitivityAnalyser {
 		}
 
 		// Get sensitivity nodes
-		JSONArray sensitivityNodes = json.optJSONArray("sensitivityNodes");
+		JSONArray sensitivityNodes = jsonConfig.optJSONArray("sensitivityNodes");
 		if (sensitivityNodes != null) {
 			sensitivityNodes.forEach(o -> {
 				this.sensitivityNodes.add(network.getNode(String.valueOf(o)));
@@ -185,9 +188,23 @@ public class SensitivityAnalyser {
 				model.calculate();
 			}
 			catch (CalculationException ex) {
-				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization", ex);
+				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (1)", ex);
 			}
 		}
+		
+		try {
+			model.getDataSetList().get(0).getCalculationResults();
+		}
+		catch (Exception ex){
+			// Not calculated?
+			try {
+				model.calculate();
+			}
+			catch (CalculationException ex1) {
+				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (2)", ex1);
+			}
+		}
+		
 		try {
 			model.convertToStatic(dataSet);
 		}
@@ -207,12 +224,297 @@ public class SensitivityAnalyser {
 		calculateStats();
 	}
 	
-	public JSONObject buildTables(){
-		return null;
+	public JSONObject getReport(){
+		JSONObject jsonReport = new JSONObject();
+		jsonReport.put("table", buildTables());
+		jsonReport.put("tornado", buildTornadoes());
+		jsonReport.put("config", getConfig());
+		return jsonReport;
 	}
 	
-	public JSONObject buildTornadoes(){
-		return null;
+	public JSONArray buildTables(){
+		
+		JSONArray jsonTables = new JSONArray();
+		
+		// Table per sens node
+		for(Node sensNode: sensitivityNodes){
+
+			JSONObject jsonTable = new JSONObject();
+			jsonTable.put("title", "p(" + targetNode.getName() + " | " + sensNode.getName() + ")");
+			jsonTable.put("headerRows", sensNode.getName());
+			jsonTable.put("headerColumns", targetNode.getName());
+			jsonTable.put("sensitivityNode", sensNode.getId());
+
+			JSONArray jsonRows = new JSONArray();
+			jsonTable.put("rows", jsonRows);
+
+			List<State> sensStates = sensNode.getStates();
+			
+			JSONArray jsonHeaderRow = new JSONArray();
+			jsonHeaderRow.put(sensNode.getName() + " State");
+			jsonTable.put("headerRow", jsonHeaderRow);
+			
+			if (targetNode.isNumericInterval()){
+				Map<BufferedStatisticKey, Double> bufferedValues = bufSAStats.get(sensNode);
+				List<BufferedStatisticKey.STAT> statsRequested = new ArrayList<>();
+				if (sumsMean){
+					statsRequested.add(BufferedStatisticKey.STAT.mean);
+				}
+				if (sumsMedian){
+					statsRequested.add(BufferedStatisticKey.STAT.median);
+				}
+				if (sumsVariance){
+					statsRequested.add(BufferedStatisticKey.STAT.variance);
+				}
+				if (sumsStDev){
+					statsRequested.add(BufferedStatisticKey.STAT.standardDeviation);
+				}
+				if (sumsLowerPercentile){
+					statsRequested.add(BufferedStatisticKey.STAT.lowerPercentile);
+				}
+				if (sumsUpperPercentile){
+					statsRequested.add(BufferedStatisticKey.STAT.upperPercentile);
+				}
+				
+
+				// Add column headers
+				for(BufferedStatisticKey.STAT statRequested: statsRequested){
+					jsonHeaderRow.put(statRequested);
+				}
+				
+				// Row per sens state
+				for(State sensState: sensStates){
+					JSONArray jsonRow = new JSONArray();
+					if (sensNode.isNumericInterval()){
+						jsonRow.put(sensState.getLogicState().getNumericalValue());
+					}
+					else {
+						jsonRow.put(sensState.getLabel());
+					}
+					
+					// Column per summary stat
+					for(BufferedStatisticKey.STAT statRequested: statsRequested){
+						Double value = bufferedValues.get(new BufferedStatisticKey(statRequested, sensState.getLabel()));
+						jsonRow.put(value);
+					}
+					jsonRows.put(jsonRow);
+				}
+			}
+			else {
+				Map<BufferedCalculationKey, Double> bufferedValues = bufSACalcs.get(sensNode);
+				List<State> tarStates = targetNode.getStates();
+				
+				// Add column headers
+				for(State tarState: tarStates){
+					jsonHeaderRow.put(tarState.getLabel());
+				}
+				
+				// Row per sens state
+				for(State sensState: sensStates){
+					JSONArray jsonRow = new JSONArray();
+					if (sensNode.isNumericInterval()){
+						jsonRow.put(sensState.getLogicState().getNumericalValue());
+					}
+					else {
+						jsonRow.put(sensState.getLabel());
+					}
+					
+					// Column per target state
+					for(State tarState: tarStates){
+						Double value = bufferedValues.get(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensState.getLabel()));
+						jsonRow.put(value);
+					}
+					jsonRows.put(jsonRow);
+				}
+				
+			}
+			
+			jsonTables.put(jsonTable);
+		}
+		
+		return jsonTables;
+	}
+	
+	public JSONArray buildTornadoes(){
+		
+		JSONArray jsonGraphs = new JSONArray();
+		
+		CalculationResult targetOriginal = bufResultsOriginal.get(targetNode);
+		
+		if(targetNode.isNumericInterval()){
+			/*
+				Graphs are created for each selected summary statistic
+				For each graph:
+					The graph represents stat(targetNode)
+					There is a line indicating stat(targetNode) without observations
+					For each sensitivity node there is a bar in the graph
+						For each state of the sensitivity node get buffered value
+						The bar is between min and max such values, labelled
+			*/
+			
+			List<BufferedStatisticKey.STAT> statsToGraph = new ArrayList<>();
+			List<Double> originalValues = new ArrayList<>();
+			if (sumsMean){
+				statsToGraph.add(BufferedStatisticKey.STAT.mean);
+				originalValues.add(targetOriginal.getMean());
+			}
+			if (sumsMedian){
+				statsToGraph.add(BufferedStatisticKey.STAT.median);
+				originalValues.add(targetOriginal.getMedian());
+			}
+			if (sumsVariance){
+				statsToGraph.add(BufferedStatisticKey.STAT.variance);
+				originalValues.add(targetOriginal.getVariance());
+			}
+			if (sumsStDev){
+				statsToGraph.add(BufferedStatisticKey.STAT.standardDeviation);
+				originalValues.add(targetOriginal.getStandardDeviation());
+			}
+			if (sumsLowerPercentile){
+				statsToGraph.add(BufferedStatisticKey.STAT.lowerPercentile);
+				originalValues.add(targetOriginal.getLowerPercentile());
+			}
+			if (sumsUpperPercentile){
+				statsToGraph.add(BufferedStatisticKey.STAT.upperPercentile);
+				originalValues.add(targetOriginal.getUpperPercentile());
+			}
+			
+			
+			for(int i = 0; i < statsToGraph.size(); i++){
+				
+				JSONObject jsonGraph = new JSONObject();
+				
+				BufferedStatisticKey.STAT statToGraph = statsToGraph.get(i);
+				
+				jsonGraph.put("summaryStatistic", statToGraph.toString());
+				jsonGraph.put("originalValue", originalValues.get(i));
+				
+				List<JSONObject> jsonBarsList = new ArrayList<>();
+				
+				for(Node sensNode: sensitivityNodes){
+					Map<BufferedStatisticKey, Double> bufferedValues = bufSAStatsLim.get(sensNode);
+					List<State> sensStates = sensNode.getStates();
+
+					State stateMin = sensStates.get(0);
+					Double valueMin = bufferedValues.get(new BufferedStatisticKey(statToGraph, sensStates.get(0).getLabel()));
+					State stateMax = sensStates.get(sensStates.size()-1);
+					Double valueMax = bufferedValues.get(new BufferedStatisticKey(statToGraph, sensStates.get(sensStates.size()-1).getLabel()));
+					for(State state: sensStates){
+						Double value = bufferedValues.get(new BufferedStatisticKey(statToGraph, state.getLabel()));
+						if (Double.isNaN(value)){
+							continue;
+						}
+//						System.out.println(statToGraph+"\t"+sensNode.getLogicNode() + "\t" + state.getLogicState() + "\t" + value);//xxxxx
+						if(value < valueMin){
+							valueMin = value;
+							stateMin = state;
+						}
+						if (value > valueMax){
+							valueMax = value;
+							stateMax = state;
+						}
+					}
+					
+					if (Double.isNaN(valueMax) || Double.isNaN(valueMin)){
+						continue;
+					}
+					
+					JSONObject jsonBar = new JSONObject();
+					jsonBar.put("diff", valueMax - valueMin);
+					jsonBar.put("node", sensNode.getId());
+					jsonBar.put("stateMin", stateMin.getLabel());
+					jsonBar.put("labelMin", "P(" + sensNode.getName() + " = " + stateMin.getLabel() + ")");
+					jsonBar.put("valueMin", valueMin);
+					jsonBar.put("stateMax", stateMax.getLabel());
+					jsonBar.put("labelMax", "P(" + sensNode.getName() + " = " + stateMax.getLabel() + ")");
+					jsonBar.put("valueMax", valueMax);
+					jsonBarsList.add(jsonBar);
+				}
+				
+				jsonBarsList.sort((o1, o2) -> {
+					// Sort so that biggest bars are on top
+					return Double.compare(o2.optDouble("diff"), o1.optDouble("diff"));
+				});
+				
+				JSONArray graphBars = new JSONArray(jsonBarsList);
+				jsonGraph.put("graphBars", graphBars);
+				
+				jsonGraphs.put(jsonGraph);
+			}
+
+		}
+		else {
+			/*
+				Graphs are created for each state of the target node
+				For each graph:
+					The graph represents p(targetNode=targetState)
+					There is a line indicating p(targetNode=targetState) without observations
+					For each sensitivity node there is a bar in the graph
+						For each state of the sensitivity node get buffered value
+						The bar is between min and max such values, labelled
+			*/
+			
+			List<State> tarStates = targetNode.getStates();
+			for(int tarStateIndex = 0; tarStateIndex < tarStates.size(); tarStateIndex++){
+				JSONObject jsonGraph = new JSONObject();
+				
+				State tarState = tarStates.get(tarStateIndex);
+				
+				jsonGraph.put("graphTitle", "P(" + targetNode.getName() + " = " + tarState.getLabel() + ")");
+				jsonGraph.put("targetState", tarState.getLabel());
+				jsonGraph.put("originalValue", bufResultsOriginal.get(targetNode).getResultValue(tarState.getLabel()).getValue());
+				
+				List<JSONObject> jsonBarsList = new ArrayList<>();
+				
+				for(Node sensNode: sensitivityNodes){
+					Map<BufferedCalculationKey, Double> bufferedValues = bufSACalcs.get(sensNode);
+					List<State> sensStates = sensNode.getStates();
+					
+					State stateMin = sensStates.get(0);
+					Double valueMin = bufferedValues.get(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensStates.get(0).getLabel()));
+					State stateMax = sensStates.get(sensStates.size()-1);
+					Double valueMax = bufferedValues.get(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensStates.get(sensStates.size()-1).getLabel()));
+					
+					for(State state: sensStates){
+						Double value = bufferedValues.get(new BufferedCalculationKey(targetNode, tarState.getLabel(), state.getLabel()));
+						if(value < valueMin){
+							valueMin = value;
+							stateMin = state;
+						}
+						if (value > valueMax){
+							valueMax = value;
+							stateMax = state;
+						}
+					}
+					
+					//new DecimalFormat("##0.###").format(valueMin));
+					
+					JSONObject jsonBar = new JSONObject();
+					jsonBar.put("diff", valueMax - valueMin);
+					jsonBar.put("node", sensNode.getId());
+					jsonBar.put("stateMin", stateMin.getLabel());
+					jsonBar.put("labelMin", "P(" + sensNode.getName() + " = " + stateMin.getLabel() + ")");
+					jsonBar.put("valueMin", valueMin);
+					jsonBar.put("stateMax", stateMax.getLabel());
+					jsonBar.put("labelMax", "P(" + sensNode.getName() + " = " + stateMax.getLabel() + ")");
+					jsonBar.put("valueMax", valueMax);
+					
+					jsonBarsList.add(jsonBar);
+				}
+				
+				jsonBarsList.sort((o1, o2) -> {
+					// Sort so that biggest bars are on top
+					return Double.compare(o2.optDouble("diff"), o1.optDouble("diff"));
+				});
+				
+				JSONArray graphBars = new JSONArray(jsonBarsList);
+				jsonGraph.put("graphBars", graphBars);
+				
+				jsonGraphs.put(jsonGraph);
+			}
+		}
+		
+		return jsonGraphs;
 	}
 	
 	public JSONObject buildCurves(){
@@ -282,7 +584,7 @@ public class SensitivityAnalyser {
 					throw new SensitivityAnalyserException("Calculation result size does not match for node " + sensitivityNode.toStringExtra());
 				}
 
-				List<State> sensStates = targetNode.getStates();
+				List<State> sensStates = sensitivityNode.getStates();
 				for (int indexSensResVal = 0; indexSensResVal < sensResValOri.size(); indexSensResVal++) {
 					State sensState = sensStates.get(indexSensResVal);
 					ResultValue rvO = sensResValOri.get(indexSensResVal);
@@ -319,11 +621,9 @@ public class SensitivityAnalyser {
 
 			if (!Arrays.asList(Node.Type.ContinuousInterval, Node.Type.IntegerInterval, Node.Type.Ranked).contains(sensitivityNode.getType())) {
 				// Skip inherently labelled nodes
-				continue;
+//				System.out.println("skip non cont");
+//				continue;
 			}
-
-			uk.co.agena.minerva.util.model.DataSet targetA1DataSet = new uk.co.agena.minerva.util.model.DataSet();
-			uk.co.agena.minerva.util.model.DataSet targetA1DataSetLim = new uk.co.agena.minerva.util.model.DataSet();
 
 			uk.co.agena.minerva.util.model.DataSet tempA1ResultsOriginal = (uk.co.agena.minerva.util.model.DataSet) bufResultsOriginal.get(sensitivityNode).getLogicCalculationResult().getDataset().clone();
 
@@ -347,8 +647,8 @@ public class SensitivityAnalyser {
 				bufSAStats.put(sensitivityNode, new LinkedHashMap<>());
 			}
 
-			if (!bufferedStatsLim.containsKey(sensitivityNode)) {
-				bufferedStatsLim.put(sensitivityNode, new LinkedHashMap<>());
+			if (!bufSAStatsLim.containsKey(sensitivityNode)) {
+				bufSAStatsLim.put(sensitivityNode, new LinkedHashMap<>());
 			}
 
 			List<State> sensStates = sensitivityNode.getStates();
@@ -366,8 +666,11 @@ public class SensitivityAnalyser {
 				Range[] xIntervals = new Range[tarStates.size()];
 
 				boolean limAllNAN = Double.isNaN(bufResultsOriginal.get(sensitivityNode).getResultValues().get(indexSensState).getValue());
+				
+				uk.co.agena.minerva.util.model.DataSet targetA1DataSet = new uk.co.agena.minerva.util.model.DataSet();
+				uk.co.agena.minerva.util.model.DataSet targetA1DataSetLim = new uk.co.agena.minerva.util.model.DataSet();
 
-				for (int indexTarState = 0; indexTarState < targetNode.getLogicNode().getExtendedStates().size(); indexTarState++) {
+				for (int indexTarState = 0; indexTarState < tarStates.size(); indexTarState++) {
 					State tarState = tarStates.get(indexTarState);
 					Range r = tarState.getLogicState().getRange();
 					try {
@@ -379,14 +682,19 @@ public class SensitivityAnalyser {
 					xIntervals[indexTarState] = r;
 
 					if (bufResultsOriginal.get(targetNode).getResultValues().get(indexTarState).getValue() == 0) {
+						// This branch was impossible with target node, skip it
 						continue;
 					}
-
+//					System.out.println(bufSACalcs);
+//					System.out.println("get node: " + sensitivityNode);
+//					System.out.println(bufSACalcs.get(sensitivityNode));
+//					System.out.println("get key: ");
+//					System.out.println(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensState.getLabel()));
 					double dbl = bufSACalcs.get(sensitivityNode).get(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensState.getLabel()));
 					double dblWithZero = Double.NaN;
 
 					try {
-						if (!Double.isNaN(tempA1ResultsOriginal.getDataPointAtOrderPosition(indexTarState).getValue())) {
+						if (!Double.isNaN(tempA1ResultsOriginal.getDataPointAtOrderPosition(indexSensState).getValue())) {
 							dblWithZero = dbl;
 						}
 					}
@@ -404,11 +712,14 @@ public class SensitivityAnalyser {
 					idp.setIntervalLowerBound(r.getLowerBound());
 					idp.setIntervalUpperBound(r.getUpperBound());
 					targetA1DataSet.addDataPoint(idp);
+					
 					IntervalDataPoint idpWithZero = new IntervalDataPoint();
 					idpWithZero.setValue(dblWithZero);
 					idpWithZero.setIntervalLowerBound(r.getLowerBound());
 					idpWithZero.setIntervalUpperBound(r.getUpperBound());
 					targetA1DataSetLim.addDataPoint(idpWithZero);
+					
+//					System.out.println("~"+sensitivityNode.getLogicNode()+"\t"+sensState.getLogicState()+"\t"+tarState.getLogicState()+"\t"+dbl+"\t"+idp);
 
 					// get all p (T | Sn)
 				}
@@ -420,6 +731,8 @@ public class SensitivityAnalyser {
 					varianceLim = limAllNAN ? Double.NaN : MathsHelper.variance(targetA1DataSetLim);
 					standardDeviation = Math.sqrt(variance);
 					standardDeviationLim = limAllNAN ? Double.NaN : Math.sqrt(varianceLim);
+//					System.out.println("~"+sensitivityNode.getLogicNode()+"\t"+sensState.getLogicState()+"\t"+mean+"\t"+variance+"\t"+standardDeviation);
+//					System.out.println(targetA1DataSet);
 				}
 				catch (Exception ex) {
 					throw new SensitivityAnalyserException("Failed to calculate SA summary statistics", ex);
@@ -454,12 +767,16 @@ public class SensitivityAnalyser {
 				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentile);
 				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.lowerPercentile, sensState.getLabel()), lowerPercentile);
 
-				bufferedStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.mean, sensState.getLabel()), meanLim);
-				bufferedStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.median, sensState.getLabel()), medianLim);
-				bufferedStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.variance, sensState.getLabel()), varianceLim);
-				bufferedStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.standardDeviation, sensState.getLabel()), standardDeviationLim);
-				bufferedStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentileLim);
-				bufferedStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.lowerPercentile, sensState.getLabel()), lowerPercentileLim);
+				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.mean, sensState.getLabel()), meanLim);
+				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.median, sensState.getLabel()), medianLim);
+				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.variance, sensState.getLabel()), varianceLim);
+				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.standardDeviation, sensState.getLabel()), standardDeviationLim);
+				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentileLim);
+				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.lowerPercentile, sensState.getLabel()), lowerPercentileLim);
+//				System.out.println("~~~");
+//				System.out.println(bufSAStats);
+//				System.out.println(bufferedStatsLim);
+//				System.out.println("~=~");
 			}
 		}
 	}
@@ -521,7 +838,19 @@ public class SensitivityAnalyser {
 			}
 			return true;
 		}
+		
+		public JSONObject toJson(){
+			JSONObject json = new JSONObject();
+			json.put("node", node.toStringExtra());
+			json.put("nodeState", nodeState);
+			json.put("calcState", calcState);
+			return json;
+		}
 
+		@Override
+		public String toString() {
+			return toJson().toString();
+		}
 	}
 
 	private static class BufferedStatisticKey {
@@ -579,7 +908,63 @@ public class SensitivityAnalyser {
 			}
 			return true;
 		}
+		
+		public JSONObject toJson(){
+			JSONObject json = new JSONObject();
+			json.put("summaryStatistic", stat);
+			json.put("calcState", calcState);
+			return json;
+		}
 
+		@Override
+		public String toString() {
+			return toJson().toString();
+		}
+
+	}
+	
+	public JSONObject getConfig(){
+		JSONObject jsonConfig = new JSONObject();
+		
+		JSONObject target = new JSONObject();
+		target.put("node", targetNode.getId());
+		target.put("network", targetNode.getNetwork().getId());
+		jsonConfig.put("target", target);
+		
+		JSONArray sensitivityNodes = new JSONArray();
+		jsonConfig.put("sensitivityNodes", sensitivityNodes);
+		this.sensitivityNodes.forEach(node -> {
+			sensitivityNodes.put(node.getId());
+		});
+		
+		JSONObject jsonReportSettings = new JSONObject();
+		jsonConfig.put("reportSettings", jsonReportSettings);
+		if (sumsMean){
+			jsonReportSettings.put("sumsMean", true);
+		}
+		if (sumsMedian){
+			jsonReportSettings.put("sumsMedian", true);
+		}
+		if (sumsVariance){
+			jsonReportSettings.put("sumsVariance", true);
+		}
+		if (sumsStDev){
+			jsonReportSettings.put("sumsStDev", true);
+		}
+		if (sumsLowerPercentile){
+			jsonReportSettings.put("sumsLowerPercentile", true);
+		}
+		if (sumsUpperPercentile){
+			jsonReportSettings.put("sumsUpperPercentile", true);
+		}
+		jsonReportSettings.put("sumsLowerPercentileValue", sumsLowerPercentileValue);
+		jsonReportSettings.put("sumsUpperPercentileValue", sumsUpperPercentileValue);
+		jsonReportSettings.put("sensLowerPercentileValue", sensLowerPercentileValue);
+		jsonReportSettings.put("sensUpperPercentileValue", sensUpperPercentileValue);
+		
+		jsonConfig.put("dataSet", dataSet.getId());
+		
+		return jsonConfig;
 	}
 
 }
