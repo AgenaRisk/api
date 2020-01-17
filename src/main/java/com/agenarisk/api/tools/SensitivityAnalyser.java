@@ -1,6 +1,5 @@
 package com.agenarisk.api.tools;
 
-import com.agenarisk.api.exception.SensitivityAnalyserException;
 import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.DataSetException;
