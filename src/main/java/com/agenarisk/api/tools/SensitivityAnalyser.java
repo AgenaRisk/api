@@ -53,10 +53,6 @@ public class SensitivityAnalyser {
 	private double sensLowerPercentileValue = 0d;
 	private double sensUpperPercentileValue = 100d;
 
-	private boolean viewTable = false;
-	private boolean viewResponseCurve = false;
-	private boolean viewTornadoGraph = false;
-
 	/**
 	 * Maps nodes to their original calculation results
 	 */
@@ -135,10 +131,6 @@ public class SensitivityAnalyser {
 
 			sensLowerPercentileValue = jsonReportSettings.optDouble("sensLowerPercentileValue", 0d);
 			sensUpperPercentileValue = jsonReportSettings.optDouble("sensUpperPercentileValue", 100d);
-
-			viewTable = jsonReportSettings.optBoolean("viewTable", false);
-			viewResponseCurve = jsonReportSettings.optBoolean("viewResponseCurve", false);
-			viewTornadoGraph = jsonReportSettings.optBoolean("viewTornadoGraph", false);
 		}
 
 		// Get DataSet
