@@ -842,15 +842,16 @@ public class SensitivityAnalyser {
 
 			final BufferedCalculationKey other = (BufferedCalculationKey) obj;
 
+			if (!Objects.equals(this.node, other.node)) {
+				return false;
+			}
 			if (!Objects.equals(this.nodeState, other.nodeState)) {
 				return false;
 			}
 			if (!Objects.equals(this.calcState, other.calcState)) {
 				return false;
 			}
-			if (!Objects.equals(this.node, other.node)) {
-				return false;
-			}
+			
 			return true;
 		}
 		
