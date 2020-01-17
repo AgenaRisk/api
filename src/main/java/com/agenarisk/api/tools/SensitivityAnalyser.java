@@ -304,7 +304,13 @@ public class SensitivityAnalyser {
 					// Column per summary stat
 					for(BufferedStatisticKey.STAT statRequested: statsRequested){
 						Double value = bufferedValues.get(new BufferedStatisticKey(statRequested, sensState.getLabel()));
-						jsonRow.put(value);
+						if (Double.isInfinite(value) || Double.isNaN(value)){
+							jsonRow.put(value+"");
+						}
+						else {
+							jsonRow.put(value);
+						}
+						
 					}
 					jsonRows.put(jsonRow);
 				}
