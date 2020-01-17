@@ -30,7 +30,11 @@ import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.Range;
 
 /**
- *
+ * SensitivityAnalyser performs sensitivity analysis of the model for the provided target and sensitivity Nodes.<br>
+ * The input is a JSON configuration. The output includes Tables, Tornado Graphs, Response Curve Graphs.<br>
+ * Discrete and continuous Nodes are supported.<br>
+ * All sensitivity and target Nodes must reside in the same Network.
+ * 
  * @author Eugene Dementiev
  */
 public class SensitivityAnalyser {
