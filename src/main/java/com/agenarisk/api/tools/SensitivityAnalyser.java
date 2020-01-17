@@ -714,7 +714,7 @@ public class SensitivityAnalyser {
 						}
 					}
 					catch (Exception ex) {
-						throw new SensitivityAnalyserException(ex);
+						throw new SensitivityAnalyserException("Calculation results are unexpectedly missing", ex);
 					}
 
 					xVals[indexTarState] = tarState.getLogicState().getNumericalValue();
