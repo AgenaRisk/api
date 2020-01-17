@@ -532,8 +532,88 @@ public class SensitivityAnalyser {
 		return jsonGraphs;
 	}
 	
-	public JSONObject buildCurves(){
-		return null;
+	/**
+	 * Compiles data for response curve graphs.<br>
+	 * A graph is generated for each sensitivity node and selected summary statistic.<br>
+	 * Will clip data points outside of lower and upper sensitivity percentile values.<br>
+	 * X axis is sensitivity node states.<br>
+	 * Y axis is summary statistic values.
+	 * 
+	 * @return JSON array of ROC graphs' data
+	 */
+	public JSONArray buildResponseCurveGraphs(){
+		JSONArray jsonROCs = new JSONArray();
+		
+		List<BufferedStatisticKey.STAT> statsRequested = new ArrayList<>();
+		if (sumsMean){
+			statsRequested.add(BufferedStatisticKey.STAT.mean);
+		}
+		if (sumsMedian){
+			statsRequested.add(BufferedStatisticKey.STAT.median);
+		}
+		if (sumsVariance){
+			statsRequested.add(BufferedStatisticKey.STAT.variance);
+		}
+		if (sumsStDev){
+			statsRequested.add(BufferedStatisticKey.STAT.standardDeviation);
+		}
+		if (sumsLowerPercentile){
+			statsRequested.add(BufferedStatisticKey.STAT.lowerPercentile);
+		}
+		if (sumsUpperPercentile){
+			statsRequested.add(BufferedStatisticKey.STAT.upperPercentile);
+		}
+		
+		for(Node sensNode: sensitivityNodes){
+			
+			for(BufferedStatisticKey.STAT statRequested: statsRequested){
+				JSONObject jsonGraph = new JSONObject();
+				jsonROCs.put(jsonGraph);
+				jsonGraph.put("titleX", sensNode.getName() + " States");
+				jsonGraph.put("titleY", targetNode.getName() + " " + statRequested);
+				jsonGraph.put("title", "p(" + targetNode.getName() + " | " + sensNode.getName() + ")");
+				jsonGraph.put("sensitivityNode", sensNode.getId());
+				JSONArray jsonPoints = new JSONArray();
+				jsonGraph.put("points", jsonPoints);
+
+//				System.out.println(sensNode.getLogicNode()+"\t"+statRequested);
+				List<State> sensStates = sensNode.getStates();
+				for(State sensState: sensStates){
+					Double value = bufSAStatsLim.get(sensNode).get(new BufferedStatisticKey(statRequested, sensState.getLabel()));
+					//System.out.println(sensNode.getLogicNode()+"\t"+statRequested+"\t"+sensState.getLogicState()+"\t"+value);
+					if (Double.isNaN(value)){
+						continue;
+					}
+					JSONObject jsonPoint = new JSONObject();
+					
+					String x;
+					if (sensNode.isNumericInterval()){
+						x = sensState.getLogicState().getNumericalValue()+"";
+						boolean infN = sensState.getLogicState().getRange().getLowerBound() == Double.NEGATIVE_INFINITY;
+						boolean infP = sensState.getLogicState().getRange().getUpperBound() == Double.POSITIVE_INFINITY;
+						if (infN && infP){
+							x = "0";
+						}
+						else if (infN){
+							x = sensState.getLogicState().getRange().getUpperBound()+"";
+						}
+						else if (infP){
+							x = sensState.getLogicState().getRange().getLowerBound()+"";
+						}
+					}
+					else {
+						x = sensState.getLabel();
+					}
+					double y = value;
+					
+					jsonPoint.put("x", x);
+					jsonPoint.put("y", y);
+					System.out.println(sensNode.getLogicNode()+"\t"+statRequested+"\t"+x+"\t"+y);
+				}
+			}
+		}
+		
+		return jsonROCs;
 	}
 
 	/**
