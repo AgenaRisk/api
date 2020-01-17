@@ -256,7 +256,7 @@ public class CalculationResult implements Storable {
 			return new CalculationResult(dataset, node);
 		}
 		catch (DataSetException ex){
-			Logger.printThrowableIfDebug(ex);
+			//Logger.printThrowableIfDebug(ex);
 		}
 		return null;
 	}
