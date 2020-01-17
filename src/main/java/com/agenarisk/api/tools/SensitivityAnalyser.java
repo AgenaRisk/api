@@ -187,30 +187,31 @@ public class SensitivityAnalyser {
 			throw new SensitivityAnalyserException("No sensitivity nodes specified");
 		}
 
-		// Convert to static
-		// Precalculate if required
-		if (!model.isCalculated()) {
-			try {
-				model.calculate();
-			}
-			catch (CalculationException ex) {
-				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (1)", ex);
-			}
-		}
+		// Precalculate if required for static conversion
 		
 		try {
 			model.getDataSetList().get(0).getCalculationResults();
 		}
 		catch (Exception ex){
-			// Not calculated?
+			// No calculation results, need to calculate
 			try {
 				model.calculate();
 			}
 			catch (CalculationException ex1) {
-				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (2)", ex1);
+				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (1)", ex1);
 			}
 		}
 		
+		if (!model.isCalculated()) {
+			try {
+				model.calculate();
+			}
+			catch (CalculationException ex) {
+				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (2)", ex);
+			}
+		}
+		
+		// Convert to static
 		try {
 			model.convertToStatic(dataSet);
 		}
