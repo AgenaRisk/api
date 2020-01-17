@@ -219,6 +219,8 @@ public class SensitivityAnalyser {
 			throw new SensitivityAnalyserException("Static conversion failed", ex);
 		}
 
+		analyse();
+		
 	}
 	
 	/**
@@ -226,7 +228,7 @@ public class SensitivityAnalyser {
 	 * 
 	 * @throws SensitivityAnalyserException upon failure
 	 */
-	public void analyse() throws SensitivityAnalyserException {
+	private void analyse() throws SensitivityAnalyserException {
 		calculateCombinations();
 		calculateStats();
 	}
