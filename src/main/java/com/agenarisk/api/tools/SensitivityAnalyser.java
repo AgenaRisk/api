@@ -2,7 +2,6 @@ package com.agenarisk.api.tools;
 
 import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.exception.CalculationException;
-import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.exception.InconsistentEvidenceException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NodeException;
@@ -13,7 +12,6 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.ResultValue;
 import com.agenarisk.api.model.State;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,11 +60,6 @@ public class SensitivityAnalyser {
 	 */
 	private Map<Node, CalculationResult> bufResultsOriginal = new HashMap<>();
 	
-	/**
-	 * Maps Nodes to their respective calculated SA values
-	 */
-	private final Map<Node, LinkedHashMap<State, CalculationResult>> bufTargetResultsSubjective = new HashMap<>();
-
 	/**
 	 * Maps Nodes to their respective calculated SA values
 	 */
@@ -306,7 +299,6 @@ public class SensitivityAnalyser {
 					statsRequested.add(BufferedStatisticKey.STAT.upperPercentile);
 				}
 				
-
 				// Add column headers
 				for(BufferedStatisticKey.STAT statRequested: statsRequested){
 					jsonHeaderRow.put(statRequested);
@@ -422,7 +414,6 @@ public class SensitivityAnalyser {
 				originalValues.add(targetOriginal.getUpperPercentile());
 			}
 			
-			
 			for(int i = 0; i < statsToGraph.size(); i++){
 				
 				JSONObject jsonGraph = new JSONObject();
@@ -432,6 +423,7 @@ public class SensitivityAnalyser {
 				jsonGraph.put("summaryStatistic", statToGraph.toString());
 				jsonGraph.put("originalValue", originalValues.get(i));
 				
+				// Keep bars in a list for sorting
 				List<JSONObject> jsonBarsList = new ArrayList<>();
 				
 				for(Node sensNode: sensitivityNodes){
@@ -447,7 +439,6 @@ public class SensitivityAnalyser {
 						if (Double.isNaN(value)){
 							continue;
 						}
-//						System.out.println(statToGraph+"\t"+sensNode.getLogicNode() + "\t" + state.getLogicState() + "\t" + value);//xxxxx
 						if(value < valueMin){
 							valueMin = value;
 							stateMin = state;
@@ -507,6 +498,7 @@ public class SensitivityAnalyser {
 				jsonGraph.put("targetState", tarState.getLabel());
 				jsonGraph.put("originalValue", bufResultsOriginal.get(targetNode).getResultValue(tarState.getLabel()).getValue());
 				
+				// Keep bars in a list for sorting
 				List<JSONObject> jsonBarsList = new ArrayList<>();
 				
 				for(Node sensNode: sensitivityNodes){
@@ -529,8 +521,6 @@ public class SensitivityAnalyser {
 							stateMax = state;
 						}
 					}
-					
-					//new DecimalFormat("##0.###").format(valueMin));
 					
 					JSONObject jsonBar = new JSONObject();
 					jsonBar.put("diff", valueMax - valueMin);
@@ -604,7 +594,6 @@ public class SensitivityAnalyser {
 				JSONArray jsonPoints = new JSONArray();
 				jsonGraph.put("points", jsonPoints);
 
-//				System.out.println(sensNode.getLogicNode()+"\t"+statRequested);
 				List<State> sensStates = sensNode.getStates();
 				for(State sensState: sensStates){
 					Double value = bufSAStatsLim.get(sensNode).get(new BufferedStatisticKey(statRequested, sensState.getLabel()));
@@ -636,7 +625,6 @@ public class SensitivityAnalyser {
 					
 					jsonPoint.put("x", x);
 					jsonPoint.put("y", y);
-					System.out.println(sensNode.getLogicNode()+"\t"+statRequested+"\t"+x+"\t"+y);
 				}
 			}
 		}
@@ -742,12 +730,6 @@ public class SensitivityAnalyser {
 		
 		for (Node sensitivityNode : sensitivityNodes) {
 
-			if (!Arrays.asList(Node.Type.ContinuousInterval, Node.Type.IntegerInterval, Node.Type.Ranked).contains(sensitivityNode.getType())) {
-				// Skip inherently labelled nodes
-//				System.out.println("skip non cont");
-//				continue;
-			}
-
 			uk.co.agena.minerva.util.model.DataSet tempA1ResultsOriginal = (uk.co.agena.minerva.util.model.DataSet) bufResultsOriginal.get(sensitivityNode).getLogicCalculationResult().getDataset().clone();
 
 			if (sensitivityNode.isNumericInterval()) {
@@ -808,11 +790,7 @@ public class SensitivityAnalyser {
 						// This branch was impossible with target node, skip it
 						continue;
 					}
-//					System.out.println(bufSACalcs);
-//					System.out.println("get node: " + sensitivityNode);
-//					System.out.println(bufSACalcs.get(sensitivityNode));
-//					System.out.println("get key: ");
-//					System.out.println(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensState.getLabel()));
+					
 					double dbl = bufSACalcs.get(sensitivityNode).get(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensState.getLabel()));
 					double dblWithZero = Double.NaN;
 
@@ -842,8 +820,6 @@ public class SensitivityAnalyser {
 					idpWithZero.setIntervalUpperBound(r.getUpperBound());
 					targetA1DataSetLim.addDataPoint(idpWithZero);
 					
-//					System.out.println("~"+sensitivityNode.getLogicNode()+"\t"+sensState.getLogicState()+"\t"+tarState.getLogicState()+"\t"+dbl+"\t"+idp);
-
 					// get all p (T | Sn)
 				}
 
@@ -854,8 +830,6 @@ public class SensitivityAnalyser {
 					varianceLim = limAllNAN ? Double.NaN : MathsHelper.variance(targetA1DataSetLim);
 					standardDeviation = Math.sqrt(variance);
 					standardDeviationLim = limAllNAN ? Double.NaN : Math.sqrt(varianceLim);
-//					System.out.println("~"+sensitivityNode.getLogicNode()+"\t"+sensState.getLogicState()+"\t"+mean+"\t"+variance+"\t"+standardDeviation);
-//					System.out.println(targetA1DataSet);
 				}
 				catch (Exception ex) {
 					throw new SensitivityAnalyserException("Failed to calculate SA summary statistics", ex);
@@ -896,10 +870,6 @@ public class SensitivityAnalyser {
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.standardDeviation, sensState.getLabel()), standardDeviationLim);
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentileLim);
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.lowerPercentile, sensState.getLabel()), lowerPercentileLim);
-//				System.out.println("~~~");
-//				System.out.println(bufSAStats);
-//				System.out.println(bufferedStatsLim);
-//				System.out.println("~=~");
 			}
 		}
 	}
