@@ -796,29 +796,61 @@ public class SensitivityAnalyser {
 		}
 	}
 
+	/**
+	 * Key for lookup table of calculation results where combination of a Node, its State and another Node's State map to a calculated double value.
+	 */
 	private class BufferedCalculationKey {
 
 		final Node node;
 		final String nodeState, calcState;
 
+		/**
+		 * Constructor for a BufferedCalculationKey.
+		 * 
+		 * @param node Node portion of the key
+		 * @param nodeState a state of the provided node
+		 * @param calcState a state of another node
+		 */
 		public BufferedCalculationKey(Node node, String nodeState, String calcState) {
 			this.node = node;
 			this.nodeState = nodeState;
 			this.calcState = calcState;
 		}
 
+		/**
+		 * Returns the Node portion of the key.
+		 * 
+		 * @return Node portion of the key
+		 */
 		public Node getNode() {
 			return node;
 		}
 
+		/**
+		 * Returns the State portion of the key.<br>
+		 * The state belongs to the Node provided in the constructor.
+		 * 
+		 * @return State that belongs to the Node provided in the constructor
+		 */
 		public String getNodeState() {
 			return nodeState;
 		}
 
+		/**
+		 * Returns another State portion of the key.<br>
+		 * The state does not belong to the Node provided in the constructor.
+		 * 
+		 * @return State that does not belong to the Node provided in the constructor
+		 */
 		public String getCalcState() {
 			return calcState;
 		}
 
+		/**
+		 * Calculates hash code based on the provided Node, its State and another Node's state.
+		 * 
+		 * @return hash code
+		 */
 		@Override
 		public int hashCode() {
 			int hash = 3;
@@ -828,6 +860,13 @@ public class SensitivityAnalyser {
 			return hash;
 		}
 
+		/**
+		 * Establishes equality to a provided object. In case the object is another BufferedCalculationKey, Node, Node's State and another State of the two objects are respectively equal.
+		 * 
+		 * @param obj object to compare to
+		 * 
+		 * @return true if the provided object is another BufferedCalculationKey with the same parameters
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) {
@@ -855,6 +894,11 @@ public class SensitivityAnalyser {
 			return true;
 		}
 		
+		/**
+		 * Returns a JSON representation of this key.
+		 * 
+		 * @return JSON representation of this key
+		 */
 		public JSONObject toJson(){
 			JSONObject json = new JSONObject();
 			json.put("node", node.toStringExtra());
@@ -863,14 +907,25 @@ public class SensitivityAnalyser {
 			return json;
 		}
 
+		/**
+		 * Returns JSON-backed String representation of this key.
+		 * 
+		 * @return JSON-backed String representation of this key
+		 */
 		@Override
 		public String toString() {
 			return toJson().toString();
 		}
 	}
 
+	/**
+	 * Key for lookup table of calculation results where combination of summary statistic and a sensitivity node state maps to a calculated double value of that summary statistic.
+	 */
 	private static class BufferedStatisticKey {
 
+		/**
+		 * Enumeration of summary statistics supported by BufferedStatisticKey
+		 */
 		enum STAT {
 			mean,
 			median,
@@ -883,19 +938,40 @@ public class SensitivityAnalyser {
 		private final STAT stat;
 		private final String calcState;
 
+		/**
+		 * Constructor for BufferedStatisticKey.
+		 * 
+		 * @param stat Summary statistic portion of this key
+		 * @param calcState State portion of this key
+		 */
 		public BufferedStatisticKey(STAT stat, String calcState) {
 			this.stat = stat;
 			this.calcState = calcState;
 		}
 
+		/**
+		 * Getter for the summary statistic portion of this key.
+		 * 
+		 * @return summary statistic portion of this key
+		 */
 		public STAT getStat() {
 			return stat;
 		}
 
+		/**
+		 * Getter for the State portion of this key
+		 * 
+		 * @return State portion of this key
+		 */
 		public String getCalcState() {
 			return calcState;
 		}
 
+		/**
+		 * Calculates hash code based on the summary statistic and the State provided in the constructor.
+		 * 
+		 * @return hash code
+		 */
 		@Override
 		public int hashCode() {
 			int hash = 7;
@@ -904,6 +980,13 @@ public class SensitivityAnalyser {
 			return hash;
 		}
 
+		/**
+		 * Establishes equality to a provided object. In case the object is another BufferedStatisticKey, it is considered equal if summary statistic and a State of the two objects are respectively equal.
+		 * 
+		 * @param obj object to compare to
+		 * 
+		 * @return true if the provided object is another BufferedStatisticKey with the same parameters
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) {
@@ -925,6 +1008,11 @@ public class SensitivityAnalyser {
 			return true;
 		}
 		
+		/**
+		 * Returns a JSON representation of this key.
+		 * 
+		 * @return JSON representation of this key
+		 */
 		public JSONObject toJson(){
 			JSONObject json = new JSONObject();
 			json.put("summaryStatistic", stat);
@@ -932,6 +1020,11 @@ public class SensitivityAnalyser {
 			return json;
 		}
 
+		/**
+		 * Returns JSON-backed String representation of this key.
+		 * 
+		 * @return JSON-backed String representation of this key
+		 */
 		@Override
 		public String toString() {
 			return toJson().toString();
@@ -939,6 +1032,11 @@ public class SensitivityAnalyser {
 
 	}
 	
+	/**
+	 * Compiles an effective configuration of this analysis and returns it as a JSON.
+	 * 
+	 * @return JSON object representing effective configuration of this analysis
+	 */
 	public JSONObject getConfig(){
 		JSONObject jsonConfig = new JSONObject();
 		
