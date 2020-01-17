@@ -233,14 +233,31 @@ public class SensitivityAnalyser {
 		calculateStats();
 	}
 	
-	public JSONObject getReport(){
+	/**
+	 * Generates response curve graphs, tables and tornado graphs.<br>
+	 * Also includes full JSON configuration for this analysis.
+	 * 
+	 * @return JSON object of the report
+	 */
+	public JSONObject getFullReport(){
 		JSONObject jsonReport = new JSONObject();
-		jsonReport.put("table", buildTables());
-		jsonReport.put("tornado", buildTornadoes());
+		jsonReport.put("responseCurveGraphs", buildResponseCurveGraphs());
+		jsonReport.put("tables", buildTables());
+		jsonReport.put("tornadoGraphs", buildTornadoGraphs());
 		jsonReport.put("config", getConfig());
 		return jsonReport;
 	}
 	
+	/**
+	 * Compiles Sensitivity Analysis data as tables.<br>
+	 * A table is generated for each sensitivity node.<br>
+	 * Row per sensitivity state.<br>
+	 * Column per summary statistic (if the target node is numeric continuous) or target state (if the target node is discrete).<br>
+	 * First item in a row is a sensitivity state.<br>
+	 * Positive infinity will appear as "Infinity", negative infinity as "-Infinity" and Double.NaN as "NaN", all wrapped in quotes.
+	 * 
+	 * @return JSON array of tables
+	 */
 	public JSONArray buildTables(){
 		
 		JSONArray jsonTables = new JSONArray();
@@ -350,7 +367,14 @@ public class SensitivityAnalyser {
 		return jsonTables;
 	}
 	
-	public JSONArray buildTornadoes(){
+	/**
+	 * Compiles Sensitivity Analysis data as tornado graphs.<br>
+	 * Graphs are created for each selected summary statistic. The graph represents stat(targetNode).<br>
+	 * For each sensitivity node there is a bar in the graph.
+	 * 
+	 * @return JSON array of tornado graphs
+	 */
+	public JSONArray buildTornadoGraphs(){
 		
 		JSONArray jsonGraphs = new JSONArray();
 		
