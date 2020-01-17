@@ -1,4 +1,4 @@
-package com.agenarisk.api.exception;
+package com.agenarisk.api.tools;
 
 /**
  *
