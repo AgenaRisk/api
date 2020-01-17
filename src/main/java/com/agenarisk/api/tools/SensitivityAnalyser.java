@@ -144,6 +144,9 @@ public class SensitivityAnalyser {
 		// Get DataSet
 		if (jsonConfig.has("dataSet")) {
 			dataSet = model.getDataSet(jsonConfig.optString("dataSet", ""));
+			if (dataSet == null){
+				throw new SensitivityAnalyserException("DataSet with id `" + jsonConfig.optString("dataSet", "") + "` not found");
+			}
 		}
 		else {
 			dataSet = model.getDataSetList().get(0);
@@ -156,25 +159,37 @@ public class SensitivityAnalyser {
 
 		// Get target Node
 		Network network;
-		JSONObject jsonTarget = jsonConfig.getJSONObject("target");
-		if (jsonTarget.has("network")) {
-			network = model.getNetwork(jsonTarget.getString("network"));
+		if (jsonConfig.has("network")) {
+			network = model.getNetwork(jsonConfig.optString("network", ""));
+			if (network == null){
+				throw new SensitivityAnalyserException("Network with id `" + jsonConfig.optString("network", "") + "` not found");
+			}
 		}
 		else {
 			network = model.getNetworkList().get(0);
 		}
-		targetNode = network.getNode(jsonTarget.optString("node", ""));
+		targetNode = network.getNode(jsonConfig.optString("targetNode", ""));
 
 		if (targetNode == null) {
-			throw new SensitivityAnalyserException("Target node not specified");
+			throw new SensitivityAnalyserException("Target node not specified or Node with ID `" + jsonConfig.optString("targetNode", "") + "`");
 		}
 
 		// Get sensitivity nodes
 		JSONArray sensitivityNodes = jsonConfig.optJSONArray("sensitivityNodes");
 		if (sensitivityNodes != null) {
-			sensitivityNodes.forEach(o -> {
-				this.sensitivityNodes.add(network.getNode(String.valueOf(o)));
-			});
+			try {
+				sensitivityNodes.forEach(o -> {
+					String nodeId = String.valueOf(o);
+					Node sensNode = network.getNode(nodeId);
+					if (sensNode == null){
+						throw new NodeException("Node with ID `" + nodeId + "` not found in Network " + network.toStringExtra());
+					}
+					this.sensitivityNodes.add(sensNode);
+				});
+			}
+			catch (NodeException ex){
+				throw new SensitivityAnalyserException(ex.getMessage());
+			}
 		}
 		if (this.sensitivityNodes.isEmpty()) {
 			throw new SensitivityAnalyserException("No sensitivity nodes specified");
@@ -925,10 +940,9 @@ public class SensitivityAnalyser {
 	public JSONObject getConfig(){
 		JSONObject jsonConfig = new JSONObject();
 		
-		JSONObject target = new JSONObject();
-		target.put("node", targetNode.getId());
-		target.put("network", targetNode.getNetwork().getId());
-		jsonConfig.put("target", target);
+		jsonConfig.put("targetNode", targetNode.getId());
+		jsonConfig.put("network", targetNode.getNetwork().getId());
+		jsonConfig.put("dataSet", dataSet.getId());
 		
 		JSONArray sensitivityNodes = new JSONArray();
 		jsonConfig.put("sensitivityNodes", sensitivityNodes);
@@ -960,8 +974,6 @@ public class SensitivityAnalyser {
 		jsonReportSettings.put("sumsUpperPercentileValue", sumsUpperPercentileValue);
 		jsonReportSettings.put("sensLowerPercentileValue", sensLowerPercentileValue);
 		jsonReportSettings.put("sensUpperPercentileValue", sensUpperPercentileValue);
-		
-		jsonConfig.put("dataSet", dataSet.getId());
 		
 		return jsonConfig;
 	}
