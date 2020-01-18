@@ -601,6 +601,7 @@ public class SensitivityAnalyser {
 						continue;
 					}
 					JSONObject jsonPoint = new JSONObject();
+					jsonPoints.put(jsonPoint);
 					
 					String x;
 					if (sensNode.isNumericInterval()){
