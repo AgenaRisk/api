@@ -603,19 +603,19 @@ public class SensitivityAnalyser {
 					JSONObject jsonPoint = new JSONObject();
 					jsonPoints.put(jsonPoint);
 					
-					String x;
+					Object x;
 					if (sensNode.isNumericInterval()){
-						x = sensState.getLogicState().getNumericalValue()+"";
+						x = sensState.getLogicState().getNumericalValue();
 						boolean infN = sensState.getLogicState().getRange().getLowerBound() == Double.NEGATIVE_INFINITY;
 						boolean infP = sensState.getLogicState().getRange().getUpperBound() == Double.POSITIVE_INFINITY;
 						if (infN && infP){
 							x = "0";
 						}
 						else if (infN){
-							x = sensState.getLogicState().getRange().getUpperBound()+"";
+							x = sensState.getLogicState().getRange().getUpperBound();
 						}
 						else if (infP){
-							x = sensState.getLogicState().getRange().getLowerBound()+"";
+							x = sensState.getLogicState().getRange().getLowerBound();
 						}
 					}
 					else {
