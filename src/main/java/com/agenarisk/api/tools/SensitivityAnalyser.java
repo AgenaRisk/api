@@ -182,6 +182,10 @@ public class SensitivityAnalyser {
 		if (this.sensitivityNodes.isEmpty()) {
 			throw new SensitivityAnalyserException("No sensitivity nodes specified");
 		}
+		
+		if (this.sensitivityNodes.contains(targetNode)){
+			throw new SensitivityAnalyserException("Target node can not also be selected as sensitivity node");
+		}
 
 		// Precalculate if required for static conversion
 		
