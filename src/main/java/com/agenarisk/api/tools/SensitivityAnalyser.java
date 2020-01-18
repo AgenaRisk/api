@@ -240,7 +240,7 @@ public class SensitivityAnalyser {
 		jsonReport.put("responseCurveGraphs", buildResponseCurveGraphs());
 		jsonReport.put("tables", buildTables());
 		jsonReport.put("tornadoGraphs", buildTornadoGraphs());
-		jsonReport.put("config", getConfig());
+		jsonReport.put("sensitivityConfig", getConfig());
 		return jsonReport;
 	}
 	
