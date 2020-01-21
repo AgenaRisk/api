@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -178,6 +179,10 @@ public class SensitivityAnalyser {
 			catch (NodeException ex){
 				throw new SensitivityAnalyserException(ex.getMessage());
 			}
+		}
+		else if ("*".equals(jsonConfig.optString("sensitivityNodes"))) {
+			// All nodes are sensitivity except target
+			network.getNodes().values().stream().filter(node -> !node.equals(targetNode)).collect(Collectors.toCollection(() -> this.sensitivityNodes));
 		}
 		if (this.sensitivityNodes.isEmpty()) {
 			throw new SensitivityAnalyserException("No sensitivity nodes specified");
