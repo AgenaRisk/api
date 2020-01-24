@@ -370,7 +370,10 @@ public class Model implements IdContainer<ModelException>, Storable {
 					
 					JSONObject jsonTable = jsonConfiguration.optJSONObject(NodeConfiguration.Table.table.toString());
 					try {
-						if (!node.getLogicNode().isConnectableInputNode()){
+						if (node.getLogicNode().isConnectableInputNode() && !node.getLinksIn().isEmpty()){
+							// Skip table
+						}
+						else {
 							node.setTable(jsonTable);
 						}
 					}
@@ -782,6 +785,8 @@ public class Model implements IdContainer<ModelException>, Storable {
 		
 		JSONObject json = JSONAdapter.toJSONObject(logicModel);
 		
+		System.out.println(json.toString(4));
+		
 		EnumSet<ExportFlags> xflags = (flags.length > 0) ? EnumSet.copyOf(Arrays.asList(flags)) : EnumSet.noneOf(ExportFlags.class);
 		
 		try {
@@ -857,6 +862,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 							// Non-manual table, can remove compiled NPTs
 							jsonTable.remove(NodeConfiguration.Table.nptCompiled.toString());
 							jsonTable.remove(NodeConfiguration.Table.probabilities.toString());
+						}
+						
+						if (jo.optString("id").equals("inFromDiscReal")){
+							System.out.println("~~~");
+							System.out.println(jsonTable.toString(10));
+							System.out.println("~=~");
 						}
 					}
 				}
