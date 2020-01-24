@@ -436,14 +436,21 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					throw new LinkException("Node " + fromNode.toStringExtra() + " already appears to be configured for cross network incoming link");
 				}
 				
-				if (Objects.equals(fromNode.getType(), toNode.getType()) && Objects.equals(fromNode.isSimulated(), toNode.isSimulated()) /* Same type and same simulation */
-						|| !fromNode.isNumericInterval() && !Type.DiscreteReal.equals(fromNode.getType()) && toNode.isSimulated() /* Not numeric going to simulation */
-						|| Objects.equals(fromNode.getType(), toNode.getType()) && fromNode.isSimulated() /* Numeric sim interval going into same non-sim type */
+				if (
+						Objects.equals(fromNode.getType(), toNode.getType()) && (fromNode.isSimulated() || toNode.isSimulated())
+						|| Objects.equals(fromNode.getType(), toNode.getType()) && !fromNode.isSimulated() && !toNode.isSimulated() && fromNode.getStates().size() == toNode.getStates().size()
+						|| !Arrays.asList(new Node.Type[]{Node.Type.ContinuousInterval, Node.Type.IntegerInterval, Node.Type.DiscreteReal}).contains(fromNode.getType()) && toNode.isSimulated()
+//						){
+//				}
+//				
+//				if (Objects.equals(fromNode.getType(), toNode.getType()) && Objects.equals(fromNode.isSimulated(), toNode.isSimulated()) /* Same type and same simulation */
+//						|| !fromNode.isNumericInterval() && !Type.DiscreteReal.equals(fromNode.getType()) && toNode.isSimulated() /* Not numeric going to simulation */
+//						|| Objects.equals(fromNode.getType(), toNode.getType()) && fromNode.isSimulated() /* Numeric sim interval going into same non-sim type */
 					){
 					// OK
 				}
 				else {
-					throw new LinkException("Cross network link not allowed between nodes (" + fromNode + " is " + fromNode.getType() + ", " + toNode + " is " + toNode.getType() + "), see documentation");
+					throw new LinkException("Cross network link not allowed between nodes (" + fromNode.toStringExtra() + " is " + fromNode.getType() + ", " + toNode.toStringExtra() + " is " + toNode.getType() + "), see documentation");
 				}
 				
 				if (!fromNode.isSimulated() && !toNode.isSimulated() && fromNode.getLogicNode().getExtendedStates().size() != toNode.getLogicNode().getExtendedStates().size()){
@@ -1111,6 +1118,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		NodeConfiguration.setDefaultIntervalStates(this);
 		ContinuousEN cien = (ContinuousEN)this.getLogicNode();
 		cien.setSimulationNode(true);
+		if (cien.getExpression() == null) {
+			this.setTableFunction("Arithmetic(0)");
+		}
 		
 		return true;
 	}
