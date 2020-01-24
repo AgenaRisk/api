@@ -672,6 +672,14 @@ public class JSONAdapter {
 			default:
 				throw new AgenaRiskRuntimeException("Invalid node table type `" + en.getFunctionMode() + "` for node `" + en.getConnNodeId() + "`");
 		}
+		
+		boolean simulated = en instanceof ContinuousEN && ((ContinuousEN)en).isSimulationNode();
+		
+		if (tableType.equals(NodeConfiguration.TableType.Manual) && simulated){
+			// Node is simulated but somehow the table is marked as manual which isn't possible
+			tableType = NodeConfiguration.TableType.Expression;
+		}
+		
 		jsonTable.put(NodeConfiguration.Table.type.toString(), tableType.toString());
 		
 		// Partitions
@@ -711,7 +719,6 @@ public class JSONAdapter {
 		}
 		
 		// Probabilities
-		boolean simulated = en instanceof ContinuousEN && ((ContinuousEN)en).isSimulationNode();
 		boolean manual = tableType.equals(NodeConfiguration.TableType.Manual);
 		if (!simulated && (manual || CACHE_NPTS)){
 			float[][] npt;
