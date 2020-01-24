@@ -1,5 +1,7 @@
 package com.agenarisk.api.model.field;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import junit.framework.TestCase;
 
 public class IDTest extends TestCase {
@@ -67,4 +69,14 @@ public class IDTest extends TestCase {
 		assertEquals(instance_BAR.toString(), "BAR");
 	}
 	
+	public void testSetAndContains() {
+		System.out.println("testSetAndContains");
+		HashSet<Id> set = new HashSet<>();
+		set.add(instance_foo);
+		set.add(instance_bar);
+		assertTrue(set.contains(instance_foo2));
+		assertTrue(set.contains(instance_Foo));
+		assertTrue(set.contains(instance_BAR));
+		assertFalse(set.contains(instance_FooBar));
+	}
 }

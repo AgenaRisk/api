@@ -10,6 +10,7 @@ import java.util.Objects;
 public class Id implements Comparable<Id> {
 	
 	private final String value;
+	private final String valueLower;
 
 	/**
 	 * Constructor of this ID.
@@ -18,6 +19,7 @@ public class Id implements Comparable<Id> {
 	 */
 	public Id(String value) {
 		this.value = value;
+		this.valueLower = value.toLowerCase();
 	}
 
 	/**
@@ -37,7 +39,7 @@ public class Id implements Comparable<Id> {
 	@Override
 	public int hashCode() {
 		int hash = 3;
-		hash = 67 * hash + Objects.hashCode(this.value);
+		hash = 67 * hash + Objects.hashCode(this.valueLower);
 		return hash;
 	}
 
@@ -64,11 +66,7 @@ public class Id implements Comparable<Id> {
 		
 		final Id other = (Id) obj;
 		
-		if (this.getValue().equalsIgnoreCase(other.getValue())) {
-			return true;
-		}
-		
-		return false;
+		return Objects.equals(this.valueLower, other.valueLower);
 	}
 
 	/**
