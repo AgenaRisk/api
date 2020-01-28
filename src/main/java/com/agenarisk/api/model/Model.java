@@ -1423,4 +1423,31 @@ public class Model implements IdContainer<ModelException>, Storable {
 		
 		return true;
 	}
+	
+	/**
+	 * Generates a new DataSet ID that is guaranteed to be available at the return time.
+	 * 
+	 * @param prefix String to prefix the generated ID
+	 * 
+	 * @return new available DataSet ID
+	 */
+	public String getAvailableDataSetId(String prefix){
+		synchronized (IdContainer.class){
+			if (prefix == null || prefix.trim().isEmpty()){
+				prefix = "Data Set";
+			}
+
+			String id = prefix;
+			int counter = 1;
+
+			while(getDataSet(id) != null){
+				id = prefix + " " + counter;
+				counter++;
+			}
+
+			return id;
+		}
+	}
+	
+	
 }
