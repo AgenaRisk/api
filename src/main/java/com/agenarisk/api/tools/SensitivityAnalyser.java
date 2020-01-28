@@ -138,7 +138,7 @@ public class SensitivityAnalyser {
 			}
 		}
 		else {
-			dataSet = model.getDataSetList().get(0);
+			dataSet = model.createDataSet("sa_temp");
 		}
 		model.getDataSetList().forEach(ds -> {
 			if (!ds.equals(dataSet)) {
