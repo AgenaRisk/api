@@ -54,6 +54,8 @@ public class SensitivityAnalyser {
 
 	private double sensLowerPercentileValue = 0d;
 	private double sensUpperPercentileValue = 100d;
+	
+	private final JSONObject jsonConfig;
 
 	/**
 	 * Maps nodes to their original calculation results
@@ -86,6 +88,8 @@ public class SensitivityAnalyser {
 	 * @throws SensitivityAnalyserException upon failure
 	 */
 	public SensitivityAnalyser(Model model, JSONObject jsonConfig) throws SensitivityAnalyserException {
+		
+		this.jsonConfig = jsonConfig;
 
 		if (model == null) {
 			throw new SensitivityAnalyserException("Model not provided");
@@ -138,7 +142,7 @@ public class SensitivityAnalyser {
 			}
 		}
 		else {
-			dataSet = model.createDataSet("sa_temp");
+			dataSet = model.createDataSet(model.getAvailableDataSetId("Sensivitity Analysis"));
 		}
 		model.getDataSetList().forEach(ds -> {
 			if (!ds.equals(dataSet)) {
@@ -1129,7 +1133,10 @@ public class SensitivityAnalyser {
 		
 		jsonConfig.put("targetNode", targetNode.getId());
 		jsonConfig.put("network", targetNode.getNetwork().getId());
-		jsonConfig.put("dataSet", dataSet.getId());
+		
+		if (this.jsonConfig.has("dataSet")){
+			jsonConfig.put("dataSet", dataSet.getId());
+		}
 		
 		JSONArray sensitivityNodes = new JSONArray();
 		jsonConfig.put("sensitivityNodes", sensitivityNodes);
