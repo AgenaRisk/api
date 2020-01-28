@@ -250,7 +250,9 @@ public class SensitivityAnalyser {
 	 */
 	public JSONObject getFullReport(){
 		JSONObject jsonReport = new JSONObject();
-		jsonReport.put("responseCurveGraphs", buildResponseCurveGraphs());
+		if (targetNode.isNumericInterval()){
+			jsonReport.put("responseCurveGraphs", buildResponseCurveGraphs());
+		}
 		jsonReport.put("tables", buildTables());
 		jsonReport.put("tornadoGraphs", buildTornadoGraphs());
 		jsonReport.put("sensitivityConfig", getConfig());
@@ -564,6 +566,7 @@ public class SensitivityAnalyser {
 	
 	/**
 	 * Compiles data for response curve graphs.<br>
+	 * Only allowed when target node is Numeric Interval.<br>
 	 * A graph is generated for each sensitivity node and selected summary statistic.<br>
 	 * Will clip data points outside of lower and upper sensitivity percentile values.<br>
 	 * X axis is sensitivity node states.<br>
