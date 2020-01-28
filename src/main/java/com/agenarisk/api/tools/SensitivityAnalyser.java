@@ -278,9 +278,9 @@ public class SensitivityAnalyser {
 
 			JSONObject jsonTable = new JSONObject();
 			jsonTable.put("title", "p(" + targetNode.getName() + " | " + sensNode.getName() + ")");
-			jsonTable.put("headerRows", sensNode.getName());
-			jsonTable.put("headerColumns", targetNode.getName());
+			jsonTable.put("sensitivityName", sensNode.getName());
 			jsonTable.put("sensitivityNode", sensNode.getId());
+			jsonTable.put("targetName", targetNode.getName());
 
 			JSONArray jsonRows = new JSONArray();
 			jsonTable.put("rows", jsonRows);
