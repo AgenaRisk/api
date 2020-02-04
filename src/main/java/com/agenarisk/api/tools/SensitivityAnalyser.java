@@ -538,7 +538,7 @@ public class SensitivityAnalyser {
 					
 					JSONObject jsonBar = new JSONObject();
 					jsonBar.put("diff", valueMax - valueMin);
-					jsonBar.put("node", sensNode.getId());
+					jsonBar.put("sensitivityNode", sensNode.getId());
 					jsonBar.put("stateMin", stateMin.getLabel());
 					jsonBar.put("labelMin", "P(" + sensNode.getName() + " = " + stateMin.getLabel() + ")");
 					jsonBar.put("valueMin", valueMin);
