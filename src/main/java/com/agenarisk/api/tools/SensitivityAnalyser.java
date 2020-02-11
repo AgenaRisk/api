@@ -608,6 +608,7 @@ public class SensitivityAnalyser {
 				jsonGraph.put("sensitivityNode", sensNode.getId());
 				JSONArray jsonPoints = new JSONArray();
 				jsonGraph.put("points", jsonPoints);
+				jsonGraph.put("summaryStatistic", statRequested.toString());
 
 				List<State> sensStates = sensNode.getStates();
 				for(State sensState: sensStates){
