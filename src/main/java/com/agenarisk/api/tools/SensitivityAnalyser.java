@@ -89,28 +89,7 @@ public class SensitivityAnalyser {
 		if (model == null) {
 			throw new SensitivityAnalyserException("Model not provided");
 		}
-
-		// Create a copy of the original model
-		try {
-			model = Model.createModel(model.export(Model.ExportFlags.KEEP_OBSERVATIONS, Model.ExportFlags.KEEP_META));
-		}
-		catch (AdapterException | JSONException | ModelException ex) {
-			throw new SensitivityAnalyserException("Initialization failed", ex);
-		}
-
-		// Factorise
-		try {
-			model.factorize();
-		}
-		catch (Exception ex) {
-			throw new SensitivityAnalyserException("Factorization failed", ex);
-		}
-
-		this.model = model;
-
-		// Get model settings
-		model.getSettings().fromJson(jsonConfig.optJSONObject("modelSettings"));
-
+		
 		// Get report settings
 		JSONObject jsonReportSettings = jsonConfig.optJSONObject("reportSettings");
 
@@ -141,6 +120,27 @@ public class SensitivityAnalyser {
 			summaryStats.add(BufferedStatisticKey.STAT.mean);
 			summaryStats.add(BufferedStatisticKey.STAT.variance);
 		}
+
+		// Create a copy of the original model
+		try {
+			model = Model.createModel(model.export(Model.ExportFlags.KEEP_OBSERVATIONS, Model.ExportFlags.KEEP_META));
+		}
+		catch (AdapterException | JSONException | ModelException ex) {
+			throw new SensitivityAnalyserException("Initialization failed", ex);
+		}
+
+		// Factorise
+		try {
+			model.factorize();
+		}
+		catch (Exception ex) {
+			throw new SensitivityAnalyserException("Factorization failed", ex);
+		}
+
+		this.model = model;
+
+		// Get model settings
+		model.getSettings().fromJson(jsonConfig.optJSONObject("modelSettings"));
 
 		// Get DataSet
 		if (jsonConfig.has("dataSet")) {
