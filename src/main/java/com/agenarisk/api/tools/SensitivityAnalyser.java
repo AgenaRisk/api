@@ -42,12 +42,7 @@ public class SensitivityAnalyser {
 	private final LinkedHashSet<Node> sensitivityNodes = new LinkedHashSet<>();
 	private DataSet dataSet;
 
-	private boolean sumsMean = false;
-	private boolean sumsMedian = false;
-	private boolean sumsVariance = false;
-	private boolean sumsStDev = false;
-	private boolean sumsLowerPercentile = false;
-	private boolean sumsUpperPercentile = false;
+	private ArrayList<BufferedStatisticKey.STAT> summaryStats = new ArrayList<>();
 
 	private double sumsLowerPercentileValue = 25d;
 	private double sumsUpperPercentileValue = 75d;
@@ -120,18 +115,31 @@ public class SensitivityAnalyser {
 		JSONObject jsonReportSettings = jsonConfig.optJSONObject("reportSettings");
 
 		if (jsonReportSettings != null) {
-			sumsMean = jsonReportSettings.optBoolean("sumsMean", false);
-			sumsMedian = jsonReportSettings.optBoolean("sumsMedian", false);
-			sumsVariance = jsonReportSettings.optBoolean("sumsVariance", false);
-			sumsStDev = jsonReportSettings.optBoolean("sumsStDev", false);
-			sumsLowerPercentile = jsonReportSettings.optBoolean("sumsLowerPercentile", false);
-			sumsUpperPercentile = jsonReportSettings.optBoolean("sumsUpperPercentile", false);
+			
+			JSONArray jsonSummaryStats = jsonReportSettings.optJSONArray("summaryStats");
+			if (jsonSummaryStats != null){
+				for(int i = 0; i < jsonSummaryStats.length(); i++){
+					String stat = jsonSummaryStats.optString(i);
+					try {
+						summaryStats.add(BufferedStatisticKey.STAT.valueOf(String.valueOf(stat)));
+					}
+					catch(Exception ex){
+						throw new SensitivityAnalyserException("Summary statistic not recognised: " + stat, ex);
+					}
+				}
+			}
 
 			sumsLowerPercentileValue = jsonReportSettings.optDouble("sumsLowerPercentileValue", 25d);
 			sumsUpperPercentileValue = jsonReportSettings.optDouble("sumsUpperPercentileValue", 75d);
 
 			sensLowerPercentileValue = jsonReportSettings.optDouble("sensLowerPercentileValue", 0d);
 			sensUpperPercentileValue = jsonReportSettings.optDouble("sensUpperPercentileValue", 100d);
+		}
+		
+		// Default to mean and variance as default requested stats
+		if (summaryStats.isEmpty()){
+			summaryStats.add(BufferedStatisticKey.STAT.mean);
+			summaryStats.add(BufferedStatisticKey.STAT.variance);
 		}
 
 		// Get DataSet
@@ -305,28 +313,8 @@ public class SensitivityAnalyser {
 			
 			if (targetNode.isNumericInterval()){
 				Map<BufferedStatisticKey, Double> bufferedValues = bufSAStats.get(sensNode);
-				List<BufferedStatisticKey.STAT> statsRequested = new ArrayList<>();
-				if (sumsMean){
-					statsRequested.add(BufferedStatisticKey.STAT.mean);
-				}
-				if (sumsMedian){
-					statsRequested.add(BufferedStatisticKey.STAT.median);
-				}
-				if (sumsVariance){
-					statsRequested.add(BufferedStatisticKey.STAT.variance);
-				}
-				if (sumsStDev){
-					statsRequested.add(BufferedStatisticKey.STAT.standardDeviation);
-				}
-				if (sumsLowerPercentile){
-					statsRequested.add(BufferedStatisticKey.STAT.lowerPercentile);
-				}
-				if (sumsUpperPercentile){
-					statsRequested.add(BufferedStatisticKey.STAT.upperPercentile);
-				}
-				
 				// Add column headers
-				for(BufferedStatisticKey.STAT statRequested: statsRequested){
+				for(BufferedStatisticKey.STAT statRequested: summaryStats){
 					jsonHeaderRow.put(statRequested);
 				}
 				
@@ -341,7 +329,7 @@ public class SensitivityAnalyser {
 					}
 					
 					// Column per summary stat
-					for(BufferedStatisticKey.STAT statRequested: statsRequested){
+					for(BufferedStatisticKey.STAT statRequested: summaryStats){
 						Double value = bufferedValues.get(new BufferedStatisticKey(statRequested, sensState.getLabel()));
 						if (Double.isInfinite(value) || Double.isNaN(value)){
 							jsonRow.put(value+"");
@@ -413,38 +401,31 @@ public class SensitivityAnalyser {
 						The bar is between min and max such values, labelled
 			*/
 			
-			List<BufferedStatisticKey.STAT> statsToGraph = new ArrayList<>();
 			List<Double> originalValues = new ArrayList<>();
-			if (sumsMean){
-				statsToGraph.add(BufferedStatisticKey.STAT.mean);
+			if (summaryStats.contains(BufferedStatisticKey.STAT.mean)){
 				originalValues.add(targetOriginal.getMean());
 			}
-			if (sumsMedian){
-				statsToGraph.add(BufferedStatisticKey.STAT.median);
+			if (summaryStats.contains(BufferedStatisticKey.STAT.median)){
 				originalValues.add(targetOriginal.getMedian());
 			}
-			if (sumsVariance){
-				statsToGraph.add(BufferedStatisticKey.STAT.variance);
+			if (summaryStats.contains(BufferedStatisticKey.STAT.variance)){
 				originalValues.add(targetOriginal.getVariance());
 			}
-			if (sumsStDev){
-				statsToGraph.add(BufferedStatisticKey.STAT.standardDeviation);
+			if (summaryStats.contains(BufferedStatisticKey.STAT.standardDeviation)){
 				originalValues.add(targetOriginal.getStandardDeviation());
 			}
-			if (sumsLowerPercentile){
-				statsToGraph.add(BufferedStatisticKey.STAT.lowerPercentile);
+			if (summaryStats.contains(BufferedStatisticKey.STAT.lowerPercentile)){
 				originalValues.add(targetOriginal.getLowerPercentile());
 			}
-			if (sumsUpperPercentile){
-				statsToGraph.add(BufferedStatisticKey.STAT.upperPercentile);
+			if (summaryStats.contains(BufferedStatisticKey.STAT.upperPercentile)){
 				originalValues.add(targetOriginal.getUpperPercentile());
 			}
 			
-			for(int i = 0; i < statsToGraph.size(); i++){
+			for(int i = 0; i < summaryStats.size(); i++){
 				
 				JSONObject jsonGraph = new JSONObject();
 				
-				BufferedStatisticKey.STAT statToGraph = statsToGraph.get(i);
+				BufferedStatisticKey.STAT statToGraph = summaryStats.get(i);
 				
 				jsonGraph.put("summaryStatistic", statToGraph.toString());
 				jsonGraph.put("originalValue", originalValues.get(i));
@@ -589,29 +570,9 @@ public class SensitivityAnalyser {
 	public JSONArray buildResponseCurveGraphs(){
 		JSONArray jsonROCs = new JSONArray();
 		
-		List<BufferedStatisticKey.STAT> statsRequested = new ArrayList<>();
-		if (sumsMean){
-			statsRequested.add(BufferedStatisticKey.STAT.mean);
-		}
-		if (sumsMedian){
-			statsRequested.add(BufferedStatisticKey.STAT.median);
-		}
-		if (sumsVariance){
-			statsRequested.add(BufferedStatisticKey.STAT.variance);
-		}
-		if (sumsStDev){
-			statsRequested.add(BufferedStatisticKey.STAT.standardDeviation);
-		}
-		if (sumsLowerPercentile){
-			statsRequested.add(BufferedStatisticKey.STAT.lowerPercentile);
-		}
-		if (sumsUpperPercentile){
-			statsRequested.add(BufferedStatisticKey.STAT.upperPercentile);
-		}
-		
 		for(Node sensNode: sensitivityNodes){
 			
-			for(BufferedStatisticKey.STAT statRequested: statsRequested){
+			for(BufferedStatisticKey.STAT statRequested: summaryStats){
 				JSONObject jsonGraph = new JSONObject();
 				jsonROCs.put(jsonGraph);
 				jsonGraph.put("titleX", sensNode.getName() + " States");
@@ -1162,24 +1123,10 @@ public class SensitivityAnalyser {
 		
 		JSONObject jsonReportSettings = new JSONObject();
 		jsonConfig.put("reportSettings", jsonReportSettings);
-		if (sumsMean){
-			jsonReportSettings.put("sumsMean", true);
-		}
-		if (sumsMedian){
-			jsonReportSettings.put("sumsMedian", true);
-		}
-		if (sumsVariance){
-			jsonReportSettings.put("sumsVariance", true);
-		}
-		if (sumsStDev){
-			jsonReportSettings.put("sumsStDev", true);
-		}
-		if (sumsLowerPercentile){
-			jsonReportSettings.put("sumsLowerPercentile", true);
-		}
-		if (sumsUpperPercentile){
-			jsonReportSettings.put("sumsUpperPercentile", true);
-		}
+		
+		JSONArray jsonSummaryStats = new JSONArray(summaryStats.stream().map(stat -> stat.toString()).collect(Collectors.toList()));
+		jsonReportSettings.put("summaryStats", jsonSummaryStats);
+
 		jsonReportSettings.put("sumsLowerPercentileValue", sumsLowerPercentileValue);
 		jsonReportSettings.put("sumsUpperPercentileValue", sumsUpperPercentileValue);
 		jsonReportSettings.put("sensLowerPercentileValue", sensLowerPercentileValue);
