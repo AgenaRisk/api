@@ -256,6 +256,18 @@ public class SensitivityAnalyser {
 		jsonReport.put("tables", buildTables());
 		jsonReport.put("tornadoGraphs", buildTornadoGraphs());
 		jsonReport.put("sensitivityConfig", getConfig());
+		
+		JSONObject jsonReportSummary = new JSONObject();
+		jsonReport.put("reportSummary", jsonReportSummary);
+		JSONObject jsonTargetNode = new JSONObject();
+		jsonReportSummary.put("targetNode", jsonTargetNode);
+		jsonTargetNode.put("id", targetNode.getId());
+		jsonTargetNode.put("name", targetNode.getName());
+		JSONObject jsonTargetNetwork = new JSONObject();
+		jsonReportSummary.put("targetNetwork", jsonTargetNetwork);
+		jsonTargetNetwork.put("id", targetNode.getNetwork().getId());
+		jsonTargetNetwork.put("name", targetNode.getNetwork().getName());
+		
 		return jsonReport;
 	}
 	
