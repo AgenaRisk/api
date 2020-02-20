@@ -682,7 +682,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
 	 */
 	public void calculate() throws CalculationException {
-		Logger.logIfDebug("Calculating all DataSets");
+		//Logger.logIfDebug("Calculating all DataSets");
 		
 		if (dataSets.isEmpty()){
 			createDataSet("Scenario 1");
