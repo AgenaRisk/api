@@ -1159,7 +1159,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			
 		}
 		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | IndexOutOfBoundsException | MinervaVariableException ex){
-			throw new NodeException("Failed to convert results to static states for node " + toStringExtra() + " from DataSet " + dataSet.getId(), ex);
+			throw new NodeException("Failed to convert results to static states for node " + toStringExtra() + " from DataSet `" + dataSet.getId() + "`. DataSet might not have been calculated.", ex);
 		}
 		return true;
 	}
