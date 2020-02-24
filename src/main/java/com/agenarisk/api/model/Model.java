@@ -1341,9 +1341,10 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * 
 	 * @param dataSet DataSet to use for creating static states from results
 	 * 
-	 * @throws NodeException upon failure
+	 * @throws AgenaRiskRuntimeException if failed to regenerate NPTs after conversion
+	 * @throws NodeException if failed for other reasons
 	 */
-	public void convertToStatic(DataSet dataSet) throws NodeException{
+	public void convertToStatic(DataSet dataSet) throws NodeException, AgenaRiskRuntimeException {
 		getNetworks().values().forEach(network -> {
 			network.getNodes().values().forEach(node -> {
 				if (node.isSimulated()){
@@ -1351,6 +1352,14 @@ public class Model implements IdContainer<ModelException>, Storable {
 				}
 			});
 		});
+		
+		try {
+			getLogicModel().getExtendedBNList().regenerateNPTforEveryExtendedNode(false);
+			getLogicModel().fireModelChangedEvent(getLogicModel(), uk.co.agena.minerva.model.ModelEvent.ALL_NPTS_CHANGED, new ArrayList());
+		}
+		catch (Exception ex){
+			throw new AgenaRiskRuntimeException("Failed to regenerate NPTs", ex);
+		}
 	}
 	
 	/**
