@@ -1,6 +1,7 @@
 package com.agenarisk.api.tools;
 
 import com.agenarisk.api.exception.AdapterException;
+import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.InconsistentEvidenceException;
 import com.agenarisk.api.exception.ModelException;
@@ -13,6 +14,7 @@ import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.ResultValue;
 import com.agenarisk.api.model.State;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -232,7 +234,7 @@ public class SensitivityAnalyser {
 		try {
 			model.convertToStatic(dataSet);
 		}
-		catch (NodeException ex) {
+		catch (AgenaRiskRuntimeException ex) {
 			throw new SensitivityAnalyserException("Static conversion failed", ex);
 		}
 
@@ -645,7 +647,7 @@ public class SensitivityAnalyser {
 
 			dataSet.setObservation(targetNode, tarObsVal);
 			try {
-				model.calculate();
+				model.calculate(Arrays.asList(dataSet));
 			}
 			catch (InconsistentEvidenceException ex) {
 				// Inconsistent evidence means we just skip this state
@@ -660,7 +662,7 @@ public class SensitivityAnalyser {
 
 			ResultValue tvO = tarResValOri.get(indexTarResVal);
 
-			CalculationResult tarCalcSub = resultsSubjective.get(targetNode);
+			CalculationResult tarCalcSub = dataSet.getCalculationResult(targetNode);
 			ArrayList<ResultValue> tarResValSub = new ArrayList<>(tarCalcSub.getResultValues());
 			ResultValue tvS = tarResValSub.get(indexTarResVal);
 
@@ -676,7 +678,7 @@ public class SensitivityAnalyser {
 				}
 
 				CalculationResult sensCalcOri = bufResultsOriginal.get(sensitivityNode);
-				CalculationResult sensCalcSub = resultsSubjective.get(sensitivityNode);
+				CalculationResult sensCalcSub = dataSet.getCalculationResult(sensitivityNode);
 
 				ArrayList<ResultValue> sensResValOri = new ArrayList<>(sensCalcOri.getResultValues());
 				ArrayList<ResultValue> sensResValSub = new ArrayList<>(sensCalcSub.getResultValues());
