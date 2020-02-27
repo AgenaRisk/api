@@ -230,11 +230,12 @@ public class SensitivityAnalyser {
 			}
 		}
 		
-		// Convert to static
+		// Convert to static and calculate to get baseline calculation results
 		try {
 			model.convertToStatic(dataSet);
+			model.calculate(Arrays.asList(dataSet));
 		}
-		catch (AgenaRiskRuntimeException ex) {
+		catch (AgenaRiskRuntimeException | CalculationException ex) {
 			throw new SensitivityAnalyserException("Static conversion failed", ex);
 		}
 
@@ -644,7 +645,7 @@ public class SensitivityAnalyser {
 			if (targetNode.isNumericInterval()) {
 				tarObsVal = "" + tarState.getLogicState().getNumericalValue();
 			}
-
+			
 			dataSet.setObservation(targetNode, tarObsVal);
 			try {
 				model.calculate(Arrays.asList(dataSet));
@@ -657,8 +658,6 @@ public class SensitivityAnalyser {
 			catch (CalculationException ex) {
 				throw new SensitivityAnalyserException("Calculation failure", ex);
 			}
-
-			Map<Node, CalculationResult> resultsSubjective = dataSet.getCalculationResults(targetNode.getNetwork());
 
 			ResultValue tvO = tarResValOri.get(indexTarResVal);
 
