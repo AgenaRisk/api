@@ -250,7 +250,9 @@ public class SensitivityAnalyser {
 	 */
 	private void analyse() throws SensitivityAnalyserException {
 		calculateCombinations();
-		calculateStats();
+		if (targetNode.isNumericInterval()){
+			calculateStats();
+		}
 	}
 	
 	/**
