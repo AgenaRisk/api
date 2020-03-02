@@ -13,6 +13,7 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.ResultValue;
 import com.agenarisk.api.model.State;
+import com.agenarisk.api.model.field.Id;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -130,6 +132,20 @@ public class SensitivityAnalyser {
 		catch (AdapterException | JSONException | ModelException ex) {
 			throw new SensitivityAnalyserException("Initialization failed", ex);
 		}
+		
+		// Get target Node
+		Network networkCandidate;
+		if (jsonConfig.has("network")) {
+			networkCandidate = model.getNetwork(jsonConfig.optString("network", ""));
+			if (networkCandidate == null){
+				throw new SensitivityAnalyserException("Network with id `" + jsonConfig.optString("network", "") + "` not found");
+			}
+		}
+		else {
+			networkCandidate = model.getNetworkList().get(0);
+		}
+		
+		Set<String> originalNodeIds = networkCandidate.getNodes().keySet();
 
 		// Factorise
 		try {
@@ -140,6 +156,9 @@ public class SensitivityAnalyser {
 		}
 
 		this.model = model;
+		
+		// Get a new reference to network after factorization
+		Network network = model.getNetwork(networkCandidate.getId());
 
 		// Get model settings
 		model.getSettings().fromJson(jsonConfig.optJSONObject("modelSettings"));
@@ -159,18 +178,7 @@ public class SensitivityAnalyser {
 				this.model.removeDataSet(ds);
 			}
 		});
-
-		// Get target Node
-		Network network;
-		if (jsonConfig.has("network")) {
-			network = model.getNetwork(jsonConfig.optString("network", ""));
-			if (network == null){
-				throw new SensitivityAnalyserException("Network with id `" + jsonConfig.optString("network", "") + "` not found");
-			}
-		}
-		else {
-			network = model.getNetworkList().get(0);
-		}
+		
 		targetNode = network.getNode(jsonConfig.optString("targetNode", ""));
 
 		if (targetNode == null) {
@@ -196,7 +204,7 @@ public class SensitivityAnalyser {
 		}
 		else if ("*".equals(jsonConfig.optString("sensitivityNodes"))) {
 			// All nodes are sensitivity except target
-			network.getNodes().values().stream().filter(node -> !node.equals(targetNode)).collect(Collectors.toCollection(() -> this.sensitivityNodes));
+			originalNodeIds.stream().filter(nodeId -> !(new Id(nodeId).equals(new Id(targetNode.getId())))).map(nodeId -> network.getNode(nodeId)).collect(Collectors.toCollection(() -> this.sensitivityNodes));
 		}
 		if (this.sensitivityNodes.isEmpty()) {
 			throw new SensitivityAnalyserException("No sensitivity nodes specified");
