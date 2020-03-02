@@ -771,6 +771,7 @@ public class SensitivityAnalyser {
 				double[] pXsWithZero = new double[tarStates.size()];
 				Range[] xIntervals = new Range[tarStates.size()];
 
+				// If original data point for this sensitivity node had NaN value, all calculated values here will be NaN
 				boolean limAllNAN = Double.isNaN(bufResultsOriginal.get(sensitivityNode).getResultValues().get(indexSensState).getValue());
 				
 				uk.co.agena.minerva.util.model.DataSet targetA1DataSet = new uk.co.agena.minerva.util.model.DataSet();
@@ -796,6 +797,7 @@ public class SensitivityAnalyser {
 					double dblWithZero = Double.NaN;
 
 					try {
+						// If temp a1 dataset had a NaN for this data point position, use NaN. Otherwise use actual value
 						if (!Double.isNaN(tempA1ResultsOriginal.getDataPointAtOrderPosition(indexSensState).getValue())) {
 							dblWithZero = dbl;
 						}
@@ -826,10 +828,11 @@ public class SensitivityAnalyser {
 
 				try {
 					mean = MathsHelper.mean(pXs, xVals);
-					meanLim = limAllNAN ? Double.NaN : MathsHelper.mean(pXsWithZero, xVals);
 					variance = MathsHelper.variance(targetA1DataSet);
-					varianceLim = limAllNAN ? Double.NaN : MathsHelper.variance(targetA1DataSetLim);
 					standardDeviation = Math.sqrt(variance);
+
+					meanLim = limAllNAN ? Double.NaN : MathsHelper.mean(pXsWithZero, xVals);
+					varianceLim = limAllNAN ? Double.NaN : MathsHelper.variance(targetA1DataSetLim);
 					standardDeviationLim = limAllNAN ? Double.NaN : Math.sqrt(varianceLim);
 				}
 				catch (Exception ex) {
@@ -849,6 +852,7 @@ public class SensitivityAnalyser {
 						median = MathsHelper.percentile(50, pXs, xIntervals);
 						upperPercentile = MathsHelper.percentile(sumsUpperPercentileValue, pXs, xIntervals);
 						lowerPercentile = MathsHelper.percentile(sumsLowerPercentileValue, pXs, xIntervals);
+						
 						medianLim = limAllNAN ? Double.NaN : MathsHelper.percentile(50, pXsWithZero, xIntervals);
 						upperPercentileLim = limAllNAN ? Double.NaN : MathsHelper.percentile(sumsUpperPercentileValue, pXsWithZero, xIntervals);
 						lowerPercentileLim = limAllNAN ? Double.NaN : MathsHelper.percentile(sumsLowerPercentileValue, pXsWithZero, xIntervals);
