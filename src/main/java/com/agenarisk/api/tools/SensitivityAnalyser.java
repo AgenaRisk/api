@@ -451,7 +451,7 @@ public class SensitivityAnalyser {
 				List<JSONObject> jsonBarsList = new ArrayList<>();
 				
 				for(Node sensNode: sensitivityNodes){
-					Map<BufferedStatisticKey, Double> bufferedValues = bufSAStats.get(sensNode);
+					Map<BufferedStatisticKey, Double> bufferedValues = bufSAStatsLim.get(sensNode);
 					List<State> sensStates = sensNode.getStates();
 
 					State stateMin = sensStates.get(0);
