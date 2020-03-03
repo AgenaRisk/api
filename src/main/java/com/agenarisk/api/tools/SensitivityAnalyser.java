@@ -415,24 +415,28 @@ public class SensitivityAnalyser {
 			*/
 			
 			List<Double> originalValues = new ArrayList<>();
-			if (summaryStats.contains(BufferedStatisticKey.STAT.mean)){
-				originalValues.add(targetOriginal.getMean());
-			}
-			if (summaryStats.contains(BufferedStatisticKey.STAT.median)){
-				originalValues.add(targetOriginal.getMedian());
-			}
-			if (summaryStats.contains(BufferedStatisticKey.STAT.variance)){
-				originalValues.add(targetOriginal.getVariance());
-			}
-			if (summaryStats.contains(BufferedStatisticKey.STAT.standardDeviation)){
-				originalValues.add(targetOriginal.getStandardDeviation());
-			}
-			if (summaryStats.contains(BufferedStatisticKey.STAT.lowerPercentile)){
-				originalValues.add(targetOriginal.getLowerPercentile());
-			}
-			if (summaryStats.contains(BufferedStatisticKey.STAT.upperPercentile)){
-				originalValues.add(targetOriginal.getUpperPercentile());
-			}
+			summaryStats.stream().forEach(stat -> {
+				switch(stat){
+					case mean:
+						originalValues.add(targetOriginal.getMean());
+						break;
+					case median:
+						originalValues.add(targetOriginal.getMedian());
+						break;
+					case variance:
+						originalValues.add(targetOriginal.getVariance());
+						break;
+					case standardDeviation:
+						originalValues.add(targetOriginal.getStandardDeviation());
+						break;
+					case lowerPercentile:
+						originalValues.add(targetOriginal.getLowerPercentile());
+						break;
+					case upperPercentile:
+						originalValues.add(targetOriginal.getUpperPercentile());
+						break;
+				}
+			});
 			
 			for(int i = 0; i < summaryStats.size(); i++){
 				
@@ -447,7 +451,7 @@ public class SensitivityAnalyser {
 				List<JSONObject> jsonBarsList = new ArrayList<>();
 				
 				for(Node sensNode: sensitivityNodes){
-					Map<BufferedStatisticKey, Double> bufferedValues = bufSAStatsLim.get(sensNode);
+					Map<BufferedStatisticKey, Double> bufferedValues = bufSAStats.get(sensNode);
 					List<State> sensStates = sensNode.getStates();
 
 					State stateMin = sensStates.get(0);
