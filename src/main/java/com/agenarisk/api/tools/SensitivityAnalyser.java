@@ -771,7 +771,7 @@ public class SensitivityAnalyser {
 				double[] pXsWithZero = new double[tarStates.size()];
 				Range[] xIntervals = new Range[tarStates.size()];
 
-				// If original data point for this sensitivity node had NaN value, all calculated values here will be NaN
+				// If original value for this sensitivity node's state had NaN value, all calculated values here will be NaN
 				boolean limAllNAN = Double.isNaN(bufResultsOriginal.get(sensitivityNode).getResultValues().get(indexSensState).getValue());
 				
 				uk.co.agena.minerva.util.model.DataSet targetA1DataSet = new uk.co.agena.minerva.util.model.DataSet();
@@ -830,51 +830,54 @@ public class SensitivityAnalyser {
 					mean = MathsHelper.mean(pXs, xVals);
 					variance = MathsHelper.variance(targetA1DataSet);
 					standardDeviation = Math.sqrt(variance);
-
-					meanLim = limAllNAN ? Double.NaN : MathsHelper.mean(pXsWithZero, xVals);
-					varianceLim = limAllNAN ? Double.NaN : MathsHelper.variance(targetA1DataSetLim);
-					standardDeviationLim = limAllNAN ? Double.NaN : Math.sqrt(varianceLim);
+					if (Double.isNaN(mean) && Double.isNaN(variance)) {
+						median = Double.NaN;
+						upperPercentile = Double.NaN;
+						lowerPercentile = Double.NaN;
+					}
+					else {
+						median = MathsHelper.percentile(50, pXs, xIntervals);
+						lowerPercentile = MathsHelper.percentile(sumsLowerPercentileValue, pXs, xIntervals);
+						upperPercentile = MathsHelper.percentile(sumsUpperPercentileValue, pXs, xIntervals);
+					}
 				}
 				catch (Exception ex) {
 					throw new SensitivityAnalyserException("Failed to calculate SA summary statistics", ex);
 				}
-
-				if (Double.isNaN(mean) && Double.isNaN(variance)) {
-					median = Double.NaN;
-					upperPercentile = Double.NaN;
-					lowerPercentile = Double.NaN;
-					medianLim = Double.NaN;
-					upperPercentileLim = Double.NaN;
-					lowerPercentileLim = Double.NaN;
-				}
-				else {
-					try {
-						median = MathsHelper.percentile(50, pXs, xIntervals);
-						upperPercentile = MathsHelper.percentile(sumsUpperPercentileValue, pXs, xIntervals);
-						lowerPercentile = MathsHelper.percentile(sumsLowerPercentileValue, pXs, xIntervals);
-						
+				
+				try {
+					meanLim = limAllNAN ? Double.NaN : MathsHelper.mean(pXsWithZero, xVals);
+					varianceLim = limAllNAN ? Double.NaN : MathsHelper.variance(targetA1DataSetLim);
+					standardDeviationLim = limAllNAN ? Double.NaN : Math.sqrt(varianceLim);
+					
+					if (Double.isNaN(meanLim) && Double.isNaN(varianceLim)){
+						medianLim = Double.NaN;
+						lowerPercentileLim = Double.NaN;
+						upperPercentileLim = Double.NaN;
+					}
+					else {
 						medianLim = limAllNAN ? Double.NaN : MathsHelper.percentile(50, pXsWithZero, xIntervals);
-						upperPercentileLim = limAllNAN ? Double.NaN : MathsHelper.percentile(sumsUpperPercentileValue, pXsWithZero, xIntervals);
 						lowerPercentileLim = limAllNAN ? Double.NaN : MathsHelper.percentile(sumsLowerPercentileValue, pXsWithZero, xIntervals);
+						upperPercentileLim = limAllNAN ? Double.NaN : MathsHelper.percentile(sumsUpperPercentileValue, pXsWithZero, xIntervals);
 					}
-					catch (Exception ex) {
-						throw new SensitivityAnalyserException("Failed to calculate Sensitivity summary statistics", ex);
-					}
+				}
+				catch (Exception ex) {
+					throw new SensitivityAnalyserException("Failed to calculate SA limited summary statistics", ex);
 				}
 
 				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.mean, sensState.getLabel()), mean);
 				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.median, sensState.getLabel()), median);
 				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.variance, sensState.getLabel()), variance);
 				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.standardDeviation, sensState.getLabel()), standardDeviation);
-				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentile);
 				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.lowerPercentile, sensState.getLabel()), lowerPercentile);
+				bufSAStats.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentile);
 
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.mean, sensState.getLabel()), meanLim);
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.median, sensState.getLabel()), medianLim);
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.variance, sensState.getLabel()), varianceLim);
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.standardDeviation, sensState.getLabel()), standardDeviationLim);
-				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentileLim);
 				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.lowerPercentile, sensState.getLabel()), lowerPercentileLim);
+				bufSAStatsLim.get(sensitivityNode).put(new BufferedStatisticKey(BufferedStatisticKey.STAT.upperPercentile, sensState.getLabel()), upperPercentileLim);
 			}
 		}
 	}
