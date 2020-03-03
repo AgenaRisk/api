@@ -454,20 +454,21 @@ public class SensitivityAnalyser {
 					Map<BufferedStatisticKey, Double> bufferedValues = bufSAStatsLim.get(sensNode);
 					List<State> sensStates = sensNode.getStates();
 
-					State stateMin = sensStates.get(0);
-					Double valueMin = bufferedValues.get(new BufferedStatisticKey(statToGraph, sensStates.get(0).getLabel()));
-					State stateMax = sensStates.get(sensStates.size()-1);
-					Double valueMax = bufferedValues.get(new BufferedStatisticKey(statToGraph, sensStates.get(sensStates.size()-1).getLabel()));
+					State stateMin = null;
+					Double valueMin = null;
+					State stateMax = null;
+					Double valueMax = null;
+					
 					for(State state: sensStates){
 						Double value = bufferedValues.get(new BufferedStatisticKey(statToGraph, state.getLabel()));
 						if (Double.isNaN(value)){
 							continue;
 						}
-						if(value < valueMin){
+						if(valueMin == null || value < valueMin){
 							valueMin = value;
 							stateMin = state;
 						}
-						if (value > valueMax){
+						if (valueMax == null || value > valueMax){
 							valueMax = value;
 							stateMax = state;
 						}
