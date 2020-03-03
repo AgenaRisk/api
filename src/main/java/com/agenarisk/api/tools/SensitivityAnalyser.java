@@ -377,7 +377,12 @@ public class SensitivityAnalyser {
 					// Column per target state
 					for(State tarState: tarStates){
 						Double value = bufferedValues.get(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensState.getLabel()));
-						jsonRow.put(value);
+						if (Double.isInfinite(value) || Double.isNaN(value)){
+							jsonRow.put(value+"");
+						}
+						else {
+							jsonRow.put(value);
+						}
 					}
 					jsonRows.put(jsonRow);
 				}
