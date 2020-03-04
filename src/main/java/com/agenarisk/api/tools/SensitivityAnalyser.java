@@ -552,8 +552,13 @@ public class SensitivityAnalyser {
 						}
 					}
 					
+					Double diff = valueMax - valueMin;
+					if (Double.isInfinite(diff) || Double.isNaN(diff)){
+						continue;
+					}
+					
 					JSONObject jsonBar = new JSONObject();
-					jsonBar.put("diff", valueMax - valueMin);
+					jsonBar.put("diff", diff);
 					jsonBar.put("sensitivityNode", sensNode.getId());
 					jsonBar.put("stateMin", stateMin.getLabel());
 					jsonBar.put("labelMin", "P(" + sensNode.getName() + " = " + stateMin.getLabel() + ")");
