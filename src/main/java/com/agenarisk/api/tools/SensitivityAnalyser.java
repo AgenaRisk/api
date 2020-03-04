@@ -184,6 +184,10 @@ public class SensitivityAnalyser {
 		if (targetNode == null) {
 			throw new SensitivityAnalyserException("Target node not specified or Node with ID `" + jsonConfig.optString("targetNode", "") + "`");
 		}
+		
+		if (dataSet.hasObservation(targetNode)){
+			throw new SensitivityAnalyserException("Target node is not allowed to have an observation on it");
+		}
 
 		// Get sensitivity nodes
 		JSONArray sensitivityNodes = jsonConfig.optJSONArray("sensitivityNodes");
@@ -194,6 +198,9 @@ public class SensitivityAnalyser {
 					Node sensNode = network.getNode(nodeId);
 					if (sensNode == null){
 						throw new NodeException("Node with ID `" + nodeId + "` not found in Network " + network.toStringExtra());
+					}
+					if (dataSet.hasObservation(sensNode)){
+						throw new NodeException("Sensitivity nodes are not allowed to have an observation on it (" + sensNode.toStringExtra() + ")");
 					}
 					this.sensitivityNodes.add(sensNode);
 				});
