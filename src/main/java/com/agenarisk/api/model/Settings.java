@@ -36,6 +36,20 @@ public class Settings implements Storable {
 			return;
 		}
 		uk.co.agena.minerva.model.Model logicModel = model.getLogicModel();
+		loadSettings(logicModel, jsonSettings);
+	}
+	
+	/**
+	 * Utility method to load settings from the provided JSON to the provided API1 Model.<br>
+	 * For any missing fields, current model settings (or defaults) will be used.
+	 * 
+	 * @param logicModel API1 Model to load settings to
+	 * @param jsonSettings JSON to load settings from
+	 */
+	public static void loadSettings(uk.co.agena.minerva.model.Model logicModel, JSONObject jsonSettings){
+		if (jsonSettings == null){
+			return;
+		}
 		logicModel.setSimulationNoOfIterations(jsonSettings.optInt(Field.iterations.toString(), logicModel.getSimulationNoOfIterations()));
 		logicModel.setSimulationEntropyConvergenceTolerance(jsonSettings.optDouble(Field.convergence.toString(), logicModel.getSimulationEntropyConvergenceTolerance()));
 		logicModel.setSimulationEvidenceTolerancePercent(jsonSettings.optDouble(Field.tolerance.toString(), logicModel.getSimulationEvidenceTolerancePercent()));
