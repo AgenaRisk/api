@@ -684,6 +684,14 @@ public class Model implements IdContainer<ModelException>, Storable {
 	public void calculate() throws CalculationException {
 		//Logger.logIfDebug("Calculating all DataSets");
 		
+		if (networks.isEmpty()){
+			throw new CalculationException("No networks in the model, nothing to calculate");
+		}
+		
+		if (!networks.values().stream().map(net -> net.getNodes().size()).anyMatch(i -> i > 0)){
+			throw new CalculationException("No nodes in the model, nothing to calculate");
+		}
+		
 		if (dataSets.isEmpty()){
 			createDataSet("Scenario 1");
 		}
