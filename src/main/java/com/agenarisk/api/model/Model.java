@@ -864,8 +864,8 @@ public class Model implements IdContainer<ModelException>, Storable {
 						String tableType = jsonTable.optString(NodeConfiguration.Table.type.toString());
 						boolean inputNode = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optBoolean(NodeConfiguration.Field.input.toString(), false);
 						
-						if (!inputNode && !Objects.equals(tableType, NodeConfiguration.TableType.Manual.toString()) && !xflags.contains(ExportFlags.KEEP_TABLES)){
-							// Non-manual table, can remove compiled NPTs
+						if (inputNode || !Objects.equals(tableType, NodeConfiguration.TableType.Manual.toString()) && !xflags.contains(ExportFlags.KEEP_TABLES)){
+							// Input node or (not manual table and no keep-tables flag)
 							jsonTable.remove(NodeConfiguration.Table.nptCompiled.toString());
 							jsonTable.remove(NodeConfiguration.Table.probabilities.toString());
 						}
