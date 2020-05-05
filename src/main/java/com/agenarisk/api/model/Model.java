@@ -1386,6 +1386,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		jsonGraphics = null;
 		jsonMeta = null;
 		jsonAudit = null;
+		logicModel.destroy();
 		initLogicModel();
 	}
 	
