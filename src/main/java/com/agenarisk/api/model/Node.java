@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import uk.co.agena.minerva.model.MarginalDataItemList;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.helpers.MathsHelper;
@@ -1144,9 +1145,20 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		}
 		
 		ContinuousEN cien = (ContinuousEN)this.getLogicNode();
+		
+		int dsIndex = dataSet.getDataSetIndex();
+		
+		MarginalDataItemList mdil = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode());
+		if (mdil.getMarginalDataItems().isEmpty()) {
+			throw new NodeException("Model missing calculation results");
+		}
+		
+		if (mdil.getMarginalDataItems().size() < dsIndex + 1){
+			throw new NodeException("Model missing calculation results for the Data Set " + dataSet.getId());
+		}
 	
 		try {
-			DataSet ds = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode()).getMarginalDataItemAtIndex(0).getDataset();
+			DataSet ds = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode()).getMarginalDataItemAtIndex(dsIndex).getDataset();
 			ContinuousEN.ConvertToNonSimulation(cien, ds);
 			for (VariableObservation vo: dataSet.getVariableObservations(this)){
 				String voName = vo.getVariableName();
@@ -1159,7 +1171,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			
 		}
 		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | IndexOutOfBoundsException | MinervaVariableException ex){
-			throw new NodeException("Failed to convert results to static states for node " + toStringExtra() + " from DataSet `" + dataSet.getId() + "`. DataSet might not have been calculated.", ex);
+			throw new NodeException("Failed to retrieve calculation result from Data Set", ex);
 		}
 		return true;
 	}

@@ -1356,7 +1356,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 		getNetworks().values().forEach(network -> {
 			network.getNodes().values().forEach(node -> {
 				if (node.isSimulated()){
-					node.convertToStatic(dataSet);
+					try {
+						node.convertToStatic(dataSet);
+					}
+					catch (Exception ex){
+						throw new NodeException("Failed to convert results to static states for node " + node.toStringExtra() + " from DataSet `" + dataSet.getId() + "`", ex);
+					}
 				}
 			});
 		});
