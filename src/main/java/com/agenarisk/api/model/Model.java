@@ -719,7 +719,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		try {
-			getLogicModel().propagateDDAlgorithm(dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()), null, true, true);
+			getLogicModel().propagateDDAlgorithm(dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()), null, false, true);
 		}
 		catch (Throwable ex){
 			outputCaptured = StreamInterceptor.output_release();
