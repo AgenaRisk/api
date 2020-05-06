@@ -693,6 +693,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		}
 		
 		if (dataSets.isEmpty()){
+			Logger.logIfDebug("No Data Sets in model, creating");
 			createDataSet("Scenario 1");
 		}
 		
