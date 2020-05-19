@@ -17,24 +17,24 @@ mvn clean compile
 
 Then, you can run the library with arguments to manage your license or override some configuration settings:
 ~~~~
-mvn exec:java '-Dexec.args=-h'
+mvn exec:java@activate '-Dexec.args="-h"'
 ~~~~
 ## Key Activation (Online)
 ~~~~
-mvn exec:java '-Dexec.args=--keyActivate --key 1234-ABCD-5678-EFGH'
+mvn exec:java@activate '-Dexec.args="--keyActivate --key 1234-ABCD-5678-EFGH"'
 ~~~~
 ## Key Activation (Offline)
 First, you will need to generate an activation request file:
 ~~~~
-mvn exec:java '-Dexec.args=--offlineActivationRequest --key 1234-ABCD-5678-EFGH --oPath activation_request.txt'
+mvn exec:java@activate '-Dexec.args="--offlineActivationRequest --key 1234-ABCD-5678-EFGH --oPath activation_request.txt"'
 ~~~~
 Then, email this file to support@agenarisk.com. You will be provided an activation file in return, e.g. `activation_confirmation.dat`
 ~~~~
-mvn exec:java '-Dexec.args=--offlineActivate --key 1234-ABCD-5678-EFGH --oPath activation_confirmation.dat'
+mvn exec:java@activate '-Dexec.args="--offlineActivate --key 1234-ABCD-5678-EFGH --oPath activation_confirmation.dat"'
 ~~~~
 In order to deactivate a license (e.g. to move it to another machine), you will need to send the license release proof file to support@agenarisk.com
 ~~~~
-mvn exec:java '-Dexec.args=--offlineDeactivate --key 1234-ABCD-5678-EFGH --oPath deactivation_proof.dat'
+mvn exec:java@activate '-Dexec.args="--offlineDeactivate --key 1234-ABCD-5678-EFGH --oPath deactivation_proof.dat"'
 ~~~~
 Note that `--oPath` provided above is just for illustration and can be a path to any valid file location in the file system.
 ## Enterprise Activation
@@ -48,7 +48,7 @@ wget -r -nd --accept-regex '.*dat|guid|aid' -R "index.html*" -P enterprise https
 Then use a path override argument for product directory `--directoryProduct <path>`
 
 ~~~~
-mvn exec:java '-Dexec.args=--keyActivate --key 1234-ABCD-5678-EFGH --directoryProduct enterprise'
+mvn exec:java@activate '-Dexec.args="--keyActivate --key 1234-ABCD-5678-EFGH --directoryProduct enterprise"'
 ~~~~
 
 Note: you can also run this with e.g. `java -jar com.agenarisk.api-0.3-SNAPSHOT.jar`
