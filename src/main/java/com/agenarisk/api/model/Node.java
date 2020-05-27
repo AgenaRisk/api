@@ -847,8 +847,14 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				catch (NodeException ex){
 					if (Advisory.getCurrentThreadGroup() != null){
 						// We are in advisory mode, relax conditions for parser
-						setTableFunction(expression, null, true);
-						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
+						try {
+							setTableFunction(expression, null, true);
+							Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
+						}
+						catch (NodeException ex2){
+							// Expression is not valid even with relaxed tokens - was this edited by hand into something invalid?
+							Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Failed parsing functions for node " + toStringExtra()));
+						}
 					}
 					else {
 						throw ex;
