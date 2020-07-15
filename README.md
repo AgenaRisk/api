@@ -6,6 +6,14 @@ AgenaRisk Java API v2 is ultimately a convenient front-end for the AgenaRisk Cor
 - hiding most of the core functionality that was not self-explanatory or unsafe
 - fully documented features
 
+## Prerequisites
+* JDK 8
+<br>We recommend jdk1.8.0_192
+<br>Note: versions of Java above 8 have not been tested
+* Maven
+<br>Version >= 3.6.1
+* Linux: net-tools, iproute2
+
 # Usage
 See [Example App](https://github.com/AgenaRisk/api-example-app) for usage example
 
@@ -51,7 +59,7 @@ Then use a path override argument for product directory `--directoryProduct <pat
 mvn exec:java@activate '-Dexec.args="--keyActivate --key 1234-ABCD-5678-EFGH --directoryProduct enterprise"'
 ~~~~
 
-Note: you can also run this with e.g. `java -jar com.agenarisk.api-0.3-SNAPSHOT.jar`
+Note: you can also run this with e.g. `java -jar com.agenarisk.api-0.9-SNAPSHOT.jar`
 
 # Resources
 [JavaDoc](https://agenarisk.github.io/api/)

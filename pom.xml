@@ -102,37 +102,52 @@
 				</configuration>
 			</plugin>
 			
-			<!-- Download natively compiled dependencies -->
-			<!-- Only required to run AgenaRisk Core (which would be run on testing) -->
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>wagon-maven-plugin</artifactId>
-				<version>2.0.0</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}/lib</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>com.googlecode.maven-download-plugin</groupId>
+				<artifactId>download-maven-plugin</artifactId>
+				<version>1.6.0</version>
 				<executions>
 					<execution>
-						<!-- Download product dat -->
 						<id>download-product</id>
 						<phase>clean</phase>
 						<goals>
-							<goal>download</goal>
+							<goal>wget</goal>
 						</goals>
 						<configuration>
-							<url>https://resources.agenarisk.com/products/developer</url>
-							<toDir>${project.basedir}/lib</toDir>
+							<url>https://resources.agenarisk.com/products/zip/developer.zip</url>
+							<outputDirectory>${project.basedir}/lib</outputDirectory>
+							<unpack>true</unpack>
+							<overwrite>true</overwrite>
 						</configuration>
 					</execution>
-					
 					<execution>
-						<!-- Download Cryptlex dependencies -->
 						<id>download-cryptlex</id>
 						<phase>clean</phase>
 						<goals>
-							<goal>download</goal>
+							<goal>wget</goal>
 						</goals>
 						<configuration>
-							<url>https://resources.agenarisk.com/download/archive/lib</url>
-							<includes>**</includes>
-							<toDir>${project.basedir}/lib</toDir>
+							<url>https://resources.agenarisk.com/download/archive/lib.zip</url>
+							<outputDirectory>${project.basedir}/lib</outputDirectory>
+							<unpack>true</unpack>
+							<overwrite>true</overwrite>
 						</configuration>
 					</execution>
 				</executions>
