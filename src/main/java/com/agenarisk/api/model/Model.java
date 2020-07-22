@@ -716,16 +716,28 @@ public class Model implements IdContainer<ModelException>, Storable {
 			net.getLogicNetwork().addModificationLogItem(new NameDescription(s, s));
 		});
 		
+		boolean SimulationSettingWarningMessage = getLogicModel().SimulationSettingWarningMessage;
+		boolean checkMonitorsOpen = uk.co.agena.minerva.model.Model.checkMonitorsOpen;
+		String suppressMessages = uk.co.agena.minerva.model.Model.suppressMessages;
+
+		getLogicModel().SimulationSettingWarningMessage = false;
+		uk.co.agena.minerva.model.Model.checkMonitorsOpen = false;
+		uk.co.agena.minerva.model.Model.suppressMessages = "system";
+		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		try {
 			getLogicModel().propagateDDAlgorithm(dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()), null, false, true);
 		}
 		catch (Throwable ex){
-			outputCaptured = StreamInterceptor.output_release();
 			throw new CalculationException("Calculation failed", ex);
 		}
-		outputCaptured += StreamInterceptor.output_release();
+		finally {
+			outputCaptured += StreamInterceptor.output_release();
+			getLogicModel().SimulationSettingWarningMessage = SimulationSettingWarningMessage;
+			uk.co.agena.minerva.model.Model.checkMonitorsOpen = checkMonitorsOpen;
+			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
+		}
 		
 		if (!getLogicModel().isLastPropagationSuccessful()){
 			String message = "Calculation failed";
