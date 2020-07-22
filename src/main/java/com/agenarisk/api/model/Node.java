@@ -1162,6 +1162,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		if (mdil.getMarginalDataItems().size() < dsIndex + 1){
 			throw new NodeException("Model missing calculation results for the Data Set " + dataSet.getId());
 		}
+		
+		// Backup observation to restore after static conversion
+		// This is needed because states will be regenerated which clears any previous observations
+		JSONObject jObservation = null;
+		if (dataSet.hasObservation(this)){
+			jObservation = dataSet.getObservation(this).toJson();
+		}
 	
 		try {
 			DataSet ds = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode()).getMarginalDataItemAtIndex(dsIndex).getDataset();
@@ -1172,13 +1179,17 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				VariableList logicVarList = getLogicNode().getExpressionVariables();
 				Variable logicVar = logicVarList.getVariable(voName);
 				logicVarList.updateVariable(logicVar, voName, varVal);
-				
 			};
-			
 		}
 		catch (ExtendedStateException | ExtendedStateNumberingException | NullPointerException | IndexOutOfBoundsException | MinervaVariableException ex){
 			throw new NodeException("Failed to retrieve calculation result from Data Set", ex);
 		}
+		
+		// Restore observation from JSON
+		if (jObservation != null){
+			dataSet.setObservation(jObservation);
+		}
+		
 		return true;
 	}
 	
