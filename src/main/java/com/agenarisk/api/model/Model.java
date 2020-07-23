@@ -56,6 +56,8 @@ import com.agenarisk.api.model.interfaces.IdContainer;
 import com.singularsys.jep.JepException;
 import java.util.Collection;
 import java.util.Objects;
+import uk.co.agena.minerva.model.DynDiscPropagation;
+import uk.co.agena.minerva.model.Propagation;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 
@@ -724,15 +726,21 @@ public class Model implements IdContainer<ModelException>, Storable {
 		uk.co.agena.minerva.model.Model.checkMonitorsOpen = false;
 		uk.co.agena.minerva.model.Model.suppressMessages = "system";
 		
+		Propagation propagationAlgorithm = getLogicModel().getPropagationAlgorithm();
+		System.out.println(propagationAlgorithm);
+		System.out.println(propagationAlgorithm.getClass());
+		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		try {
+			getLogicModel().setPropagateForStaticConversion(true);
 			getLogicModel().propagateDDAlgorithm(dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()), null, false, true);
 		}
 		catch (Throwable ex){
 			throw new CalculationException("Calculation failed", ex);
 		}
 		finally {
+			getLogicModel().setPropagateForStaticConversion(false);
 			outputCaptured += StreamInterceptor.output_release();
 			getLogicModel().SimulationSettingWarningMessage = SimulationSettingWarningMessage;
 			uk.co.agena.minerva.model.Model.checkMonitorsOpen = checkMonitorsOpen;
