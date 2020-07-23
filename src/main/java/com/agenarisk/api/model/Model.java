@@ -726,8 +726,6 @@ public class Model implements IdContainer<ModelException>, Storable {
 		uk.co.agena.minerva.model.Model.checkMonitorsOpen = false;
 		uk.co.agena.minerva.model.Model.suppressMessages = "system";
 		
-		Propagation propagationAlgorithm = getLogicModel().getPropagationAlgorithm();
-		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		try {
