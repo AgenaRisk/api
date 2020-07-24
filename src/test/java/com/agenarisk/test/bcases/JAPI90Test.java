@@ -17,7 +17,7 @@ public class JAPI90Test {
 	 * Test that observations are not removed during static conversion
 	 */
 	public void testDefault() throws Exception {
-		Model model = TestHelper.loadModelFromResource("/common/JAPI90.basic.json");
+		Model model = TestHelper.loadModelFromResource("/misc/JAPI90.basic.json");
 		DataSet ds = model.getDataSetList().get(0);
 
 		int sizeBefore = ds.getObservationsAndVariables().size();
