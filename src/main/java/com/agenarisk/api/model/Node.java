@@ -679,7 +679,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		for (int i = 0; i < jsonNotes.length(); i++) {
 			JSONObject jsonNote = jsonNotes.getJSONObject(i);
 			String name = jsonNote.getString(Meta.Field.name.toString());
-			String text = jsonNote.getString(Meta.Field.name.toString());
+			String text = jsonNote.getString(Meta.Field.text.toString());
 			getLogicNode().getNotes().addNote(name, text);
 		}
 		
