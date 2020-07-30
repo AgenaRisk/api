@@ -73,7 +73,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		model
 	}
 	
-	public static enum ExportFlags {
+	public static enum ExportFlag {
 		/**
 		 * Keep meta, audit, names, notes and descriptions of Model, Networks and Nodes
 		 */
@@ -816,11 +816,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * 
 	 * @throws AdapterException if conversion to JSON fails
 	 */
-	public JSONObject export(ExportFlags... flags) throws AdapterException {
+	public JSONObject export(ExportFlag... flags) throws AdapterException {
 		
 		JSONObject json = JSONAdapter.toJSONObject(logicModel);
 		
-		EnumSet<ExportFlags> xflags = (flags.length > 0) ? EnumSet.copyOf(Arrays.asList(flags)) : EnumSet.noneOf(ExportFlags.class);
+		EnumSet<ExportFlag> xflags = (flags.length > 0) ? EnumSet.copyOf(Arrays.asList(flags)) : EnumSet.noneOf(ExportFlag.class);
 		
 		try {
 
@@ -829,7 +829,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 
 			if (jsonDataSets != null){
 				
-				if (jsonDataSets.length() > 0 && xflags.contains(ExportFlags.CLOUD_DATASET)){
+				if (jsonDataSets.length() > 0 && xflags.contains(ExportFlag.CLOUD_DATASET)){
 					// If there are data sets and cloud flag set, copy the first data set without results to root json
 					JSONObject jDataSet = jsonDataSets.optJSONObject(0);
 					json.put(DataSet.Field.dataSet.toString(), jDataSet);
@@ -837,7 +837,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 					jDataSet.remove(CalculationResult.Field.results.toString());
 				}
 				
-				if (!xflags.contains(ExportFlags.KEEP_RESULTS) && !xflags.contains(ExportFlags.KEEP_OBSERVATIONS)){
+				if (!xflags.contains(ExportFlag.KEEP_RESULTS) && !xflags.contains(ExportFlag.KEEP_OBSERVATIONS)){
 					// If there are data sets but we are not keeping results nor observations, remove all data sets
 					jsonModel.remove(DataSet.Field.dataSets.toString());
 				}
@@ -845,11 +845,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 					jsonDataSets.forEach(o -> {
 						if (o instanceof JSONObject){
 							JSONObject jDataSet = (JSONObject) o;
-							if (!xflags.contains(ExportFlags.KEEP_RESULTS)){
+							if (!xflags.contains(ExportFlag.KEEP_RESULTS)){
 								jDataSet.remove(CalculationResult.Field.results.toString());
 							}
 							
-							if (!xflags.contains(ExportFlags.KEEP_OBSERVATIONS)){
+							if (!xflags.contains(ExportFlag.KEEP_OBSERVATIONS)){
 								jDataSet.remove(Observation.Field.observations.toString());
 							}
 						}
@@ -857,11 +857,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 				}
 			}
 			
-			if (!xflags.contains(ExportFlags.KEEP_RISK_TABLE)){
+			if (!xflags.contains(ExportFlag.KEEP_RISK_TABLE)){
 				jsonModel.remove(RiskTable.Field.riskTable.toString());
 			}
 			
-			if (!xflags.contains(ExportFlags.KEEP_META)){
+			if (!xflags.contains(ExportFlag.KEEP_META)){
 				jsonModel.remove(Audit.Field.audit.toString());
 				jsonModel.remove(Meta.Field.meta.toString());
 			}
@@ -869,7 +869,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			JSONUtils.traverse(json, (obj -> {
 				if (obj instanceof JSONObject){
 					JSONObject jo = ((JSONObject) obj);
-					if (!xflags.contains(ExportFlags.KEEP_META)){
+					if (!xflags.contains(ExportFlag.KEEP_META)){
 						if (jo.has(Network.Field.id.toString())){
 							// If the object has an ID, we can remove its name and description
 							jo.remove(Network.Field.name.toString());
@@ -879,7 +879,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 					}
 
 					// Remove graphics from all objects
-					if (!xflags.contains(ExportFlags.KEEP_GRAPHICS)){
+					if (!xflags.contains(ExportFlag.KEEP_GRAPHICS)){
 						jo.remove(Graphics.Field.graphics.toString());
 					}
 
@@ -891,7 +891,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 						String tableType = jsonTable.optString(NodeConfiguration.Table.type.toString());
 						boolean inputNode = jo.optJSONObject(NodeConfiguration.Field.configuration.toString()).optBoolean(NodeConfiguration.Field.input.toString(), false);
 						
-						if (inputNode || !Objects.equals(tableType, NodeConfiguration.TableType.Manual.toString()) && !xflags.contains(ExportFlags.KEEP_TABLES)){
+						if (inputNode || !Objects.equals(tableType, NodeConfiguration.TableType.Manual.toString()) && !xflags.contains(ExportFlag.KEEP_TABLES)){
 							// Input node or (not manual table and no keep-tables flag)
 							jsonTable.remove(NodeConfiguration.Table.nptCompiled.toString());
 							jsonTable.remove(NodeConfiguration.Table.probabilities.toString());
@@ -921,7 +921,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	public void saveEssentials(String path, boolean keepMeta) throws FileIOException {
 		try {
 			
-			JSONObject json = export(Model.ExportFlags.CLOUD_DATASET);
+			JSONObject json = export(Model.ExportFlag.CLOUD_DATASET);
 			Files.write(Paths.get(path), json.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			
 		}

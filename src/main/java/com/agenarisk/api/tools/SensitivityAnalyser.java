@@ -127,7 +127,7 @@ public class SensitivityAnalyser {
 
 		// Create a copy of the original model
 		try {
-			model = Model.createModel(model.export(Model.ExportFlags.KEEP_OBSERVATIONS, Model.ExportFlags.KEEP_META));
+			model = Model.createModel(model.export(Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_META));
 		}
 		catch (AdapterException | JSONException | ModelException ex) {
 			throw new SensitivityAnalyserException("Initialization failed", ex);
