@@ -110,6 +110,19 @@ public class Model implements IdContainer<ModelException>, Storable {
 		CLOUD_DATASET
 	}
 	
+	public static enum PropagationFlag {
+		
+		/**
+		 * Calculate ancestors of the networks provided as well
+		 */
+		WITH_ANCESTORS,
+		
+		/**
+		 * While propagating simulation nodes, keep tails and zero mass regions (default is to prune and compact)
+		 */
+		KEEP_TAILS_ZERO_REGIONS
+	}
+	
 	/**
 	 * ID-Network map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
