@@ -1172,7 +1172,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	
 		try {
 			DataSet ds = getNetwork().getModel().getLogicModel().getMarginalDataStore().getMarginalDataItemListForNode(getNetwork().getLogicNetwork(), getLogicNode()).getMarginalDataItemAtIndex(dsIndex).getDataset();
-			ContinuousEN.ConvertToNonSimulation(cien, ds);
+			ContinuousEN.ConvertToNonSimulation(cien, ds, getNetwork().getLogicNetwork(), dataSet.getLogicScenario());
 			for (VariableObservation vo: dataSet.getVariableObservations(this)){
 				String voName = vo.getVariableName();
 				double varVal = vo.getVariableValue();
