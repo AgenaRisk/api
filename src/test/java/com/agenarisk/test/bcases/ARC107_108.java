@@ -2,7 +2,11 @@ package com.agenarisk.test.bcases;
 
 import com.agenarisk.api.model.DataSet;
 import com.agenarisk.api.model.Model;
+import com.agenarisk.api.model.Node;
+import com.agenarisk.api.model.State;
 import com.agenarisk.test.TestHelper;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,22 +14,37 @@ import org.junit.Test;
  *
  * @author Eugene Dementiev
  */
-public class JAPI90Test {
-	
+public class ARC107_108 {
+
 	@Test
 	/**
 	 * Test that observations are not removed during static conversion
 	 */
 	public void testDefault() throws Exception {
-		Model model = TestHelper.loadModelFromResource("/common/JAPI90.basic.json");
+		Model model = TestHelper.loadModelFromResource("/misc/ARC107_108.basic.cmpx");
 		DataSet ds = model.getDataSetList().get(0);
 
+		// Verify that observations are kept
 		int sizeBefore = ds.getObservationsAndVariables().size();
-		model.calculate();
+		model.calculate(Arrays.asList(ds));
 		model.convertToStatic(ds);
 		int sizeAfter = ds.getObservationsAndVariables().size();
-		
+
 		Assert.assertTrue(sizeBefore > 0);
 		Assert.assertEquals(sizeBefore, sizeAfter);
+		
+		// Verify that all nodes have infinite bounds
+		for(Node node: model.getNetworkList().get(0).getNodeList()){
+			List<State> states = node.getStates();
+			Double lowerBound = states.get(0).getLogicState().getRange().getLowerBound();
+			Double upperBound = states.get(states.size()-1).getLogicState().getRange().getUpperBound();
+			System.out.println(node.toStringExtra());
+			System.out.println(Double.isInfinite(lowerBound));
+			System.out.println(Double.isInfinite(upperBound));
+		}
+		
+		model.calculate();
+		
+		Assert.assertTrue(model.isCalculated());
 	}
 }
