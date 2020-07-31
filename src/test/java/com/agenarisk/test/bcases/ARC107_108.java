@@ -26,7 +26,7 @@ public class ARC107_108 {
 
 		// Verify that observations are kept
 		int sizeBefore = ds.getObservationsAndVariables().size();
-		model.calculate(Arrays.asList(ds));
+		model.calculate(null, Arrays.asList(ds), Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS);
 		model.convertToStatic(ds);
 		int sizeAfter = ds.getObservationsAndVariables().size();
 

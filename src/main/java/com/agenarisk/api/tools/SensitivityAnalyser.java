@@ -221,34 +221,23 @@ public class SensitivityAnalyser {
 			throw new SensitivityAnalyserException("Target node can not also be selected as sensitivity node");
 		}
 
-		// Precalculate if required for static conversion
-		
+		// Precalculate for static conversion (compulsory due to KEEP_TAILS_ZERO_REGIONS flag required
+		/* If optimisation is needed in future and we want to sometimes avoid pre-calculation
+		 * we can skip pre-calculation if the model is already calculated
+		 * model.isCalculated() and model.getDataSetList().get(0).getCalculationResults() no exceptions
+		 * and there are no simulation nodes without observations (if all simulated nodes are observed, we can assume the model is static)
+		 */
 		try {
-			model.getDataSetList().get(0).getCalculationResults();
+			model.calculate(Arrays.asList(targetNode.getNetwork()), Arrays.asList(dataSet), Model.CalculationFlag.WITH_ANCESTORS, Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS);
 		}
-		catch (Exception ex){
-			// No calculation results, need to calculate
-			try {
-				model.calculate();
-			}
-			catch (CalculationException ex1) {
-				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (1)", ex1);
-			}
-		}
-		
-		if (!model.isCalculated()) {
-			try {
-				model.calculate();
-			}
-			catch (CalculationException ex) {
-				throw new SensitivityAnalyserException("Failed to precalculate the model during initialization (2)", ex);
-			}
+		catch (CalculationException ex){
+			throw new SensitivityAnalyserException("Failed to precalculate the model during initialization", ex);
 		}
 		
 		// Convert to static and calculate to get baseline calculation results
 		try {
 			model.convertToStatic(dataSet);
-			model.calculate(Arrays.asList(dataSet));
+			model.calculate(Arrays.asList(targetNode.getNetwork()), Arrays.asList(dataSet));
 		}
 		catch (AgenaRiskRuntimeException | CalculationException ex) {
 			throw new SensitivityAnalyserException("Static conversion failed", ex);
@@ -680,7 +669,7 @@ public class SensitivityAnalyser {
 			
 			dataSet.setObservation(targetNode, tarObsVal);
 			try {
-				model.calculate(Arrays.asList(dataSet));
+				model.calculate(Arrays.asList(targetNode.getNetwork()), Arrays.asList(dataSet));
 			}
 			catch (InconsistentEvidenceException ex) {
 				// Inconsistent evidence means we just skip this state

@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
+import uk.co.agena.minerva.model.Model.PropagationFlag;
 
 /**
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
@@ -110,7 +111,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		CLOUD_DATASET
 	}
 	
-	public static enum PropagationFlag {
+	public static enum CalculationFlag {
 		
 		/**
 		 * Calculate ancestors of the networks provided as well
@@ -689,19 +690,41 @@ public class Model implements IdContainer<ModelException>, Storable {
 	}
 	
 	/**
-	 * Triggers propagation in this model for all Networks and DataSets.
+	 * Triggers propagation in this Model for all Networks and DataSets.
 	 * 
 	 * @throws CalculationException if calculation failed
 	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
 	 */
 	public void calculate() throws CalculationException {
-		//Logger.logIfDebug("Calculating all DataSets");
+		calculate(null, null);
+	}
+	
+	/**
+	 * Triggers propagation in this model for provided Networks and DataSets.<br>
+	 * If either is null, all Networks or DataSets will be used instead.
+	 * 
+	 * @param networks Networks to calculate, can be null for all Networks
+	 * @param dataSets DataSets to calculate, can be null for all DataSets
+	 * @param flags Calculation flags
+	 * 
+	 * @throws CalculationException if calculation failed
+	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
+	 */
+	public void calculate(Collection<Network> networks, Collection<DataSet> dataSets, CalculationFlag... flags) throws CalculationException {
+		
+		if (networks == null){
+			networks = getNetworks().values();
+		}
+		
+		if (dataSets == null){
+			dataSets = getDataSets().values();
+		}
 		
 		if (networks.isEmpty()){
 			throw new CalculationException("No networks in the model, nothing to calculate");
 		}
 		
-		if (!networks.values().stream().map(net -> net.getNodes().size()).anyMatch(i -> i > 0)){
+		if (!networks.stream().map(net -> net.getNodes().size()).anyMatch(i -> i > 0)){
 			throw new CalculationException("No nodes in the model, nothing to calculate");
 		}
 		
@@ -710,21 +733,8 @@ public class Model implements IdContainer<ModelException>, Storable {
 			createDataSet("Scenario 1");
 		}
 		
-		calculate(getDataSets().values());
-	}
-	
-	/**
-	 * Triggers propagation in this model for provided DataSets and all Networks.
-	 * 
-	 * @param dataSets DataSets to calculate
-	 * 
-	 * @throws CalculationException if calculation failed
-	 * @throws InconsistentEvidenceException specifically in case inconsistent evidence was detected
-	 */
-	public void calculate(Collection<DataSet> dataSets) throws CalculationException {
-		
-		getNetworks().values().stream().forEach(net -> {
-			// Force all networks to recalculate
+		networks.stream().forEach(net -> {
+			// Force to recalculate
 			String s = "Calculation requested";
 			net.getLogicNetwork().addModificationLogItem(new NameDescription(s, s));
 		});
@@ -737,10 +747,29 @@ public class Model implements IdContainer<ModelException>, Storable {
 		uk.co.agena.minerva.model.Model.checkMonitorsOpen = false;
 		uk.co.agena.minerva.model.Model.suppressMessages = "system";
 		
+		//EnumSet<CalculationFlag> xflags = (flags.length > 0) ? EnumSet.copyOf(Arrays.asList(flags)) : EnumSet.noneOf(CalculationFlag.class);
+		List<PropagationFlag> flagsToPass = new ArrayList();
+		for (CalculationFlag flag: flags) {
+			switch(flag){
+				case KEEP_TAILS_ZERO_REGIONS:
+					flagsToPass.add(PropagationFlag.KEEP_TAILS_ZERO_REGIONS);
+					break;
+					
+				case WITH_ANCESTORS:
+					flagsToPass.add(PropagationFlag.WITH_ANCESTORS);
+					break;
+				default:
+			}
+		}
+		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		try {
-			getLogicModel().propagateDDAlgorithm(dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()), null);
+			getLogicModel().propagateDDAlgorithm(
+					dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()),
+					null,
+					flagsToPass.toArray(new PropagationFlag[0])
+			);
 			outputCaptured += StreamInterceptor.output_release();
 		}
 		catch (Throwable ex){
