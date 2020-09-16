@@ -584,7 +584,7 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 					setObservation(node, value);
 				}
 				catch(Exception ex){
-					throw new DataSetException("Failed to set observation for node " + node, ex);
+					throw new DataSetException("Failed to set observation for node " + node.toStringExtra(), ex);
 				}
 				return;
 			}
@@ -596,7 +596,7 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 			setObservationSoft(node, entries);
 		}
 		catch(Exception ex){
-			throw new DataSetException("Failed to set observation for node " + node, ex);
+			throw new DataSetException("Failed to set observation for node " + node.toStringExtra(), ex);
 		}
 
 	}
