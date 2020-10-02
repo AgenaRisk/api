@@ -773,7 +773,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			outputCaptured += StreamInterceptor.output_release();
 		}
 		catch (Throwable ex){
-			StreamInterceptor.output_release();
+			outputCaptured += StreamInterceptor.output_release();
 			throw new CalculationException("Calculation failed", ex);
 		}
 		finally {
@@ -783,6 +783,8 @@ public class Model implements IdContainer<ModelException>, Storable {
 		}
 		
 		if (!getLogicModel().isLastPropagationSuccessful()){
+			Logger.logIfDebug("Last propagation is not flagged as successful:");
+			Logger.logIfDebug(outputCaptured);
 			String message = "Calculation failed";
 			if (outputCaptured.contains("Inconsistent evidence in risk object")){
 				throw new InconsistentEvidenceException("Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)");
