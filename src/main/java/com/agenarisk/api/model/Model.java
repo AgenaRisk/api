@@ -474,7 +474,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		for (int i = 0; i < jsonNotes.length(); i++) {
 			JSONObject jsonNote = jsonNotes.getJSONObject(i);
 			String name = jsonNote.getString(Meta.Field.name.toString());
-			String text = jsonNote.getString(Meta.Field.name.toString());
+			String text = jsonNote.getString(Meta.Field.text.toString());
 			getLogicModel().getNotes().addNote(name, text);
 		}
 		
