@@ -7,6 +7,7 @@ import com.agenarisk.api.model.field.Id;
 import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.Advisory;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -907,7 +908,9 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 				.getNodes()
 				.values()
 				.stream()
-				.collect(Collectors.toMap(node -> node, node -> CalculationResult.getCalculationResult(this, node)));
+				.map(node -> new AbstractMap.SimpleEntry<>(node, CalculationResult.getCalculationResult(this, node)))
+				.filter(entry -> entry.getValue() != null)
+				.collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
 	}
 	
 	/**
