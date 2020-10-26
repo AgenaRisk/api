@@ -8,6 +8,7 @@ import com.agenarisk.api.model.interfaces.Identifiable;
 import com.agenarisk.api.model.interfaces.Storable;
 import com.agenarisk.api.util.Advisory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +35,7 @@ import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.model.scenario.ObservationNotFoundException;
 import uk.co.agena.minerva.model.scenario.Scenario;
 import uk.co.agena.minerva.model.scenario.ScenarioException;
+import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.model.NameDescription;
 
 /**
@@ -879,12 +881,18 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 	 * @return list of all CalculationResults for all Nodes for this DataSet
 	 */
 	public List<CalculationResult> getCalculationResults() {
-		return getModel()
-				.getNetworks()
-				.values()
-				.stream()
-				.flatMap(network -> getCalculationResults(network).values().stream())
-				.collect(Collectors.toList());
+		try {
+			return getModel()
+					.getNetworks()
+					.values()
+					.stream()
+					.flatMap(network -> getCalculationResults(network).values().stream())
+					.collect(Collectors.toList());
+		}
+		catch (NullPointerException ex) {
+			Logger.logIfDebug("No results in data set: " + getId());
+			return Arrays.asList(new CalculationResult[0]);
+		}
 	}
 	
 	/**
