@@ -767,7 +767,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		try {
 			getLogicModel().propagateDDAlgorithm(
 					dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()),
-					null,
+					networks.stream().map(net -> net.getLogicNetwork()).collect(Collectors.toList()),
 					flagsToPass.toArray(new PropagationFlag[0])
 			);
 			outputCaptured += StreamInterceptor.output_release();
