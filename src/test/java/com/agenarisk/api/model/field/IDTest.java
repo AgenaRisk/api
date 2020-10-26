@@ -1,10 +1,13 @@
 package com.agenarisk.api.model.field;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
 
-public class IDTest extends TestCase {
+public class IDTest {
 	
 	Id instance_foo;
 	Id instance_foo2;
@@ -13,13 +16,8 @@ public class IDTest extends TestCase {
 	Id instance_Foo;
 	Id instance_BAR;
 	
-	public IDTest(String testName) {
-		super(testName);
-	}
-	
-	@Override
+	@BeforeAll
 	protected void setUp() throws Exception {
-		super.setUp();
 		instance_foo = new Id("foo");
 		instance_foo2 = new Id("foo");
 		instance_bar = new Id("bar");
@@ -48,8 +46,8 @@ public class IDTest extends TestCase {
 		assertEquals(instance_foo, instance_Foo);
 		assertEquals(instance_bar, instance_BAR);
 		
-		assertFalse(instance_foo.equals(null));
-		assertFalse(instance_foo.equals(instance_bar));
+		Assertions.assertNotEquals(null, instance_foo);
+		Assertions.assertNotEquals(instance_bar, instance_foo);
 	}
 
 	public void testCompareTo() {

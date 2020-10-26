@@ -3,7 +3,7 @@ package com.agenarisk.test.composite;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.test.TestHelper;
 import java.nio.file.Path;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * 

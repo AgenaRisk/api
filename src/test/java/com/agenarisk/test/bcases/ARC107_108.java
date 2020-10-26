@@ -7,8 +7,8 @@ import com.agenarisk.api.model.State;
 import com.agenarisk.test.TestHelper;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -30,8 +30,8 @@ public class ARC107_108 {
 		model.convertToStatic(ds);
 		int sizeAfter = ds.getObservationsAndVariables().size();
 
-		Assert.assertTrue(sizeBefore > 0);
-		Assert.assertEquals(sizeBefore, sizeAfter);
+		Assertions.assertTrue(sizeBefore > 0);
+		Assertions.assertEquals(sizeBefore, sizeAfter);
 		
 		// Verify that all nodes have infinite bounds
 		for(Node node: model.getNetworkList().get(0).getNodeList()){
@@ -45,6 +45,6 @@ public class ARC107_108 {
 		
 		model.calculate();
 		
-		Assert.assertTrue(model.isCalculated());
+		Assertions.assertTrue(model.isCalculated());
 	}
 }

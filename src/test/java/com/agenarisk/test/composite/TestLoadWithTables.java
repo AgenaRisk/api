@@ -1,12 +1,10 @@
 package com.agenarisk.test.composite;
 
-import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.util.Advisory;
-import com.agenarisk.api.util.JSONUtils;
 import com.agenarisk.test.TestHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -41,13 +39,13 @@ public class TestLoadWithTables {
 			error = true;
 		}
 		// We expect the model loading to fail without Advisory
-		Assert.assertEquals(true, error);
+		Assertions.assertEquals(true, error);
 		
 		// We now try to load with Advisory, which should succeed
 		Advisory.getGroupByKey(this).linkToThread(Thread.currentThread());
 		Model model = TestHelper.loadModelFromResource("/load/LoadInvalidTableExpression.xml");
-		Assert.assertEquals("Arithmetic(abc)",model.getNetworkList().get(0).getNode("nn1").getLogicNode().getExpression().toString());
-		Assert.assertEquals("Arithmetic(foo)",model.getNetworkList().get(0).getNode("nn2").getLogicNode().getPartitionedExpressions().get(0).toString());
-		Assert.assertEquals("Arithmetic(bar)",model.getNetworkList().get(0).getNode("nn2").getLogicNode().getPartitionedExpressions().get(1).toString());
+		Assertions.assertEquals("Arithmetic(abc)",model.getNetworkList().get(0).getNode("nn1").getLogicNode().getExpression().toString());
+		Assertions.assertEquals("Arithmetic(foo)",model.getNetworkList().get(0).getNode("nn2").getLogicNode().getPartitionedExpressions().get(0).toString());
+		Assertions.assertEquals("Arithmetic(bar)",model.getNetworkList().get(0).getNode("nn2").getLogicNode().getPartitionedExpressions().get(1).toString());
 	}
 }

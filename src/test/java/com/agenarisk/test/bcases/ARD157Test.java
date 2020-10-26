@@ -4,21 +4,24 @@ import com.agenarisk.api.model.DataSet;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 /**
  *
  * @author Eugene Dementiev
  */
+@TestInstance(Lifecycle.PER_CLASS)
 public class ARD157Test {
 	
 	Model model;
 	Network net;
 	Node x, y, n1, n2, n3;
 	DataSet ds;
-	@Before
+	@BeforeAll
 	public void prepare(){
 		model = Model.createModel();
 		net = model.createNetwork("net");
@@ -53,9 +56,9 @@ public class ARD157Test {
 	 */
 	public void testDefault() throws Exception {
 		model.calculate();
-		Assert.assertEquals(1, ds.getCalculationResult(n1).getResultValue("True").getValue(), 0);
-		Assert.assertEquals(1, ds.getCalculationResult(n2).getResultValue("True").getValue(), 0);
-		Assert.assertEquals(1, ds.getCalculationResult(n3).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n1).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n2).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n3).getResultValue("True").getValue(), 0);
 	}
 	
 	@Test
@@ -66,9 +69,9 @@ public class ARD157Test {
 		x.setTableFunction("Arithmetic(0)");
 		y.setTableFunction("Arithmetic(0)");
 		model.calculate();
-		Assert.assertEquals(1, ds.getCalculationResult(n1).getResultValue("True").getValue(), 0);
-		Assert.assertEquals(1, ds.getCalculationResult(n2).getResultValue("True").getValue(), 0);
-		Assert.assertEquals(1, ds.getCalculationResult(n3).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n1).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n2).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n3).getResultValue("True").getValue(), 0);
 	}
 	
 	@Test
@@ -79,9 +82,9 @@ public class ARD157Test {
 		x.setTableFunction("Uniform(0.0,100.0)");
 		y.setTableFunction("Uniform(0.0,100.0)");
 		model.calculate();
-		Assert.assertEquals(1, ds.getCalculationResult(n1).getResultValue("True").getValue(), 0);
-		Assert.assertEquals(1, ds.getCalculationResult(n2).getResultValue("True").getValue(), 0);
-		Assert.assertEquals(1, ds.getCalculationResult(n3).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n1).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n2).getResultValue("True").getValue(), 0);
+		Assertions.assertEquals(1, ds.getCalculationResult(n3).getResultValue("True").getValue(), 0);
 	}
 	
 }

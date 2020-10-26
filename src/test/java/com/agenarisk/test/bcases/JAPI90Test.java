@@ -3,8 +3,8 @@ package com.agenarisk.test.bcases;
 import com.agenarisk.api.model.DataSet;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.test.TestHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -25,7 +25,7 @@ public class JAPI90Test {
 		model.convertToStatic(ds);
 		int sizeAfter = ds.getObservationsAndVariables().size();
 		
-		Assert.assertTrue(sizeBefore > 0);
-		Assert.assertEquals(sizeBefore, sizeAfter);
+		Assertions.assertTrue(sizeBefore > 0);
+		Assertions.assertEquals(sizeBefore, sizeAfter);
 	}
 }

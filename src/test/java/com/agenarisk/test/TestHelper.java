@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
+
 import uk.co.agena.minerva.util.Config;
 import uk.co.agena.minerva.util.Environment;
 
@@ -31,18 +32,15 @@ public class TestHelper {
 	
 	static {
 		Environment.initialize();
+		try {
+			tempDir = Files.createTempDirectory("agenarisk_test");
+		}
+		catch (IOException ex){
+			throw new RuntimeException("Failed to create temp directory for test files", ex);
+		}
 	}
 	
-	private static TemporaryFolder TEMPORARY_FOLDER = new TemporaryFolder();
-	
-//	static {
-//		try {
-//			TEMPORARY_FOLDER.create();
-//		}
-//		catch (IOException ex){
-//			throw new RuntimeException("Failed to create temp directory", ex);
-//		}
-//	}
+    static Path tempDir;
 	
 	public static Path tempFileCopyOfResource(String resourcePath) {
 		try (InputStream is = TestHelper.class.getResourceAsStream(resourcePath)) {
@@ -72,8 +70,11 @@ public class TestHelper {
 
 				// Copy to temporary files
 				try {
-					String pathNewIn = TEMPORARY_FOLDER.newFile(inFileName).getAbsoluteFile().toString();
-					String pathNewOut = TEMPORARY_FOLDER.newFile(outFileName).getAbsoluteFile().toString();
+					System.out.println(tempDir);
+					System.out.println(inFileName);
+					System.out.println("---");
+					String pathNewIn = tempDir.resolve(inFileName).toAbsolutePath().toString();
+					String pathNewOut = tempDir.resolve(outFileName).toAbsolutePath().toString();
 					
 					Files.copy(originalInputPath, Paths.get(pathNewIn), StandardCopyOption.REPLACE_EXISTING);
 					Files.copy(originalOutputPath, Paths.get(pathNewOut), StandardCopyOption.REPLACE_EXISTING);
@@ -93,11 +94,6 @@ public class TestHelper {
 		catch(IOException | URISyntaxException ex){
 			throw new RuntimeException("Failed to load test files", ex);
 		}
-	}
-	
-	public static TemporaryFolder initTemporaryFolder(){
-		TEMPORARY_FOLDER = new TemporaryFolder();
-		return TEMPORARY_FOLDER;
 	}
 	
 	public static String readResourceContent(String resourcePath){

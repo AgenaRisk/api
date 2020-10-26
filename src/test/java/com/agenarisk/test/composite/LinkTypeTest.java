@@ -4,7 +4,7 @@ import com.agenarisk.api.model.CrossNetworkLink;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * The purpose of this test is to exhaustively try to create cross network links between nodes of different types and check that all expected link types are allowed and all others are not.

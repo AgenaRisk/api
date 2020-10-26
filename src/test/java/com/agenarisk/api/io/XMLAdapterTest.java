@@ -3,8 +3,6 @@ package com.agenarisk.api.io;
 import com.agenarisk.api.exception.AdapterException;
 import com.agenarisk.api.util.JSONUtils;
 import com.agenarisk.test.TestHelper;
-//import com.google.gson.JsonElement;
-//import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,10 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
 
 /**
  * The purpose of this test is to make sure that JSON to XML arrives to the same 
@@ -24,9 +22,6 @@ import org.junit.rules.TemporaryFolder;
  */
 public class XMLAdapterTest {
 	
-	@Rule
-    public TemporaryFolder testFolder = TestHelper.initTemporaryFolder();
-
 	@Test
 	public void testJsonToXmlFromFiles() throws IOException {
 		// Get all json files

@@ -2,13 +2,12 @@ package com.agenarisk.test.composite;
 
 import com.agenarisk.api.exception.CalculationException;
 import com.agenarisk.api.exception.ModelException;
-import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.model.Model;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import uk.co.agena.minerva.util.Environment;
 
 /**
@@ -43,7 +42,7 @@ public class CalculationTest {
 				error = true;
 			}
 			
-			Assert.assertTrue(error);
+			Assertions.assertTrue(error);
 		});
 	}
 	

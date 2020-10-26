@@ -1,8 +1,8 @@
 package com.agenarisk.api.model;
 
 import com.agenarisk.test.TestHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -26,20 +26,20 @@ public class NodeTest {
 		Node n2n2 = net2.getNode("n2n2");
 		Node n2n3 = net2.getNode("n2n3");
 		
-		Assert.assertEquals(true, n1n1.isConnectedOutput());
-		Assert.assertEquals(false, n1n1.isConnectedInput());
+		Assertions.assertEquals(true, n1n1.isConnectedOutput());
+		Assertions.assertEquals(false, n1n1.isConnectedInput());
 		
-		Assert.assertEquals(false, n1n2.isConnectedOutput());
-		Assert.assertEquals(false, n1n2.isConnectedInput());
+		Assertions.assertEquals(false, n1n2.isConnectedOutput());
+		Assertions.assertEquals(false, n1n2.isConnectedInput());
 		
-		Assert.assertEquals(false, n2n1.isConnectedOutput());
-		Assert.assertEquals(true, n2n1.isConnectedInput());
+		Assertions.assertEquals(false, n2n1.isConnectedOutput());
+		Assertions.assertEquals(true, n2n1.isConnectedInput());
 		
-		Assert.assertEquals(false, n2n2.isConnectedOutput());
-		Assert.assertEquals(false, n2n2.isConnectedInput());
+		Assertions.assertEquals(false, n2n2.isConnectedOutput());
+		Assertions.assertEquals(false, n2n2.isConnectedInput());
 		
-		Assert.assertEquals(false, n2n3.isConnectedOutput());
-		Assert.assertEquals(false, n2n3.isConnectedInput());
+		Assertions.assertEquals(false, n2n3.isConnectedOutput());
+		Assertions.assertEquals(false, n2n3.isConnectedInput());
 	}
 	
 	/**
@@ -62,28 +62,28 @@ public class NodeTest {
 		
 		Node n2n1 = net2.getNode("n1");
 		
-		Assert.assertEquals(0, n1.getAncestors().size());
-		Assert.assertEquals(6, n1.getDescendants().size());
+		Assertions.assertEquals(0, n1.getAncestors().size());
+		Assertions.assertEquals(6, n1.getDescendants().size());
 		
-		Assert.assertEquals(1, n2.getAncestors().size());
-		Assert.assertEquals(4, n2.getDescendants().size());
+		Assertions.assertEquals(1, n2.getAncestors().size());
+		Assertions.assertEquals(4, n2.getDescendants().size());
 		
-		Assert.assertEquals(2, n3.getAncestors().size());
-		Assert.assertEquals(2, n3.getDescendants().size());
+		Assertions.assertEquals(2, n3.getAncestors().size());
+		Assertions.assertEquals(2, n3.getDescendants().size());
 		
-		Assert.assertEquals(1, n4.getAncestors().size());
-		Assert.assertEquals(3, n4.getDescendants().size());
+		Assertions.assertEquals(1, n4.getAncestors().size());
+		Assertions.assertEquals(3, n4.getDescendants().size());
 		
-		Assert.assertEquals(3, n5.getAncestors().size());
-		Assert.assertEquals(2, n5.getDescendants().size());
+		Assertions.assertEquals(3, n5.getAncestors().size());
+		Assertions.assertEquals(2, n5.getDescendants().size());
 		
-		Assert.assertEquals(5, n6.getAncestors().size());
-		Assert.assertEquals(1, n6.getDescendants().size());
+		Assertions.assertEquals(5, n6.getAncestors().size());
+		Assertions.assertEquals(1, n6.getDescendants().size());
 		
-		Assert.assertEquals(6, n7.getAncestors().size());
-		Assert.assertEquals(0, n7.getDescendants().size());
+		Assertions.assertEquals(6, n7.getAncestors().size());
+		Assertions.assertEquals(0, n7.getDescendants().size());
 		
-		Assert.assertEquals(0, n2n1.getAncestors().size());
-		Assert.assertEquals(0, n2n1.getDescendants().size());
+		Assertions.assertEquals(0, n2n1.getAncestors().size());
+		Assertions.assertEquals(0, n2n1.getDescendants().size());
 	}
 }

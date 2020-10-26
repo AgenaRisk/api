@@ -1,18 +1,18 @@
 package com.agenarisk.api.model;
 
 import com.agenarisk.test.TestHelper;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 /**
  *
  * @author Asu
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DataSetTest {
-	
-	public DataSetTest() {
-	}
 	
 	Model model;
 	DataSet dataSet;
@@ -20,7 +20,7 @@ public class DataSetTest {
 	Node nodeCont;
 	Node nodeDisc;
 	
-	@Before
+	@BeforeAll
 	public void loadCarExample(){
 		model = TestHelper.loadModelFromResource("/common/Biased Coin Flip Experiment.cmpx");
 		network = model.getNetworkList().get(0);
