@@ -780,11 +780,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 			getLogicModel().SimulationSettingWarningMessage = SimulationSettingWarningMessage;
 			uk.co.agena.minerva.model.Model.checkMonitorsOpen = checkMonitorsOpen;
 			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
+			Logger.logIfDebug(outputCaptured);
 		}
 		
 		if (!getLogicModel().isLastPropagationSuccessful()){
 			Logger.logIfDebug("Last propagation is not flagged as successful:");
-			Logger.logIfDebug(outputCaptured);
 			String message = "Calculation failed";
 			if (outputCaptured.contains("Inconsistent evidence in risk object")){
 				throw new InconsistentEvidenceException("Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)");
