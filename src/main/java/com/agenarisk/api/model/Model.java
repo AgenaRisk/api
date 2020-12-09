@@ -59,6 +59,7 @@ import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.Model.PropagationFlag;
+import uk.co.agena.minerva.model.ModelEvent;
 
 /**
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
@@ -582,7 +583,19 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @param net Network to remove
 	 */
 	public void removeNetwork(Network net){
-		throw new UnsupportedOperationException("Not supported yet.");
+		if (net == null){
+			return;
+		}
+		networks.remove(new Id(net.getId()));
+		try {
+			getLogicModel().removeExtendedBNs(net.getLogicNetwork(), true);
+		}
+		catch(uk.co.agena.minerva.model.ModelException ex){
+			// This would be thrown if a questionnaire removal failed
+			// Try to recover and ignore the exception
+			getLogicModel().getExtendedBNList().getExtendedBNs().remove(net.getLogicNetwork());
+			Logger.printThrowableIfDebug(ex);
+		}
 	}
 	
 	/**
