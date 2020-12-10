@@ -34,9 +34,12 @@ import com.agenarisk.api.io.stub.Graphics;
 import com.agenarisk.api.io.stub.Meta;
 import com.agenarisk.api.io.stub.NodeGraphics;
 import com.agenarisk.api.model.field.Id;
+import com.agenarisk.api.model.interfaces.IdContainer;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import uk.co.agena.minerva.model.MarginalDataItemList;
 import uk.co.agena.minerva.model.extendedbn.ExtendedState;
@@ -48,7 +51,6 @@ import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.MinervaVariableException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import uk.co.agena.minerva.util.model.Range;
-import uk.co.agena.minerva.util.model.Variable;
 import uk.co.agena.minerva.util.model.VariableList;
 import uk.co.agena.minerva.util.nptgenerator.ExpressionParser;
 
@@ -111,6 +113,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * This stores graphics for the Node, and should be set on model load
 	 */
 	private JSONObject jsonGraphics;
+	
+	/**
+	 * Cache of Variables
+	 */
+	private final Map<String, Variable> variablesCache = Collections.synchronizedMap(new LinkedHashMap<>());
 	
 	/**
 	 * Constructor for the Node class. Creates a Node object without affecting the logic in any way.
@@ -621,10 +628,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				String variableName = jsonVariable.getString(NodeConfiguration.Variables.name.toString());
 				Double variableValue = jsonVariable.getDouble(NodeConfiguration.Variables.value.toString());
 				try {
-					uk.co.agena.minerva.util.model.Variable variable = en.addExpressionVariable(variableName, variableValue, true);
+					node.createVariable(variableName, variableValue);
 				}
-				catch (ExtendedBNException ex){
-					throw new NodeException("Duplicate variable names detected", ex);
+				catch (NodeException ex){
+					if (!Advisory.addMessageIfLinked("Failed to create a Variable" + variableName + " in Node " + node.toStringExtra() + ": " + ex.getMessage())) {
+						// If Advisory is linked, will load the rest of the model, otherwise stop with exception
+						throw ex;
+					}
 				}
 			}
 		}
@@ -1177,7 +1187,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				String voName = vo.getVariableName();
 				double varVal = vo.getVariableValue();
 				VariableList logicVarList = getLogicNode().getExpressionVariables();
-				Variable logicVar = logicVarList.getVariable(voName);
+				uk.co.agena.minerva.util.model.Variable logicVar = logicVarList.getVariable(voName);
 				logicVarList.updateVariable(logicVar, voName, varVal);
 			};
 		}
@@ -1528,7 +1538,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Builds and returns a set of ancestors for this Node.<br>
 	 * Does not include itself.<br>
-	 * Does not follow cross-network links (only includes Nodes in the same Network)
+	 * Does not follow cross-network links (only includes Nodes in the same Network).
 	 * 
 	 * @return HashSet of ancestors for this Node
 	 */
@@ -1544,7 +1554,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * Builds and returns a set of descendants for this Node.<br>
 	 * Does not include itself.<br>
-	 * Does not follow cross-network links (only includes Nodes in the same Network)
+	 * Does not follow cross-network links (only includes Nodes in the same Network).
 	 * 
 	 * @return HashSet of descendants for this Node
 	 */
@@ -1555,6 +1565,81 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			set.addAll(n.getDescendants());
 		});
 		return set;
+	}
+	
+	/**
+	 * Creates a new node Variable.
+	 * 
+	 * @param varName unique Variable name, only number, letters and underscores are allowed, but can't be just a number
+	 * @param defaultValue default value of the Variable
+	 * 
+	 * @return the Variable instance created
+	 * 
+	 * @throws NodeException if a Variable with this name already exists in this Node
+	 */
+	public synchronized Variable createVariable(String varName, double defaultValue) throws NetworkException {
+		try {
+			uk.co.agena.minerva.util.model.Variable logicVariable = getLogicNode().addExpressionVariable(varName, defaultValue, true);
+			Variable variable = new Variable(this, logicVariable);
+			variablesCache.put(varName, variable);
+			return variable;
+		}
+		catch (ExtendedBNException ex){
+			throw new NodeException(ex.getMessage(), ex);
+		}
+	}
+	
+	/**
+	 * Retrieves and returns the Variable by name.
+	 * 
+	 * @param varName name of the Variable to return
+	 * 
+	 * @return Variable with provided name or null
+	 */
+	public synchronized Variable getVariable(String varName){
+		if (variablesCache.containsKey(varName)){
+			return variablesCache.get(varName);
+		}
+		try {
+			VariableList logicVarList = getLogicNode().getExpressionVariables();
+			uk.co.agena.minerva.util.model.Variable logicVar = logicVarList.getVariable(varName);
+			Variable variable = new Variable(this, logicVar);
+			variablesCache.put(varName, variable);
+			return variable;
+		}
+		catch (Exception ex){
+			// Actually does not exist
+			return null;
+		}
+	}
+	
+	/**
+	 * Removes Variable by name if it exists
+	 * 
+	 * @param varName name of the Variable to remove
+	 */
+	public synchronized void removeVariable(String varName) {
+		try {
+			VariableList logicVarList = getLogicNode().getExpressionVariables();
+			uk.co.agena.minerva.util.model.Variable logicVar = logicVarList.getVariable(varName);
+			logicVarList.removeVariable(logicVar);
+			variablesCache.remove(varName);
+		}
+		catch (Exception ex){
+			// It throws exception if no variable exists, which we don't really care about
+			return;
+		}
+	}
+	
+	/**
+	 * Gets an unmodifiable list of all Variables.
+	 * 
+	 * @return unmodifiable list of all Variables
+	 */
+	public synchronized List<Variable> getVariables(){
+		VariableList logicVarList = getLogicNode().getExpressionVariables();
+		List<Variable> list = ((List<String>)logicVarList.getAllVariableNames()).stream().map(varName -> getVariable(varName)).collect(Collectors.toList());
+		return Collections.unmodifiableList(list);
 	}
 
 }
