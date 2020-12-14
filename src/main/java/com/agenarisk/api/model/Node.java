@@ -1029,6 +1029,19 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws NodeException if state is an invalid range; or if the Node is simulated
 	 */
 	public void setStates(String[] states) throws NodeException{
+		setStates(Arrays.asList(states));
+	}
+	
+	/**
+	 * Replaces Node's states by the ones given in the array.
+	 * <br>
+	 * This action resets the probability table to uniform.
+	 * 
+	 * @param states new Node's states
+	 * 
+	 * @throws NodeException if state is an invalid range; or if the Node is simulated
+	 */
+	public void setStates(List<String> states) throws NodeException{
 		if (isSimulated()){
 			throw new NodeException("Can't set states for a simulated node");
 		}
@@ -1037,9 +1050,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		DataSet ds = new DataSet();
 		
-		for(int s = 0; s < states.length; s++){
+		for(int s = 0; s < states.size(); s++){
 			
-			String stateName = states[s].trim();
+			String stateName = states.get(s).trim();
 			
 			if (stateName.isEmpty()){
 				throw new NodeException("State name can't be an empty string");
