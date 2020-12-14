@@ -797,13 +797,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			return;
 		}
 		
-		List<String> allowedTokens = new ArrayList<>();
-		
-		List<String> parentIDs = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getId()).collect(Collectors.toList());
-		List<String> variableNames = getLogicNode().getExpressionVariables().getAllVariableNames();
-		
-		allowedTokens.addAll(parentIDs);
-		allowedTokens.addAll(variableNames);
+		List<String> allowedTokens = getAllowedFunctionTokens();
 		
 		try {
 			String tableType = jsonTable.getString(NodeConfiguration.Table.type.toString());
@@ -843,28 +837,16 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					}
 				}
 			}
-			else if (tableType.equalsIgnoreCase(NodeConfiguration.Table.expression.toString())){
+			else if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Expression.toString())){
 				String expression = jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()).getString(0);
-				
-				if (Advisory.getCurrentThreadGroup() != null && expression.contains("?")){
-					expression = expression.replace("?", "");
-					Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contained invalid characters and were cleaned. We recommend to check the expressions in this node."));
-				}
 				
 				try {
 					setTableFunction(expression, allowedTokens);
 				}
 				catch (NodeException ex){
 					if (Advisory.getCurrentThreadGroup() != null){
-						// We are in advisory mode, relax conditions for parser
-						try {
-							setTableFunction(expression, null, true);
-							Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
-						}
-						catch (NodeException ex2){
-							// Expression is not valid even with relaxed tokens - was this edited by hand into something invalid?
-							Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Failed parsing functions for node " + toStringExtra()));
-						}
+						// Expression is not valid even with relaxed tokens - was this edited by hand into something invalid?
+						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Failed parsing functions for node " + toStringExtra()));
 					}
 					else {
 						throw ex;
@@ -872,52 +854,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				}
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Partitioned.toString())){
-				// Get parents used for partitioning (can be only a subset of all parents)
 				List<String> partitionParentIDs = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.partitions.toString()), String.class);
-				List<ExtendedNode> partitionParentNodes = new ArrayList<>();
-				partitionParentIDs.stream().forEachOrdered(parentID -> {
-					ExtendedNode parent = getNetwork().getLogicNetwork().getExtendedNodeWithUniqueIdentifier(parentID);
-					if (parent == null){
-						throw new IllegalArgumentException("No such parent `"+parentID+"` found");
-					}
-					partitionParentNodes.add(parent);
-				});
-				getLogicNode().setPartitionedExpressionModelNodes(partitionParentNodes);
-
-				// Create functions
-				List<ExtendedNodeFunction> enfs = new ArrayList<>();
+				List<Node> partitionParents = partitionParentIDs.stream().map(id -> getNetwork().getNode(id)).collect(Collectors.toList());
 				List<String> expressions = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()), String.class);
-
-				for(String expression: expressions){
-					
-					if (Advisory.getCurrentThreadGroup() != null && expression.contains("?")){
-						expression = expression.replace("?", "");
-						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contained invalid characters and were cleaned. We recommend to check the expressions in this node."));
-					}
-					
-					ExtendedNodeFunction enf;
-					try {
-						try {
-							enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens, false);
-						}
-						catch (ParseException ex){
-							if (Advisory.getCurrentThreadGroup() != null){
-								Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
-								enf = ExpressionParser.parseFunctionFromString(expression, null, true);
-							}
-							else {
-								throw ex;
-							}
-						}
-					}
-					catch (ParseException ex){
-						throw new NodeException("Unable to parse node function `"+expression+"`", ex);
-					}
-					enfs.add(enf);
-				}
-
-				getLogicNode().setPartitionedExpressions(enfs);
-
+				setTableFunctions(expressions, allowedTokens, false, partitionParents);
 			}
 			else {
 				throw new NodeException("Invalid table type");
@@ -938,6 +878,15 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws NodeException if function is invalid
 	 */
 	public void setTableFunction(String expression) throws NodeException {
+		setTableFunctions(Arrays.asList(expression), getAllowedFunctionTokens(), false, null);
+	}
+	
+	/**
+	 * Returns a list of parent IDs, variable names etc to use as parseable function tokens.
+	 * 
+	 * @return list of allowed function tokens for this node
+	 */
+	public List<String> getAllowedFunctionTokens(){
 		List<String> allowedTokens = new ArrayList<>();
 		
 		List<String> parentIDs = getParents().stream().filter(n -> n.getNetwork().equals(getNetwork())).map(node -> node.getId()).collect(Collectors.toList());
@@ -946,7 +895,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		allowedTokens.addAll(parentIDs);
 		allowedTokens.addAll(variableNames);
 		
-		setTableFunction(expression, allowedTokens);
+		return allowedTokens;
 	}
 	
 	/**
@@ -960,7 +909,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws NodeException if function is invalid
 	 */
 	public void setTableFunction(String expression, List<String> allowedTokens) throws NodeException {
-		setTableFunction(expression, allowedTokens, false);
+		setTableFunctions(Arrays.asList(expression), allowedTokens, false, null);
 	}
 	
 	/**
@@ -974,36 +923,110 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @throws NodeException if function is invalid
 	 */
-	public void setTableFunction(String expression, List<String> allowedTokens, boolean relaxFunctionRequirements) throws NodeException {
+	protected void setTableFunction(String expression, List<String> allowedTokens, boolean relaxFunctionRequirements) throws NodeException {
+		setTableFunctions(Arrays.asList(expression), allowedTokens, relaxFunctionRequirements, null);
+	}
+	
+	/**
+	 * Parses the provided expression as an ExtendedNodeFunction
+	 * 
+	 * @param expression function to set
+	 * @param allowedTokens list of parent IDs, variable names etc to add as parseable tokens; if null, all tokens are allowed
+	 * @param relaxFunctionRequirements if true, all function requirements are lifted and any number of arguments are allowed
+	 * 
+	 * @return ExtendedNodeFunction parsed from the provided expression
+	 */
+	protected ExtendedNodeFunction parseAsFunction(String expression, List<String> allowedTokens, boolean relaxFunctionRequirements){
+		
+		if (Advisory.getCurrentThreadGroup() != null && expression.contains("?")){
+			expression = expression.replace("?", "");
+			Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contained invalid characters and were cleaned. We recommend to check the expressions in this node."));
+		}
+		
 		ExtendedNodeFunction enf;
 		try {
-			enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens, relaxFunctionRequirements);
-			for(String fname: ExpressionParser.parsed_functions){
-				// Restore function names to full versions with spaces
-				if (fname.replaceAll(" ", "").equalsIgnoreCase(enf.getName())){
-					enf.setName(fname);
+			try {
+				enf = ExpressionParser.parseFunctionFromString(expression, allowedTokens, relaxFunctionRequirements);
+				for(String fname: ExpressionParser.parsed_functions){
+					// Restore function names to full versions with spaces
+					if (fname.replaceAll(" ", "").equalsIgnoreCase(enf.getName())){
+						enf.setName(fname);
+					}
+				}
+				return enf;
+			}
+			catch (ParseException ex){
+				if (Advisory.getCurrentThreadGroup() != null){
+					Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Functions for node " + toStringExtra() + " contain invalid tokens. We recommend to check the expressions in this node.", ex));
+					enf = ExpressionParser.parseFunctionFromString(expression, null, true);
+					for(String fname: ExpressionParser.parsed_functions){
+						// Restore function names to full versions with spaces
+						if (fname.replaceAll(" ", "").equalsIgnoreCase(enf.getName())){
+							enf.setName(fname);
+						}
+					}
+					return enf;
+				}
+				else {
+					throw ex;
 				}
 			}
 		}
 		catch (ParseException ex){
 			throw new NodeException("Unable to parse node function `"+expression+"`", ex);
 		}
-		getLogicNode().setExpression(enf);
 	}
 	
 	/**
-	 * Sets Node functions to the ones provided.
+	 * Sets Node expressions to the ones provided.
 	 * <br>
-	 * Also sets Table type to NodeConfiguration.TableType.Partitioned.
+	 * Table type will be set to NodeConfiguration.TableType.Partitioned or NodeConfiguration.TableType.Function depending on how many expressions were provided.
 	 * <br>
-	 * If the node only has one non-simulated parent, this parent will be automatically used to partition this node.
+	 * If the node only has one non-simulated parent, this parent will be automatically used to partition this node. Otherwise partitions must have been set beforehand using {@link #partitionByParents(java.util.List)}
 	 * 
-	 * @param functions functions to set
+	 * @param expressions expressions to set
+	 * @param partitionParents discrete parents to partition by
 	 * 
 	 * @throws NodeException if a function is invalid
 	 */
-	public void setTableFunctions(String[] functions) throws NodeException {
-		throw new UnsupportedOperationException("Not implemented");
+	public void setTableFunctions(List<String> expressions, List<Node> partitionParents) throws NodeException {
+		setTableFunctions(expressions, getAllowedFunctionTokens(), false, partitionParents);
+	}
+	
+	/**
+	 * Sets Node expressions to the ones provided.
+	 * <br>
+	 * Table type will be set to NodeConfiguration.TableType.Partitioned or NodeConfiguration.TableType.Function depending on how many expressions were provided.
+	 * 
+	 * @param expressions expressions to set
+	 * @param allowedTokens list of parent IDs, variable names etc to add as parseable tokens; if null, all tokens are allowed
+	 * @param relaxFunctionRequirements if true, all function requirements are lifted and any number of arguments are allowed
+	 * @param partitionParents discrete parents to partition by, ignored if null or empty
+	 * 
+	 * @throws NodeException if a function is invalid
+	 */
+	protected void setTableFunctions(List<String> expressions, List<String> allowedTokens, boolean relaxFunctionRequirements, List<Node> partitionParents) throws NodeException {
+		
+		if (expressions.isEmpty()){
+			return;
+		}
+		
+		List<ExtendedNodeFunction> functions = expressions.stream()
+				.map(expression -> parseAsFunction(expression, allowedTokens, relaxFunctionRequirements))
+				.collect(Collectors.toList());
+		
+		if (functions.size() == 1){
+			getLogicNode().setExpression(functions.get(0));
+			return;
+		}
+		
+		if (functions.size() > 1){
+			
+			if (partitionParents != null && !partitionParents.isEmpty()){
+				partitionByParents(partitionParents);
+			}
+			getLogicNode().setPartitionedExpressions(functions);
+		}
 	}
 	
 	/**
