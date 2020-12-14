@@ -1573,7 +1573,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return HashSet of ancestors for this Node
 	 */
 	public Set<Node> getAncestors(){
-		Set set = new HashSet();
+		Set set = new LinkedHashSet();
 		getParents().stream().filter(n -> Objects.equals(getNetwork(), n.getNetwork())).forEach(n -> {
 			set.add(n);
 			set.addAll(n.getAncestors());
@@ -1589,7 +1589,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return HashSet of descendants for this Node
 	 */
 	public Set<Node> getDescendants(){
-		Set set = new HashSet();
+		Set set = new LinkedHashSet();
 		getChildren().stream().filter(n -> Objects.equals(getNetwork(), n.getNetwork())).forEach(n -> {
 			set.add(n);
 			set.addAll(n.getDescendants());
