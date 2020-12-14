@@ -1015,8 +1015,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @throws NodeException if one of the nodes in partitionParents is simulated or is not a parent of this Node
 	 */
-	public void partitionByParents(Node[] partitionParents) throws NodeException {
-		throw new UnsupportedOperationException("Not implemented");
+	public void partitionByParents(List<Node> partitionParents) throws NodeException {
+		getLogicNode().setPartitionedExpressionModelNodes(partitionParents.stream().map(node -> node.getLogicNode()).collect(Collectors.toList()));
 	}
 	
 	/**
