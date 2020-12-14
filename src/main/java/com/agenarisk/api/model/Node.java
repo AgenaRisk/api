@@ -149,12 +149,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return list of incoming Links
 	 */
 	@Override
-	public List<Link> getLinksIn() {
-		List<Link> list;
-		synchronized(linksIn) {
-			list = new ArrayList<>(linksIn);
-		}
-		return list;
+	public synchronized List<Link> getLinksIn() {
+		return Collections.unmodifiableList(new ArrayList<>(linksIn));
 	}
 
 	/**
@@ -163,12 +159,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @return list of outgoing Links
 	 */
 	@Override
-	public List<Link> getLinksOut() {
-		List<Link> list;
-		synchronized(linksOut) {
-			list = new ArrayList<>(linksOut);
-		}
-		return list;
+	public synchronized List<Link> getLinksOut() {
+		return Collections.unmodifiableList(new ArrayList<>(linksOut));
 	}
 	
 	/**
