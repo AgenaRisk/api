@@ -1662,7 +1662,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
-	 * Gets an unmodifiable list of all Variables.
+	 * Gets an unmodifiable list of all Variables.<br>
+	 * Will not reflect Variables being added or deleted from the Node.
 	 * 
 	 * @return unmodifiable list of all Variables
 	 */
