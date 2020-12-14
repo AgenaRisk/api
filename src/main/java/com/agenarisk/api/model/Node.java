@@ -197,10 +197,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @param link the Link to remove
 	 * 
 	 * @return true if Link was added and false if the Link does not concern this Node
-	 * @deprecated For internal use only
 	 */
-	@Deprecated
-	protected boolean addLink(Link link){
+	protected final boolean addLink(Link link){
 		if (link.getFromNode().equals(this)){
 			linksOut.add(link);
 			return true;
@@ -221,10 +219,8 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @param link the Link to remove
 	 * 
 	 * @return true if Link was removed and false if the Link does not concern this Node
-	 * @deprecated For internal use only
 	 */
-	@Deprecated
-	protected boolean removeLink(Link link){
+	protected final boolean removeLink(Link link){
 		if (link.getFromNode().equals(this)){
 			linksOut.remove(link);
 			return true;
@@ -505,8 +501,6 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				// Throw the exception up the stack
 				throw ex;
 			}
-			
-//			if(true)throw new UnsupportedOperationException("If the link was created, for same-network links we need to reapply child's NPT");
 			
 			return link;
 		}
