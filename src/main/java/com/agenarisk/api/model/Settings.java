@@ -135,7 +135,7 @@ public class Settings implements Storable {
 	 * @param tolerance simulation evidence tolerance percent
 	 */
 	public void setTolerance(double tolerance) {
-		model.getLogicModel().setSimulationEntropyConvergenceTolerance(tolerance);
+		model.getLogicModel().setSimulationEvidenceTolerancePercent(tolerance);
 	}
 
 	/**
