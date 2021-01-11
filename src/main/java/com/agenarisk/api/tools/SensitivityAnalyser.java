@@ -117,6 +117,19 @@ public class SensitivityAnalyser {
 
 			sensLowerPercentileValue = jsonReportSettings.optDouble("sensLowerPercentileValue", 0d);
 			sensUpperPercentileValue = jsonReportSettings.optDouble("sensUpperPercentileValue", 100d);
+			
+			validatePercentileSetting("sumsLowerPercentileValue", sumsLowerPercentileValue);
+			validatePercentileSetting("sumsUpperPercentileValue", sumsUpperPercentileValue);
+			validatePercentileSetting("sensLowerPercentileValue", sensLowerPercentileValue);
+			validatePercentileSetting("sensUpperPercentileValue", sensUpperPercentileValue);
+			
+			if (sumsLowerPercentileValue > sumsUpperPercentileValue){
+				throw new SensitivityAnalyserException("Parameter value of `sumsLowerPercentileValue` must be smaller than `sumsUpperPercentileValue`");
+			}
+			
+			if (sensLowerPercentileValue > sensUpperPercentileValue){
+				throw new SensitivityAnalyserException("Parameter value of `sensLowerPercentileValue` must be smaller than `sensUpperPercentileValue`");
+			}
 		}
 		
 		// Default to mean and variance as default requested stats
@@ -1162,6 +1175,12 @@ public class SensitivityAnalyser {
 		jsonReportSettings.put("sensUpperPercentileValue", sensUpperPercentileValue);
 		
 		return jsonConfig;
+	}
+	
+	private static void validatePercentileSetting(String name, double value) throws SensitivityAnalyserException {
+		if (value < 0 || value > 100){
+			throw new SensitivityAnalyserException("Parameter `" + name + "` allowed value range is between 0 and 100, but attempted to be set as: " + value);
+		}
 	}
 
 }
