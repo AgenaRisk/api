@@ -13,7 +13,7 @@
 	
 	<groupId>com.agenarisk</groupId>
 	<artifactId>com.agenarisk.api</artifactId>
-	<version>0.976-SNAPSHOT</version>
+	<version>0.977-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<repositories>
