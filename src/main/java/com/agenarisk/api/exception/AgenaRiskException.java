@@ -14,4 +14,8 @@ public class AgenaRiskException extends Exception {
 		super(message, cause);
 	}
 
+	public AgenaRiskException(Throwable thrwbl) {
+		super(thrwbl);
+	}
+
 }

@@ -10,6 +10,7 @@ import com.agenarisk.api.exception.LinkException;
 import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.exception.NetworkException;
 import com.agenarisk.api.exception.NodeException;
+import com.agenarisk.api.exception.OutOfMemoryException;
 import com.agenarisk.api.io.FileAdapter;
 import com.agenarisk.api.io.JSONAdapter;
 import com.agenarisk.api.io.XMLAdapter;
@@ -777,28 +778,39 @@ public class Model implements IdContainer<ModelException>, Storable {
 		
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
+		Throwable calcException = null;
 		try {
 			getLogicModel().propagateDDAlgorithm(
 					dataSets.stream().map(ds -> ds.getLogicScenario()).collect(Collectors.toList()),
 					networks.stream().map(net -> net.getLogicNetwork()).collect(Collectors.toList()),
 					flagsToPass.toArray(new PropagationFlag[0])
 			);
-			outputCaptured += StreamInterceptor.output_release();
 		}
 		catch (Throwable ex){
-			outputCaptured += StreamInterceptor.output_release();
-			throw new CalculationException("Calculation failed", ex);
+			calcException = ex;
 		}
 		finally {
+			outputCaptured += StreamInterceptor.output_release();
 			getLogicModel().SimulationSettingWarningMessage = SimulationSettingWarningMessage;
 			uk.co.agena.minerva.model.Model.checkMonitorsOpen = checkMonitorsOpen;
 			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
 			Logger.logIfDebug(outputCaptured);
 		}
 		
-		if (!getLogicModel().isLastPropagationSuccessful()){
-			Logger.logIfDebug("Last propagation is not flagged as successful:");
+		if (calcException != null){
+			Logger.printThrowableIfDebug(calcException);
+		}
+		
+		if (!getLogicModel().isLastPropagationSuccessful() || calcException != null){
+			Logger.logIfDebug("Calculation failed. Propagation OK flag: " + getLogicModel().isLastPropagationSuccessful());
+			
 			String message = "Calculation failed";
+			
+			if (outputCaptured.contains("Memory required exceeds that available")){
+				message = "Calculation failed because there is not enough RAM";
+				throw new OutOfMemoryException(message, calcException);
+			}
+			
 			if (outputCaptured.contains("Inconsistent evidence in risk object")){
 				throw new InconsistentEvidenceException("Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)");
 			}

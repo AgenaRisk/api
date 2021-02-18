@@ -14,5 +14,9 @@ public class CalculationException extends AgenaRiskException {
 	public CalculationException(String message, Throwable cause) {
 		super(message, cause);
 	}
+
+	public CalculationException(Throwable thrwbl) {
+		super(thrwbl);
+	}
 	
 }
