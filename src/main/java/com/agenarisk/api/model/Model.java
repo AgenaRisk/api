@@ -807,7 +807,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			String message = "Calculation failed";
 			
 			if (outputCaptured.contains("Memory required exceeds that available")){
-				message = "Calculation failed because there is not enough RAM";
+				message = "Insufficient RAM";
 				throw new OutOfMemoryException(message, calcException);
 			}
 			
