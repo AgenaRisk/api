@@ -10,7 +10,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import uk.co.agena.minerva.util.Config;
 import uk.co.agena.minerva.util.Logger;
-import uk.co.agena.minerva.util.helpers.License;
+import uk.co.agena.minerva.util.product.License;
 
 /**
  *
@@ -34,7 +34,7 @@ public class Launcher {
 		og1.addOption(Option.builder().longOpt("keyDeactivate").hasArg(false).desc("deactivate the license").build());
 		
 		og1.addOption(Option.builder().longOpt("offlineActivationRequest").hasArg(false).desc("save offline activation request file").build());
-		og1.addOption(Option.builder().longOpt("offlineActivate").hasArg(false).desc("activate offline with license key and activation file").build());
+		og1.addOption(Option.builder().longOpt("offlineActivate").hasArg(false).desc("activate offline with activation file").build());
 		og1.addOption(Option.builder().longOpt("offlineDeactivate").hasArg(false).desc("deactivate the license offline and save proof into file").build());
 				
 		og1.addOption(Option.builder().longOpt("floatingLease").numberOfArgs(2).argName("address:port").valueSeparator(':').desc("add floating license server settings").build());
@@ -107,15 +107,13 @@ public class Launcher {
 		}
 		
 		if (cmd.hasOption("offlineActivate")){
-			String key = cmd.getOptionValue("key");
 			String path = cmd.getOptionValue("oPath");
-			License.offlineActivate(key, path);
+			License.offlineActivate(path);
 		}
 		
 		if (cmd.hasOption("offlineDeactivate")){
-			String key = cmd.getOptionValue("key");
 			String path = cmd.getOptionValue("oPath");
-			License.offlineRelease(key, path);
+			License.offlineRelease(path);
 		}
 
 		if (cmd.hasOption("floatingLease")){
