@@ -146,7 +146,7 @@
 						</goals>
 						<configuration>
 							<url>https://resources.agenarisk.com/products/zip/developer.zip</url>
-							<outputDirectory>${project.basedir}/lib/cv2</outputDirectory>
+							<outputDirectory>${project.basedir}/lib/</outputDirectory>
 							<unpack>true</unpack>
 							<overwrite>true</overwrite>
 						</configuration>
