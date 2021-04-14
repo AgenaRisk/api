@@ -50,4 +50,16 @@
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
+	<action>
+            <actionName>CUSTOM-Install Skip Tests</actionName>
+            <displayName>Install Skip Tests</displayName>
+            <goals>
+                <goal>install</goal>
+            </goals>
+            <properties>
+                <skipTests>true</skipTests>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+            </properties>
+        </action>
+	
 </actions>
