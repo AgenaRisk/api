@@ -519,8 +519,8 @@ public class JSONAdapter {
 					}
 					catch(ExtendedStateNotFoundException ex){
 						// Use default answers
-						Logger.logIfDebug("Resetting answers to state mapping " + en.getConnNodeId() + " [" + en.getName().getShortDescription() + "]", Logger.err());
-						Logger.logIfDebug("Broken answer was: " + answ.getName() + " ["+answ.getConnExtendedStateId()+"]", Logger.err());
+						Logger.logIfDebug("Resetting answers to state mapping " + en.getConnNodeId() + " [" + en.getName().getShortDescription() + "]", 10);
+						Logger.logIfDebug("Broken answer was: " + answ.getName() + " ["+answ.getConnExtendedStateId()+"]", 10);
 //						Environment.printThrowableIfDebug(ex);
 						Question tempQstn = uk.co.agena.minerva.model.Model.generateQuestionFromNode(ebn, en);
 						qstn.setAnswers(tempQstn.getAnswers());
