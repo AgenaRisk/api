@@ -1386,6 +1386,13 @@ public class Model implements IdContainer<ModelException>, Storable {
 		JSONObject settingsOriginal = Settings.toJson(logicModel);
 		
 		try {
+                        // Reset MessagePassingLinks.iterationCounter
+                        ((List<uk.co.agena.minerva.model.MessagePassingLinks>)logicModel.getMessagePassingLinks())
+                                .forEach(mpls -> {
+                                    mpls.startIterator();
+                                    mpls.next();
+                                });
+                        
 			// Call to perform actual factorization (a factorized model is saved to disk)
 			converter.convertBNList(bnList, logicModel, factorizeFlags);
 			
