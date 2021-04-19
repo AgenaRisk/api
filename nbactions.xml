@@ -8,58 +8,58 @@
 		</goals>
 	</action>
 	<action>
-            <actionName>run</actionName>
-            <packagings>
-                <packaging>jar</packaging>
-            </packagings>
-            <goals>
-                <goal>process-classes</goal>
-                <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
-            </goals>
-            <properties>
-                <exec.args>-classpath %classpath com.agenarisk.api.util.Launcher</exec.args>
-                <exec.executable>java</exec.executable>
-            </properties>
-        </action>
+		<actionName>run</actionName>
+		<packagings>
+			<packaging>jar</packaging>
+		</packagings>
+		<goals>
+			<goal>process-classes</goal>
+			<goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
+		</goals>
+		<properties>
+			<exec.args>-classpath %classpath com.agenarisk.api.util.Launcher</exec.args>
+			<exec.executable>java</exec.executable>
+		</properties>
+	</action>
 	<action>
-            <actionName>debug</actionName>
-            <packagings>
-                <packaging>jar</packaging>
-            </packagings>
-            <goals>
-                <goal>process-classes</goal>
-                <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
-            </goals>
-            <properties>
-                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath com.agenarisk.api.util.Launcher</exec.args>
-                <exec.executable>java</exec.executable>
-                <jpda.listen>true</jpda.listen>
-            </properties>
-        </action>
+		<actionName>debug</actionName>
+		<packagings>
+			<packaging>jar</packaging>
+		</packagings>
+		<goals>
+			<goal>process-classes</goal>
+			<goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
+		</goals>
+		<properties>
+			<exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath com.agenarisk.api.util.Launcher</exec.args>
+			<exec.executable>java</exec.executable>
+			<jpda.listen>true</jpda.listen>
+		</properties>
+	</action>
 	<action>
-            <actionName>profile</actionName>
-            <packagings>
-                <packaging>jar</packaging>
-            </packagings>
-            <goals>
-                <goal>process-classes</goal>
-                <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
-            </goals>
-            <properties>
-                <exec.args>-classpath %classpath com.agenarisk.api.util.Launcher</exec.args>
-                <exec.executable>java</exec.executable>
-            </properties>
-        </action>
+		<actionName>profile</actionName>
+		<packagings>
+			<packaging>jar</packaging>
+		</packagings>
+		<goals>
+			<goal>process-classes</goal>
+			<goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
+		</goals>
+		<properties>
+			<exec.args>-classpath %classpath com.agenarisk.api.util.Launcher</exec.args>
+			<exec.executable>java</exec.executable>
+		</properties>
+	</action>
 	<action>
-            <actionName>CUSTOM-Install Skip Tests</actionName>
-            <displayName>Install Skip Tests</displayName>
-            <goals>
-                <goal>install</goal>
-            </goals>
-            <properties>
-                <skipTests>true</skipTests>
-                <maven.javadoc.skip>true</maven.javadoc.skip>
-            </properties>
-        </action>
+		<actionName>CUSTOM-Install Skip Tests</actionName>
+		<displayName>Install Skip Tests</displayName>
+		<goals>
+			<goal>install</goal>
+		</goals>
+		<properties>
+			<skipTests>true</skipTests>
+			<maven.javadoc.skip>true</maven.javadoc.skip>
+		</properties>
+	</action>
 	
 </actions>
