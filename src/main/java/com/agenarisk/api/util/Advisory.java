@@ -131,12 +131,12 @@ public class Advisory {
 
 			agroup.getMessages().stream().forEachOrdered(amsg -> {
 				if (amsg.getMessage() != null && !amsg.getMessage().trim().isEmpty()){
-					lines.add(amsg.getMessage());
+					lines.add(amsg.getMessage().trim());
 				}
 				Throwable cause = amsg.getCause();
 				while(cause != null){
 					if (cause.getMessage() != null && !cause.getMessage().trim().isEmpty()){
-						lines.add(cause.getMessage());
+						lines.add(cause.getMessage().trim());
 						cause = cause.getCause();
 					}
 					else {
@@ -265,6 +265,7 @@ public class Advisory {
 		 * @param cause Throwable cause of the AdvisoryMessage; can be null
 		 */
 		public AdvisoryMessage(String message, Throwable cause) {
+			message = (message+"").trim();
 			this.message = message;
 			this.cause = cause;
 		}
