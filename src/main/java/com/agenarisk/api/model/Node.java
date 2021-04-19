@@ -609,9 +609,16 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		if (jsonVariables != null){
 			for(int i = 0; i < jsonVariables.length(); i++){
 				JSONObject jsonVariable = jsonVariables.getJSONObject(i);
-				String variableName = jsonVariable.getString(NodeConfiguration.Variables.name.toString());
-				Double variableValue = jsonVariable.getDouble(NodeConfiguration.Variables.value.toString());
+				String variableName = "";
+				Double variableValue;
 				try {
+					try {
+						variableName = jsonVariable.getString(NodeConfiguration.Variables.name.toString());
+						variableValue = jsonVariable.getDouble(NodeConfiguration.Variables.value.toString());
+					}
+					catch(JSONException ex){
+						throw new NodeException(ex.getMessage(), ex);
+					}
 					node.createVariable(variableName, variableValue);
 				}
 				catch (NodeException ex){
