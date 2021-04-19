@@ -822,6 +822,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 				throw new InconsistentEvidenceException(message);
 			}
 			
+			List<String> calcErrors = getLogicModel().getErrors();
+			if (!calcErrors.isEmpty()){
+				message = calcErrors.stream().collect(Collectors.joining("\n"));
+			}
+			
 			throw new CalculationException(message);
 		}
 	}
