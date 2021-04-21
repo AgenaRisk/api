@@ -845,10 +845,20 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				}
 			}
 			else if (tableType.equalsIgnoreCase(NodeConfiguration.TableType.Partitioned.toString())){
-				List<String> partitionParentIDs = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.partitions.toString()), String.class);
-				List<Node> partitionParents = partitionParentIDs.stream().map(id -> getNetwork().getNode(id)).collect(Collectors.toList());
-				List<String> expressions = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()), String.class);
-				setTableFunctions(expressions, allowedTokens, false, partitionParents);
+				try {
+					List<String> partitionParentIDs = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.partitions.toString()), String.class);
+					List<Node> partitionParents = partitionParentIDs.stream().map(id -> getNetwork().getNode(id)).collect(Collectors.toList());
+					List<String> expressions = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()), String.class);
+					setTableFunctions(expressions, allowedTokens, false, partitionParents);
+				}
+				catch(JSONException ex){
+					if (Advisory.getCurrentThreadGroup() != null){
+						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Partitioned table definition missing or corrupt in node " + toStringExtra(), ex));
+					}
+					else {
+						throw ex;
+					}
+				}
 			}
 			else {
 				throw new NodeException("Invalid table type");
