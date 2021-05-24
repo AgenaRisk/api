@@ -470,8 +470,8 @@ public class JSONAdapter {
 					en = ebn.getExtendedNode(qstn.getConnExtendedNodeId());
 				}
 				catch (ExtendedBNNotFoundException | ExtendedNodeNotFoundException ex){
-					Logger.logIfDebug("Questionnaire Network or node not found: " + qstn.getName());
-					Logger.printThrowableIfDebug(ex);
+					Logger.logIfDebug("Questionnaire Network or node not found: " + qstn.getName(), 10);
+					Logger.printThrowableIfDebug(ex, 10);
 					continue;
 				}
 				
