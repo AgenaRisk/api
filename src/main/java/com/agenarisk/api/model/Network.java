@@ -147,7 +147,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 			network.setDescription(description);
 		}
 		catch (NetworkException ex){
-			throw new NetworkException("Failed to add a network to model", ex);
+			throw new NetworkException("Failed to add a network to model with ID `" + id + "`", ex);
 		}
 		
 		// Create nodes
@@ -181,7 +181,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 					parent.linkTo(child);
 				}
 				catch (LinkException ex){
-					throw new NetworkException("Failed to link nodes " + parent + " and " + child, ex);
+					throw new NetworkException("Failed to link nodes " + parent.toStringExtra() + " and " + child.toStringExtra(), ex);
 				}
 			}
 		}
@@ -198,7 +198,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 					node.setTable(jsonTable);
 				}
 				catch (NodeException ex){
-					throw new NetworkException("Failed to load table for node " + node, ex);
+					throw new NetworkException("Failed to load table for node " + node.toStringExtra(), ex);
 				}
 			}
 		}
