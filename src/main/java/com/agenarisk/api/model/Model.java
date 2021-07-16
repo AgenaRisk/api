@@ -1529,8 +1529,8 @@ public class Model implements IdContainer<ModelException>, Storable {
 		// Check modification log
 		for(Network net: networks.values()){
 			try {
-				boolean netModified = net.getLogicNetwork().getModificationLog().getModificationItems().isEmpty();
-				if (netModified){
+				boolean requiresCalculation = getLogicModel().isEbnRecalculationRequired(net.getLogicNetwork());
+				if (requiresCalculation){
 					return false;
 				}
 			}
