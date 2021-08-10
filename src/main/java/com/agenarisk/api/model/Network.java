@@ -30,6 +30,7 @@ import org.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import com.agenarisk.api.model.interfaces.IdContainer;
+import com.agenarisk.api.util.Advisory;
 
 /**
  * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1.
@@ -181,7 +182,13 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 					parent.linkTo(child);
 				}
 				catch (LinkException ex){
-					throw new NetworkException("Failed to link nodes " + parent.toStringExtra() + " and " + child.toStringExtra(), ex);
+					if (Advisory.getCurrentThreadGroup() != null){
+						String message = "Ignored link from " + parent.toStringExtra() + " to " + child.toStringExtra() + ": " + ex.getMessage();
+						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message));
+					}
+					else {
+						throw new NetworkException("Failed to link nodes " + parent.toStringExtra() + " and " + child.toStringExtra(), ex);
+					}
 				}
 			}
 		}
