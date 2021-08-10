@@ -769,6 +769,20 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	}
 	
 	/**
+	 * Attempts to reset node's table
+	 * 
+	 * @throws NodeException upon failure
+	 */
+	public void resetTable() throws NodeException {
+		try {
+			getNetwork().getLogicNetwork().getConnBN().getNodeWithAltId(getId()).updateNPTSize();
+		}
+		catch(Exception ex){
+			throw new NodeException("Failed to reset table for node " + toStringExtra(), ex);
+		}
+	}
+	
+	/**
 	 * Replaces the Node's probability table with one specified in the given JSON.
 	 * <br>
 	 * This must be used after all parents states and incoming links had been created.
@@ -806,6 +820,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				}
 				catch (ExtendedBNException ex){
 					getLogicNode().setNptReCalcRequired(true);
+					resetTable();
 					if (!tableType.equalsIgnoreCase(NodeConfiguration.TableType.Manual.toString())){
 						// NPT failed to set - corrupted?						
 						// Node is not manual - we can afford to lose the NPT
@@ -820,6 +835,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				}
 				catch (ArrayIndexOutOfBoundsException ex){
 					getLogicNode().setNptReCalcRequired(true);
+					resetTable();
 					throw new NodeException("NPT size is wrong", ex);
 				}
 			}
