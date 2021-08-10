@@ -54,6 +54,7 @@ import uk.co.agena.minerva.util.binaryfactorisation.BinaryBNConverter;
 import uk.co.agena.minerva.util.io.FileHandlingException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import com.agenarisk.api.model.interfaces.IdContainer;
+import com.agenarisk.api.util.Advisory;
 import com.singularsys.jep.JepException;
 import java.util.Collection;
 import java.util.Objects;
@@ -394,7 +395,13 @@ public class Model implements IdContainer<ModelException>, Storable {
 						}
 					}
 					catch (NodeException ex){
-						throw new ModelException("Failed to load table for node " + node, ex);
+						if (Advisory.getCurrentThreadGroup() != null){
+							String message = "Failed to load table for node " + node.toStringExtra() + ": " + ex.getMessage();
+							Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message));
+						}
+						else {
+							throw new ModelException("Failed to load table for node " + node, ex);
+						}
 					}
 					
 					// Remember statuses of node NPTs
