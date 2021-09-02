@@ -1,5 +1,6 @@
 package com.agenarisk.api.model;
 
+import com.agenarisk.api.exception.AgenaRiskRuntimeException;
 import com.agenarisk.api.exception.DataSetException;
 import com.agenarisk.api.io.stub.SummaryStatistic;
 import com.agenarisk.api.model.interfaces.Storable;
@@ -19,6 +20,7 @@ import uk.co.agena.minerva.model.extendedbn.IntegerIntervalEN;
 import uk.co.agena.minerva.model.extendedbn.NumericalEN;
 import uk.co.agena.minerva.model.extendedbn.RankedEN;
 import uk.co.agena.minerva.util.Logger;
+import uk.co.agena.minerva.util.helpers.MathsHelper;
 import uk.co.agena.minerva.util.model.DataPoint;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
@@ -378,6 +380,22 @@ public class CalculationResult implements Storable {
 	 */
 	public double getUpperPercentile() {
 		return logicResult.getUpperPercentile();
+	}
+	
+	/**
+	 * Gets a specified percentile value for this result.
+	 * 
+	 * @param percentile percentile to calculate
+	 * 
+	 * @return specified percentile value for this result
+	 */
+	public double getPercentile(double percentile){
+		try {
+			return MathsHelper.percentile(percentile, logicResult.getDataset());
+		}
+		catch(Exception ex){
+			throw new AgenaRiskRuntimeException("Failed to retrieve percentile " + percentile, ex);
+		}
 	}
 
 	/**

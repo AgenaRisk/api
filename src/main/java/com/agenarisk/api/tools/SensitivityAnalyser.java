@@ -444,10 +444,10 @@ public class SensitivityAnalyser {
 						originalValues.add(targetOriginal.getStandardDeviation());
 						break;
 					case lowerPercentile:
-						originalValues.add(targetOriginal.getLowerPercentile());
+						originalValues.add(targetOriginal.getPercentile(sumsLowerPercentileValue));
 						break;
 					case upperPercentile:
-						originalValues.add(targetOriginal.getUpperPercentile());
+						originalValues.add(targetOriginal.getPercentile(sumsUpperPercentileValue));
 						break;
 				}
 			});
