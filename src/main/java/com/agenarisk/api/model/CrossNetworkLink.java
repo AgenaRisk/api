@@ -25,6 +25,7 @@ import com.agenarisk.api.model.interfaces.Storable;
 import org.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
+import uk.co.agena.minerva.util.model.NameDescription;
 import uk.co.agena.minerva.util.model.Variable;
 import uk.co.agena.minerva.util.nptgenerator.Arithmetic;
 import uk.co.agena.minerva.util.nptgenerator.Normal;
@@ -167,9 +168,12 @@ public class CrossNetworkLink extends Link implements Storable {
 			if (en2 instanceof LabelledEN || en2 instanceof DiscreteRealEN || en2 instanceof RankedEN){
 				// If target is labelled node, just copy states from source to target
 				List<ExtendedState> states = new ArrayList<>();
-				for(ExtendedState es: (List<ExtendedState>)en1.getExtendedStates()){
-					String esname = es.getName().getShortDescription();
-					states.add(ExtendedState.createLabelledState(esname, esname));
+				for(ExtendedState es1: (List<ExtendedState>)en1.getExtendedStates()){
+					ExtendedState es2 = new ExtendedState();
+					es2.setName(new NameDescription(es1.getName().getShortDescription(), es1.getName().getLongDescription()));
+					es2.setRange(es1.getRange());
+					es2.setNumericalValue(es1.getNumericalValue());
+					states.add(es2);
 				}
 
 				try {
