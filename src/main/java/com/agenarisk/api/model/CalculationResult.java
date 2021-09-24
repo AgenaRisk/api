@@ -207,7 +207,7 @@ public class CalculationResult implements Storable {
 				}
 				catch (NullPointerException ex){
 					ds.clearDataPoints();
-					String message = "Failed to read results data for node " + node.toStringExtra();
+					String message = "Recalculation required: result data corrupted or missing for node " + node.toStringExtra();
 					
 					if (Advisory.getCurrentThreadGroup() != null){
 						Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message, ex));
