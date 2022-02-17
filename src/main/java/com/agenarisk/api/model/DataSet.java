@@ -122,8 +122,14 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 		try {
 			// Try to use original ID. If it exists, try appending numbers
 			
-			String idOriginal = jsonDataSet.getString(DataSet.Field.id.toString());
-			String id = idOriginal;
+			String idOriginal;
+			if (jsonDataSet.has(DataSet.Field.id.toString())){
+				idOriginal = jsonDataSet.getString(DataSet.Field.id.toString());
+			}
+			else {
+				idOriginal = "Scenario";
+			}
+			String id = String.valueOf(idOriginal);
 			int i = 1;
 			while(model.getDataSets().get(id) != null){
 				id = idOriginal + "_" + i++;
