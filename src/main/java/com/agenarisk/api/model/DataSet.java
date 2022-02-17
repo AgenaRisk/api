@@ -560,9 +560,21 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 		
 		try {
 			node = model.getNetwork(networkId).getNode(nodeId);
+			node.toStringExtra();
 		}
 		catch(NullPointerException ex){
-			throw new DataSetException("Network or node not found", ex);
+			String message;
+			Network errNet = model.getNetwork(networkId);
+			if (errNet == null){
+				message = "Network with ID `" + networkId + "` does not exist";
+			}
+			else if (errNet.getNode(nodeId) == null){
+				message = "Node with ID `" + nodeId + "` does not exist in Network `" + networkId + "`";
+			}
+			else {
+				message = "Network or node not found for network ID: " + networkId + ", node ID: " + nodeId;
+			}
+			throw new DataSetException(message, ex);
 		}
 		
 		JSONArray jsonEntries = jsonObservation.getJSONArray(Observation.Field.entries.toString());
