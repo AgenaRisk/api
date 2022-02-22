@@ -801,7 +801,9 @@ public class Model implements IdContainer<ModelException>, Storable {
 			getLogicModel().SimulationSettingWarningMessage = SimulationSettingWarningMessage;
 			uk.co.agena.minerva.model.Model.checkMonitorsOpen = checkMonitorsOpen;
 			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
-			Logger.logIfDebug(outputCaptured);
+			if (!outputCaptured.trim().isEmpty()){
+				Logger.logIfDebug(outputCaptured);
+			}
 		}
 		
 		if (calcException != null){
