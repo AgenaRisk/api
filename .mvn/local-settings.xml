@@ -1,0 +1,18 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+		  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 http://maven.apache.org/xsd/settings-1.2.0.xsd">
+	<mirrors>
+		<mirror>
+			<id>archiva.internal-unblocker</id>
+			<name>Unblocker mirror for archiva.internal</name>
+			<url>http://mvn.agenarisk.com/repository/internal</url>
+			<mirrorOf>archiva.internal</mirrorOf>
+		</mirror>
+		<mirror>
+			<id>archiva.snapshots-unblocker</id>
+			<name>Unblocker mirror for archiva.snapshots</name>
+			<url>http://mvn.agenarisk.com/repository/snapshots</url>
+			<mirrorOf>archiva.snapshots</mirrorOf>
+		</mirror>
+	</mirrors>
+</settings>
