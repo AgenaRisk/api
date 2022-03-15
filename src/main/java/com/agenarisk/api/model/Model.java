@@ -1034,7 +1034,18 @@ public class Model implements IdContainer<ModelException>, Storable {
 		getLogicModel().getQuestionnaireList().getQuestionnaires().clear();
 		getLogicModel().getMetaData().getRootMetaDataItem().getConnQuestionnaireList().getQuestionnaires().clear();
 		for(int i = 0; i < jsonRiskTable.length(); i++){
-			this.loadQuestionnaire(jsonRiskTable.optJSONObject(i));
+			try {
+				this.loadQuestionnaire(jsonRiskTable.optJSONObject(i));
+			}
+			catch (Exception ex){
+				if (Advisory.getCurrentThreadGroup() != null){
+					String message = "Failed to load all questionnaires";
+					Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message));
+				}
+				else {
+					throw new AgenaRiskRuntimeException("Failed to load all questionnaires");
+				}
+			}
 		}
 		
 		// For each ExtendedBN without a questionnaire, create one
