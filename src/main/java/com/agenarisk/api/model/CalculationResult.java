@@ -140,7 +140,7 @@ public class CalculationResult implements Storable {
 			
 		}
 		catch(NullPointerException ex){
-			String message = "Not found node with ID `"+nodeId+"` in network with ID `"+networkId+"`";
+			String message = "Not found calculation data for node with ID `"+nodeId+"` in network with ID `"+networkId+"`";
 			if (Advisory.getCurrentThreadGroup() != null){
 				Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message, ex));
 				return;
