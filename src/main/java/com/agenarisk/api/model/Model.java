@@ -62,6 +62,7 @@ import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.Model.PropagationFlag;
 import uk.co.agena.minerva.model.ModelEvent;
+import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
 
 /**
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
@@ -1375,25 +1376,32 @@ public class Model implements IdContainer<ModelException>, Storable {
 					return false;
 				}
 				
-				if (!node.getTableType().equals(NodeConfiguration.TableType.Expression)){
-					// Only factorize nodes with a single expression - not a manual NPT and not a partitioned expression
+				if (node.getTableType().equals(NodeConfiguration.TableType.Manual)){
+					// Do not factorize manual NPT nodes
 					return false;
 				}
 				
 				if (node.getLogicNode() instanceof ContinuousEN){
 					ContinuousEN cien = (ContinuousEN)node.getLogicNode();
-					if (cien.checkExpressionToDetectComplexFunction()){
-						// The node contains an expression that can't be factorized
+				
+					List<ExtendedNodeFunction> functions = new ArrayList<>();
+					
+					if (node.getTableType().equals(NodeConfiguration.TableType.Expression)){
+						functions.add(cien.getCurrentNodeFunction());
+					}
+					if (node.getTableType().equals(NodeConfiguration.TableType.Partitioned)){
+						functions.addAll(cien.getPartitionedExpressions());
+					}
+					
+					boolean complexFunctionFound = functions.stream().anyMatch(function -> ContinuousEN.checkExpressionToDetectComplexFunction(function));
+					if (complexFunctionFound){
 						return false;
 					}
 				}
 				
 				// At this point there are more than 2 parents
-				// The NPT type is expression
-				// All parents are intervals (sim or non-sim) because otherwise the node would have to be partitioned expression
-				
+				// The NPT type is expression or partitioned expressions
 				Set<Node> parents = node.getParents();
-				
 				// Only factorize if the number of simulated parents is more than 2
 				return parents.stream().filter(Node::isSimulated).count() > 2;
 				
