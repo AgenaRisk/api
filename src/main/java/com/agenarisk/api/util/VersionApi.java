@@ -12,12 +12,10 @@ import uk.co.agena.minerva.util.Logger;
  * @author Eugene Dementiev
  */
 public class VersionApi {
-	private static final int revision;
-	private static final String versionText;
+	private static final String VERSION_TEXT;
 	
 	static {
-		versionText = retrieveVersion();
-		revision = retrieveRevision(versionText);
+		VERSION_TEXT = retrieveVersion();
 	}
 	
 	private static String retrieveVersion(){
@@ -38,31 +36,7 @@ public class VersionApi {
 		return revString;
 	}
 	
-	private static Integer retrieveRevision(String version){
-		
-		Integer revParsed = null;
-		
-		if (version != null){
-			try {
-				revParsed = Integer.parseInt(version);
-			}
-			catch (NumberFormatException ex){
-				Logger.logIfDebug("Failed to parse API version string: " + ex.getMessage());
-			}
-		}
-		
-		if (revParsed == null){
-			return 0;
-		}
-		
-		return revParsed;
-	}
-	
-	public static int getRevision(){
-		return revision;
-	}
-	
 	public static String getVersionText(){
-		return versionText;
+		return VERSION_TEXT;
 	}
 }
