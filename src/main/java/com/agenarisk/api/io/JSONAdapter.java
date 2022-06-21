@@ -136,6 +136,9 @@ public class JSONAdapter {
 		JSONArray jsonResults = resultsToJSON(model, scenario);
 		jsonDataSet.put(com.agenarisk.api.model.CalculationResult.Field.results.toString(), jsonResults);
 		
+		JSONObject logPe = new JSONObject(scenario.getLogPeMap());
+		jsonDataSet.put(com.agenarisk.api.model.DataSet.Field.logPe.toString(), logPe);
+		
 		// Graphics
 		
 		return jsonDataSet;

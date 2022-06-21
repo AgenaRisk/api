@@ -125,7 +125,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 		/**
 		 * While propagating simulation nodes, keep tails and zero mass regions (default is to prune and compact)
 		 */
-		KEEP_TAILS_ZERO_REGIONS
+		KEEP_TAILS_ZERO_REGIONS,
+		
+		/**
+		 * Along with calculating marginals, log probability of evidence will also be calculated (incurs additional calculation time)
+		 */
+		CALCULATE_LOGPE
 	}
 	
 	/**
@@ -780,6 +785,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 				case WITH_ANCESTORS:
 					flagsToPass.add(PropagationFlag.WITH_ANCESTORS);
 					break;
+					
+				case CALCULATE_LOGPE: 
+					flagsToPass.add(PropagationFlag.CALCULATE_LOGPE);
+					break;
+					
 				default:
 			}
 		}

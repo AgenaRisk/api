@@ -54,7 +54,8 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 		dataSet,
 		id,
 		active,
-		displayable
+		displayable,
+		logPe
 	}
 
 	/**
@@ -197,6 +198,23 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 			}
 			catch (JSONException | DataSetException ex){
 				throw new ModelException("Failed to read results data", ex);
+			}
+		}
+		
+		// Load LogPE data
+		if (jsonDataSet.has(Field.logPe.toString())){
+			try {
+				JSONObject logPe = jsonDataSet.getJSONObject(Field.logPe.toString());
+				for(String networkId: logPe.keySet()){
+					Double logPeValue = logPe.getDouble(networkId);
+					
+					dataSet.getLogicScenario().setLogProbabilityEvidence(networkId, logPeValue);
+				}
+			}
+			catch (Exception ex){
+				if (Advisory.getCurrentThreadGroup() != null){
+					Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Failed to load logPE values", ex));
+				}
 			}
 		}
 		
@@ -999,6 +1017,17 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 		});
 		jsonDataSet.put(com.agenarisk.api.model.CalculationResult.Field.results.toString(), jsonResults);
 		
+		JSONObject logPe = new JSONObject(getLogicScenario().getLogPeMap());
+		jsonDataSet.put(Field.logPe.toString(), logPe);
+		
 		return jsonDataSet;
+	}
+	
+	public Double getLogProbabilityOfEvidence(Network network){
+		return getLogicScenario().getLogProbabilityEvidence(network.getId());
+	}
+	
+	public Double getProbabilityOfEvidence(Network network){
+		return getLogicScenario().getProbabilityEvidence(network.getId());
 	}
 }
