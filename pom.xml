@@ -136,6 +136,7 @@
 							<outputDirectory>${project.basedir}/lib</outputDirectory>
 							<unpack>true</unpack>
 							<overwrite>true</overwrite>
+							<md5>1fd9e1bce419e8fd8763f3a19ce563e1</md5>
 						</configuration>
 					</execution>
 					<execution>
