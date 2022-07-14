@@ -313,6 +313,7 @@ public class CrossNetworkLink extends Link implements Storable {
 		
 		uk.co.agena.minerva.model.Model model = getFromNode().getNetwork().getModel().getLogicModel();
 		MessagePassingLinks mpls = new MessagePassingLinks();
+		mpls.setId(model.getMessagePassingLinks().size());
 		mpls.getLinks().add(logicLink);
 		model.getMessagePassingLinks().add(mpls);
 		model.fireModelChangedEvent(model, ModelEvent.MESSAGE_PASSING_LINKS_CHANGED, model.getMessagePassingLinks());
