@@ -179,7 +179,7 @@ public class JSONAdapter {
 					ds = mdi.getDataset();
 				}
 				catch(NullPointerException ex){
-					Logger.logIfDebug("No MDI or DataSet for `" + ebn.getConnID() + "`.`" + en.getConnNodeId() + "` during API1 to API2 conversion");
+					Logger.logIfDebug("No MDI or DataSet for `" + ebn.getConnID() + "`.`" + en.getConnNodeId() + "` during API1 to API2 conversion", 5);
 					continue;
 				}
 				
