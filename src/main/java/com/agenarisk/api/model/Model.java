@@ -1488,7 +1488,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	public void convertToStatic(DataSet dataSet) throws NodeException, AgenaRiskRuntimeException {
 		getNetworks().values().forEach(network -> {
 			network.getNodes().values().forEach(node -> {
-				if (node.isSimulated()){
+				if (node.isSimulated() && !node.isConnectedInput()){
 					try {
 						node.convertToStatic(dataSet);
 					}
