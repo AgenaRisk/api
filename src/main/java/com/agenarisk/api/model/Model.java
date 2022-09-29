@@ -1498,14 +1498,6 @@ public class Model implements IdContainer<ModelException>, Storable {
 				}
 			});
 		});
-		
-		try {
-			getLogicModel().getExtendedBNList().regenerateNPTforEveryExtendedNode(false);
-			getLogicModel().fireModelChangedEvent(getLogicModel(), uk.co.agena.minerva.model.ModelEvent.ALL_NPTS_CHANGED, new ArrayList());
-		}
-		catch (Exception ex){
-			throw new AgenaRiskRuntimeException("Failed to regenerate NPTs", ex);
-		}
 	}
 	
 	/**
