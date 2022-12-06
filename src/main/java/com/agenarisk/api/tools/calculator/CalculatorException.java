@@ -1,4 +1,4 @@
-package com.agenarisk.api.tools;
+package com.agenarisk.api.tools.calculator;
 
 /**
  *
