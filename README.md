@@ -60,5 +60,27 @@ mvn exec:java@activate '-Dexec.args="--keyActivate --key 1234-ABCD-5678-EFGH --d
 
 Note: you can also run this with e.g. `java -jar com.agenarisk.api-0.9-SNAPSHOT.jar`
 
+# CLI Tools
+## Calculation
+You can use this library to run a calculation from CLI by invoking `mvn exec:java@calculate`
+It requires the following `-Dexec.args`:
+* `--model` - path to model file
+* `--data` - path to data file  
+Format of the output file will be a JSON array of dataset objects each containing id and observations array: `[{id, observations[]}, ...]`
+* `--out` - path to output file  
+Format of the output file will be a JSON array of dataset objects each containing id and results array: `[{id, results[]}, ...]`
+* `--use-cache` - optional, skip data recalculation if found in results file [default: false]  
+This option is useful when you want to be able to resume an interrupted batch calculation, as every dataset will be written to file as soon as it is calculated
+
+Example command for Powershell:
+```
+ mvn exec:java@calculate "-Dexec.args=`"--model 'c:\\Car Costs.cmpx' --out 'c:\\out.json' --data 'c:\\Car Costs Scenarios.json' --use-cache`""
+```
+
+Example command for Linux bash:
+```
+mvn exec:java@calculate -Dexec.args="--model '~/agena/Car Costs.cmpx' --out '~/agena/out.json' --data '~/agena/Car Costs Scenarios.json' --use-cache"
+```
+
 # Resources
 [JavaDoc](https://agenarisk.github.io/api/)
