@@ -133,6 +133,13 @@ public class Model implements IdContainer<ModelException>, Storable {
 		CALCULATE_LOGPE
 	}
 	
+	public static enum ConversionFlag {
+		/**
+		 * Ignore static conversion errors for individual nodes (e.g. if calculation result missing from DataSet)
+		 */
+		IgnoreErrors
+	}
+	
 	/**
 	 * ID-Network map of this Model
 	 * This should not be directly returned to other components and should be modified only by this class in a block synchronized on IDContainer.class
@@ -1481,11 +1488,13 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * Any VariableObservations in the DataSet will replace current Node variable defaults and will be replaced from the DataSet observations.
 	 * 
 	 * @param dataSet DataSet to use for creating static states from results
+	 * @param flags Conversion flags
 	 * 
 	 * @throws AgenaRiskRuntimeException if failed to regenerate NPTs after conversion
 	 * @throws NodeException if failed for other reasons
 	 */
-	public void convertToStatic(DataSet dataSet) throws NodeException, AgenaRiskRuntimeException {
+	public void convertToStatic(DataSet dataSet,  ConversionFlag... flags) throws NodeException, AgenaRiskRuntimeException {
+		boolean ignoreErrors = Arrays.stream(flags).anyMatch(flag -> ConversionFlag.IgnoreErrors.equals(flag));
 		getNetworks().values().forEach(network -> {
 			network.getNodes().values().forEach(node -> {
 				if (node.isSimulated() && !node.isConnectedInput()){
@@ -1493,7 +1502,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 						node.convertToStatic(dataSet);
 					}
 					catch (Exception ex){
-						throw new NodeException("Failed to convert results to static states for node " + node.toStringExtra() + " from DataSet `" + dataSet.getId() + "`", ex);
+						String message = "Failed to convert results to static states for node " + node.toStringExtra() + " from DataSet `" + dataSet.getId() + "`";
+						if (!ignoreErrors){
+							throw new NodeException(message, ex);
+						}
+						Logger.logIfDebug(message, 101);
 					}
 				}
 			});

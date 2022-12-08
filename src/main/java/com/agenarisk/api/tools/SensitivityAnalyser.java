@@ -249,7 +249,7 @@ public class SensitivityAnalyser {
 		
 		// Convert to static and calculate to get baseline calculation results
 		try {
-			model.convertToStatic(dataSet);
+			model.convertToStatic(dataSet, Model.ConversionFlag.IgnoreErrors);
 			model.calculate(Arrays.asList(targetNode.getNetwork()), Arrays.asList(dataSet));
 		}
 		catch (AgenaRiskRuntimeException | CalculationException ex) {
