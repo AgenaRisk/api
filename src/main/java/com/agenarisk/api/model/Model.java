@@ -137,7 +137,12 @@ public class Model implements IdContainer<ModelException>, Storable {
 		/**
 		 * Ignore static conversion errors for individual nodes (e.g. if calculation result missing from DataSet)
 		 */
-		IgnoreErrors
+		IgnoreErrors,
+		
+		/**
+		 * Skips regenerating tables in the Core
+		 */
+		SkipTableRegeneration
 	}
 	
 	/**
@@ -1494,7 +1499,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws NodeException if failed for other reasons
 	 */
 	public void convertToStatic(DataSet dataSet,  ConversionFlag... flags) throws NodeException, AgenaRiskRuntimeException {
-		boolean ignoreErrors = Arrays.stream(flags).anyMatch(flag -> ConversionFlag.IgnoreErrors.equals(flag));
+		List<ConversionFlag> flagsList = Arrays.asList(flags);
 		getNetworks().values().forEach(network -> {
 			network.getNodes().values().forEach(node -> {
 				if (node.isSimulated() && !node.isConnectedInput()){
@@ -1503,7 +1508,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 					}
 					catch (Exception ex){
 						String message = "Failed to convert results to static states for node " + node.toStringExtra() + " from DataSet `" + dataSet.getId() + "`";
-						if (!ignoreErrors){
+						if (!flagsList.contains(ConversionFlag.IgnoreErrors)){
 							throw new NodeException(message, ex);
 						}
 						Logger.logIfDebug(message, 101);
@@ -1511,6 +1516,10 @@ public class Model implements IdContainer<ModelException>, Storable {
 				}
 			});
 		});
+
+		if (!flagsList.contains(ConversionFlag.SkipTableRegeneration)){
+			regenerateLogicTables();
+		}
 	}
 	
 	/**
@@ -1609,6 +1618,43 @@ public class Model implements IdContainer<ModelException>, Storable {
 			return id;
 		}
 	}
-	
+
+	/**
+	 * Tries to gracefully regenerate NPTs in all nodes in all networks in a way that suppresses non-catchable exceptions in core
+	 */
+	private void regenerateLogicTables(){
+		Logger.logIfDebug("Regenerating NPTs", 3);
+		boolean SimulationSettingWarningMessage = getLogicModel().SimulationSettingWarningMessage;
+		boolean checkMonitorsOpen = uk.co.agena.minerva.model.Model.checkMonitorsOpen;
+		String suppressMessages = uk.co.agena.minerva.model.Model.suppressMessages;
+		getLogicModel().SimulationSettingWarningMessage = false;
+		uk.co.agena.minerva.model.Model.checkMonitorsOpen = false;
+		uk.co.agena.minerva.model.Model.suppressMessages = "system";
+		StreamInterceptor.output_capture();
+		String outputCaptured = "";
+		Throwable exception = null;
+		try {
+			getLogicModel().getExtendedBNList().regenerateNPTforEveryExtendedNode(false);
+			getLogicModel().fireModelChangedEvent(getLogicModel(), uk.co.agena.minerva.model.ModelEvent.ALL_NPTS_CHANGED, new ArrayList());
+		}
+		catch (Throwable ex){
+			exception = ex;
+		}
+		finally {
+			outputCaptured += StreamInterceptor.output_release();
+			getLogicModel().SimulationSettingWarningMessage = SimulationSettingWarningMessage;
+			uk.co.agena.minerva.model.Model.checkMonitorsOpen = checkMonitorsOpen;
+			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
+		}
+		
+		if (exception != null){
+			Logger.logIfDebug("Failed to regenerate NPTs during static conversion", 3);
+			Logger.printThrowableIfDebug(exception, 101);
+		}
+		
+		if (!outputCaptured.trim().isEmpty()){
+			Logger.logIfDebug("Output captured during NPT regeneration: " + outputCaptured.trim(), 101);
+		}
+	}
 	
 }

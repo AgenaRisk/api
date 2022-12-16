@@ -241,7 +241,12 @@ public class SensitivityAnalyser {
 		 * and there are no simulation nodes without observations (if all simulated nodes are observed, we can assume the model is static)
 		 */
 		try {
-			model.calculate(Arrays.asList(targetNode.getNetwork()), Arrays.asList(dataSet), Model.CalculationFlag.WITH_ANCESTORS, Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS);
+			model.calculate(
+					Arrays.asList(targetNode.getNetwork()),
+					Arrays.asList(dataSet),
+					Model.CalculationFlag.WITH_ANCESTORS,
+					Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS
+			);
 		}
 		catch (CalculationException ex){
 			throw new SensitivityAnalyserException("Failed to precalculate the model during initialization", ex);
