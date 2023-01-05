@@ -5,4 +5,5 @@ com.agenarisk.api.model
 com.agenarisk.api.model.field
 com.agenarisk.api.model.interfaces
 com.agenarisk.api.tools
+com.agenarisk.api.tools.calculator
 com.agenarisk.api.util
