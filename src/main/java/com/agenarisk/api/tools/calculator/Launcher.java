@@ -85,7 +85,7 @@ public class Launcher {
 		}
 		
 		try {
-		new Calculator()
+			new Calculator()
 				.withModel(cmd.getOptionValue("model"))
 				.withData(cmd.getOptionValue("data"))
 				.savingTo(cmd.getOptionValue("out"))
