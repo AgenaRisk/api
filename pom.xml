@@ -212,6 +212,16 @@
 							<mainClass>com.agenarisk.api.tools.calculator.Launcher</mainClass>
 						</configuration>
 					</execution>
+					
+					<execution>
+						<id>sensitivity</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.agenarisk.api.tools.sensitivity.Launcher</mainClass>
+						</configuration>
+					</execution>
 
 				</executions>
 				<configuration>
