@@ -4,10 +4,9 @@ import com.agenarisk.api.exception.ModelException;
 import com.agenarisk.api.model.DataSet;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.model.Observation;
-import java.io.IOException;
+import com.agenarisk.api.tools.Utils;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -34,7 +33,7 @@ public class Calculator {
 	public Calculator(){}
 	
 	public Calculator withModel(String path){
-		pathModel = resolve(path);
+		pathModel = Utils.resolve(path);
 		try {
 			model = Model.loadModel(pathModel.toString());
 			model.getDataSetList().forEach(ds -> model.removeDataSet(ds));
@@ -47,11 +46,11 @@ public class Calculator {
 	}
 	
 	public Calculator withData(String path){
-		pathDataSets = resolve(path);
+		pathDataSets = Utils.resolve(path);
 
 		int i = 0;
 		try {
-			JSONArray jArray = readJsonArray(pathDataSets);
+			JSONArray jArray = Utils.readJsonArray(pathDataSets);
 			for (; i < jArray.length(); i++) {
 				JSONObject jDataSet = jArray.optJSONObject(i);
 				model.createDataSet(jDataSet);
@@ -72,7 +71,7 @@ public class Calculator {
 	}
 	
 	public Calculator savingTo(String path) {
-		pathOut = resolve(path);
+		pathOut = Utils.resolve(path);
 		Logger.out().println("Results: " + pathOut);
 		return this;
 	}
@@ -128,7 +127,7 @@ public class Calculator {
 	
 	private void readCache(){
 		try {
-			jResults = readJsonArray(pathOut);
+			jResults = Utils.readJsonArray(pathOut);
 		}
 		catch(Exception ex){
 			throw new CalculatorException("Failed to read result cache from: " + pathOut, ex);
@@ -145,26 +144,4 @@ public class Calculator {
 			throw new CalculatorException("Result cache corrupted at index " + i, ex);
 		}
 	}
-		
-	private JSONArray readJsonArray(Path path){
-		String fileContents;
-		try {
-			fileContents = new String(Files.readAllBytes(path)).trim();
-		}
-		catch(IOException ex){
-			throw new CalculatorException("Failed to read file: " + path, ex);
-		}
-		return new JSONArray(fileContents);
-	}
-	
-	/**
-	 * Strips out optional double quotes enclosing this path
-	 * 
-	 * @param path
-	 * @return 
-	 */
-	private Path resolve(String path) {
-		return Paths.get(path.replaceFirst("^[\"'](.*)[\"']$", "$1"));
-	}
-	
 }
