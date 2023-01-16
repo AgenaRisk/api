@@ -212,9 +212,7 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 				}
 			}
 			catch (Exception ex){
-				if (Advisory.getCurrentThreadGroup() != null){
-					Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage("Failed to load logPE values", ex));
-				}
+				Logger.logIfDebug(ex, 5);
 			}
 		}
 		

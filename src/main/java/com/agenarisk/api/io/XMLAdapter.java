@@ -125,7 +125,7 @@ public class XMLAdapter {
 	 * 
 	 * @return object in XML format
 	 */
-	private static String toXMLString(Object o, String wrapper){
+	public static String toXMLString(Object o, String wrapper){
 		StringBuilder sb = new StringBuilder();
 		
 		String prefix = "";
