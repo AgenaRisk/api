@@ -255,7 +255,12 @@ public class SensitivityAnalyser {
 		// Convert to static and calculate to get baseline calculation results
 		try {
 			model.convertToStatic(dataSet, Model.ConversionFlag.IgnoreErrors);
-			model.calculate(Arrays.asList(targetNode.getNetwork()), Arrays.asList(dataSet));
+			model.calculate(
+					Arrays.asList(targetNode.getNetwork()),
+					Arrays.asList(dataSet),
+					Model.CalculationFlag.WITH_ANCESTORS,
+					Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS
+			);
 		}
 		catch (AgenaRiskRuntimeException | CalculationException ex) {
 			throw new SensitivityAnalyserException("Static conversion failed", ex);
@@ -332,7 +337,7 @@ public class SensitivityAnalyser {
 			JSONArray jsonRows = new JSONArray();
 			jsonTable.put("rows", jsonRows);
 
-			List<State> sensStates = sensNode.getStates();
+			List<State> sensStates = getStates(sensNode);
 			
 			JSONArray jsonHeaderRow = new JSONArray();
 			jsonHeaderRow.put(sensNode.getName() + " State");
@@ -371,7 +376,7 @@ public class SensitivityAnalyser {
 			}
 			else {
 				Map<BufferedCalculationKey, Double> bufferedValues = bufSACalcs.get(sensNode);
-				List<State> tarStates = targetNode.getStates();
+				List<State> tarStates = getStates(targetNode);
 				
 				// Add column headers
 				for(State tarState: tarStates){
@@ -471,7 +476,7 @@ public class SensitivityAnalyser {
 				
 				for(Node sensNode: sensitivityNodes){
 					Map<BufferedStatisticKey, Double> bufferedValues = bufSAStatsLim.get(sensNode);
-					List<State> sensStates = sensNode.getStates();
+					List<State> sensStates = getStates(sensNode);
 
 					State stateMin = null;
 					Double valueMin = null;
@@ -532,7 +537,7 @@ public class SensitivityAnalyser {
 						The bar is between min and max such values, labelled
 			*/
 			
-			List<State> tarStates = targetNode.getStates();
+			List<State> tarStates = getStates(targetNode);
 			for(int tarStateIndex = 0; tarStateIndex < tarStates.size(); tarStateIndex++){
 				JSONObject jsonGraph = new JSONObject();
 				
@@ -547,7 +552,7 @@ public class SensitivityAnalyser {
 				
 				for(Node sensNode: sensitivityNodes){
 					Map<BufferedCalculationKey, Double> bufferedValues = bufSACalcs.get(sensNode);
-					List<State> sensStates = sensNode.getStates();
+					List<State> sensStates = getStates(sensNode);
 					
 					State stateMin = sensStates.get(0);
 					Double valueMin = bufferedValues.get(new BufferedCalculationKey(targetNode, tarState.getLabel(), sensStates.get(0).getLabel()));
@@ -625,7 +630,7 @@ public class SensitivityAnalyser {
 				jsonGraph.put("points", jsonPoints);
 				jsonGraph.put("summaryStatistic", statRequested.toString());
 
-				List<State> sensStates = sensNode.getStates();
+				List<State> sensStates = getStates(sensNode);
 				for(State sensState: sensStates){
 					Double value = bufSAStatsLim.get(sensNode).get(new BufferedStatisticKey(statRequested, sensState.getLabel()));
 					//System.out.println(sensNode.getLogicNode()+"\t"+statRequested+"\t"+sensState.getLogicState()+"\t"+value);
@@ -675,7 +680,7 @@ public class SensitivityAnalyser {
 		CalculationResult tarCalcOri = bufResultsOriginal.get(targetNode);
 		ArrayList<ResultValue> tarResValOri = new ArrayList<>(tarCalcOri.getResultValues());
 
-		List<State> tarStates = targetNode.getStates();
+		List<State> tarStates = getStates(targetNode);
 		for (int indexTarResVal = 0; indexTarResVal < targetNode.getLogicNode().getExtendedStates().size(); indexTarResVal++) {
 			State tarState = tarStates.get(indexTarResVal);
 
@@ -687,7 +692,12 @@ public class SensitivityAnalyser {
 			
 			dataSet.setObservation(targetNode, tarObsVal);
 			try {
-				model.calculate(Arrays.asList(targetNode.getNetwork()), Arrays.asList(dataSet));
+				model.calculate(
+						Arrays.asList(targetNode.getNetwork()),
+						Arrays.asList(dataSet),
+						Model.CalculationFlag.WITH_ANCESTORS,
+						Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS
+				);
 			}
 			catch (InconsistentEvidenceException ex) {
 				// Inconsistent evidence means we just skip this state
@@ -725,7 +735,7 @@ public class SensitivityAnalyser {
 					throw new SensitivityAnalyserException("Calculation result size does not match for node " + sensitivityNode.toStringExtra());
 				}
 
-				List<State> sensStates = sensitivityNode.getStates();
+				List<State> sensStates = getStates(sensitivityNode);
 				for (int indexSensResVal = 0; indexSensResVal < sensResValOri.size(); indexSensResVal++) {
 					State sensState = sensStates.get(indexSensResVal);
 					ResultValue rvO = sensResValOri.get(indexSensResVal);
@@ -756,7 +766,7 @@ public class SensitivityAnalyser {
 	 * @throws SensitivityAnalyserException upon failure
 	 */
 	private void calculateStats() throws SensitivityAnalyserException {
-		List<State> tarStates = targetNode.getStates();
+		List<State> tarStates = getStates(targetNode);
 		
 		for (Node sensitivityNode : sensitivityNodes) {
 
@@ -786,7 +796,7 @@ public class SensitivityAnalyser {
 				bufSAStatsLim.put(sensitivityNode, new LinkedHashMap<>());
 			}
 
-			List<State> sensStates = sensitivityNode.getStates();
+			List<State> sensStates = getStates(sensitivityNode);
 			for (int indexSensState = 0; indexSensState < sensitivityNode.getLogicNode().getExtendedStates().size(); indexSensState++) {
 				State sensState = sensStates.get(indexSensState);
 
@@ -1186,6 +1196,20 @@ public class SensitivityAnalyser {
 		if (value < 0 || value > 100){
 			throw new SensitivityAnalyserException("Parameter `" + name + "` allowed value range is between 0 and 100, but attempted to be set as: " + value);
 		}
+	}
+	
+	/**
+	 * Get node states, or its parent's states if the node is input node
+	 * 
+	 * @param node the node to get states of
+	 * 
+	 * @return node states
+	 */
+	private static List<State> getStates(Node node){
+		if (node.isConnectedInput()){
+			return node.getParents().stream().findFirst().orElse(node).getStates();
+		}
+		return node.getStates();
 	}
 
 }
