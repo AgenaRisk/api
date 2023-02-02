@@ -484,6 +484,16 @@ public class Model implements IdContainer<ModelException>, Storable {
 			pair.getKey().getLogicNode().setNptReCalcRequired(nptReCalcRequired);
 		}
 		
+		if (json.has("dataSet")){
+			JSONObject jDataSet = json.getJSONObject("dataSet");
+			try {
+				model.createDataSet(jDataSet);
+			}
+			catch (JSONException ex){
+				throw new ModelException("Failed to create Network", ex);
+			}
+		}
+		
 	}
 	
 	/**
