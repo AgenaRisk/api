@@ -24,6 +24,7 @@ public class Calculator {
 	private Path pathDataSets = null;
 	private Path pathOut = null;
 	private boolean useCache = false;
+	private boolean exitOnError = true;
 	
 	private Model model;
 	
@@ -70,6 +71,11 @@ public class Calculator {
 		return this;
 	}
 	
+	public Calculator exitOnError(boolean exitOnerror){
+		this.exitOnError = exitOnerror;
+		return this;
+	}
+	
 	public Calculator savingTo(String path) {
 		pathOut = Utils.resolve(path);
 		Logger.out().println("Results: " + pathOut);
@@ -103,11 +109,16 @@ public class Calculator {
 		catch (Exception ex){
 			Logger.log("Failure: " + ex.getMessage());
 			Logger.printThrowableIfDebug(ex);
+			if (exitOnError){
+				System.exit(1);
+			}
 		}
 		catch (Error ex){
 			Logger.log("Failure: " + ex.getMessage());
 			Logger.printThrowableIfDebug(ex);
-			System.exit(3);
+			if (exitOnError){
+				System.exit(3);
+			}
 		}
 	}
 	
