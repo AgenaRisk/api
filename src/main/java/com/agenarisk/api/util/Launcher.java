@@ -38,9 +38,6 @@ public class Launcher {
 		og1.addOption(Option.builder().longOpt("offlineActivate").hasArg(false).desc("activate offline with activation file").build());
 		og1.addOption(Option.builder().longOpt("offlineDeactivate").hasArg(false).desc("deactivate the license offline and save proof into file").build());
 				
-		og1.addOption(Option.builder().longOpt("floatingLease").numberOfArgs(2).argName("address:port").valueSeparator(':').desc("add floating license server settings").build());
-		og1.addOption(Option.builder().longOpt("floatingRelease").hasArg(false).desc("remove floating license server settings").build());
-		
 		og1.addOption(Option.builder().longOpt("licenseSummary").hasArg(false).desc("print license summary").build());
 		OPTIONS.addOptionGroup(og1);
 		
@@ -118,15 +115,6 @@ public class Launcher {
 			License.offlineRelease(path);
 		}
 
-		if (cmd.hasOption("floatingLease")){
-			String[] params = cmd.getOptionValues("floatingLease");
-			License.floatingLicenseLease(params[0], params[1]);
-		}
-		
-		if (cmd.hasOption("floatingRelease")){
-			License.floatingLicenseRelease();
-		}
-		
 		if (cmd.hasOption("licenseSummary")){
 			System.out.println("License summary:");
 			System.out.println(License.getSummary().toString(10));
