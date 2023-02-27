@@ -31,7 +31,6 @@ public class Sensitivity {
 		pathModel = Utils.resolve(path);
 		try {
 			model = Model.loadModel(pathModel.toString());
-			model.getDataSetList().forEach(ds -> model.removeDataSet(ds));
 			Logger.out().println("Model: " + pathModel);
 		}
 		catch (ModelException ex){
@@ -44,9 +43,7 @@ public class Sensitivity {
 		Logger.out().println("Overriding data in model with data from: " + path);
 		
 		// Remove all existing data sets
-		model.getDataSetList().forEach(ds -> {
-			model.removeDataSet(ds);
-		});
+		model.getDataSetList().forEach(ds -> model.removeDataSet(ds));
 		
 		filePath = Utils.resolve(path);
 		
