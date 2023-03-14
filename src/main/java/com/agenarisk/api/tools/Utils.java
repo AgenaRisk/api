@@ -24,10 +24,22 @@ public class Utils {
 		return fileContents;
 	}
 	
+	/**
+	 * Reads contents of the path as JSONObject
+	 * @param path path to read
+	 * 
+	 * @return JSON object if read successfully
+	 */
 	public static JSONObject readJsonObject(Path path){
 		return new JSONObject(readFile(path));
 	}
 	
+	/**
+	 * Reads contents of the path as JSONArray
+	 * @param path path to read
+	 * 
+	 * @return JSON array if read successfully
+	 */
 	public static JSONArray readJsonArray(Path path){
 		return new JSONArray(readFile(path));
 	}
