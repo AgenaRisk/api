@@ -195,7 +195,7 @@ public class SensitivityAnalyser {
 		targetNode = network.getNode(jsonConfig.optString("targetNode", ""));
 
 		if (targetNode == null) {
-			throw new SensitivityAnalyserException("Target node not specified or Node with ID `" + jsonConfig.optString("targetNode", "") + "`");
+			throw new SensitivityAnalyserException("Target node not specified or Node with ID `" + jsonConfig.optString("targetNode", "") + " is missing`");
 		}
 		
 		if (dataSet.hasObservation(targetNode)){
