@@ -61,7 +61,6 @@ import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.Model.PropagationFlag;
-import uk.co.agena.minerva.model.ModelEvent;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
 
 /**
@@ -367,10 +366,35 @@ public class Model implements IdContainer<ModelException>, Storable {
 		if (jsonNetworks == null){
 			return;
 		}
-			
+		
 		for(int i = 0; i < jsonNetworks.length(); i++){
 			// Call public method to create a network in model from JSON
-			model.createNetwork(jsonNetworks.getJSONObject(i), false);
+			JSONObject jNetwork = jsonNetworks.getJSONObject(i);
+			String id = jNetwork.getString(Network.Field.id.toString());
+			
+			if (networks.containsKey(new Id(id))){
+				// Handling exceptional case when the model JSON is not entirely correct but we could try to recover from this
+				boolean success = false;
+				String newId = id;
+				for (int j = 0; j < 10; j++){
+					newId += "_" + j;
+					jNetwork.put("id", newId);
+					try {
+						model.createNetwork(jNetwork, false);
+						success = true;
+						break;
+					}
+					catch (NetworkException ex) {
+						Logger.logIfDebug("Failed to add a network to model with ID `" + id + "` with overridden ID `"+newId+"`", 10);
+					}
+				}
+
+				if (success){
+					// Managed to add with a different ID, continue to next network
+					continue;
+				}
+			}
+			model.createNetwork(jNetwork, false);
 		}
 
 		// Create cross cross network links
@@ -418,7 +442,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 							Advisory.getCurrentThreadGroup().addMessage(new Advisory.AdvisoryMessage(message));
 						}
 						else {
-							throw new ModelException("Failed to load table for node " + node, ex);
+							throw new ModelException("Failed to load table for node " + node.toStringExtra(), ex);
 						}
 					}
 					
