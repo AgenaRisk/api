@@ -866,14 +866,16 @@ public class Model implements IdContainer<ModelException>, Storable {
 		if (calcException != null){
 			Logger.printThrowableIfDebug(calcException);
 		}
-		
 		if (!getLogicModel().isLastPropagationSuccessful() || calcException != null){
 			Logger.logIfDebug("Calculation failed. Propagation OK flag: " + getLogicModel().isLastPropagationSuccessful());
 			
 			String message = "Calculation failed";
 			
-			if (outputCaptured.contains("Memory required exceeds that available")){
-				message = "Insufficient RAM";
+			if (calcException instanceof OutOfMemoryError
+					|| calcException instanceof OutOfMemoryException
+					|| outputCaptured.contains("Java heap space")
+					|| outputCaptured.contains("Insufficient memory")) {
+				message = "Insufficient memory";
 				throw new OutOfMemoryException(message, calcException);
 			}
 			
