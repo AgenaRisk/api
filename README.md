@@ -18,6 +18,7 @@ See [Example App](https://github.com/AgenaRisk/api-example-app) for usage exampl
 
 # Licensing
 Once cloned, you will need to perform mvn clean to trigger automatic download of non-Java dependencies into your project/lib directory.
+Most command examples are not platform-specific, please make sure you use correct escaping for your console of choice.
 ~~~~
 mvn clean compile
 ~~~~
