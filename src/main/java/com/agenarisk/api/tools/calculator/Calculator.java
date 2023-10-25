@@ -7,11 +7,13 @@ import com.agenarisk.api.model.Observation;
 import com.agenarisk.api.tools.Utils;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashSet;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import uk.co.agena.minerva.util.Config;
 import uk.co.agena.minerva.util.Logger;
 
 /**
@@ -138,7 +140,12 @@ public class Calculator {
 	
 	private void readCache(){
 		try {
-			jResults = Utils.readJsonArray(pathOut);
+			if (Files.exists(pathOut)){
+				jResults = Utils.readJsonArray(pathOut);
+			}
+			else {
+				Files.createFile(pathOut.toAbsolutePath());
+			}
 		}
 		catch(Exception ex){
 			throw new CalculatorException("Failed to read result cache from: " + pathOut, ex);

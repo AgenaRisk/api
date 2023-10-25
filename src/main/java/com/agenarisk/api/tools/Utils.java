@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import uk.co.agena.minerva.util.Config;
 
 /**
  *
@@ -51,6 +52,6 @@ public class Utils {
 	 * @return 
 	 */
 	public static Path resolve(String path) {
-		return Paths.get(path.replaceFirst("^[\"'](.*)[\"']$", "$1"));
+		return Paths.get(Config.getDirectoryWorking()).resolve(Paths.get(path.replaceFirst("^[\"'](.*)[\"']$", "$1")));
 	}
 }
