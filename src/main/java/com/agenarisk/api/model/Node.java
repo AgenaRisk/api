@@ -591,6 +591,13 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			node.setStates(jsonConfiguration.optJSONArray(State.Field.states.toString()));
 		}
 		
+		JSONObject jPercentiles = jsonConfiguration.optJSONObject(NodeConfiguration.Field.percentiles.toString());
+		if (jPercentiles != null){
+			Double lowerPercentile = jPercentiles.optDouble(NodeConfiguration.Percentiles.lowerPercentile.toString(), 25d);
+			Double upperPercentile = jPercentiles.optDouble(NodeConfiguration.Percentiles.upperPercentile.toString(), 75d);
+			node.setCustomPercentiles(lowerPercentile, upperPercentile);
+		}
+		
 		if (jsonConfiguration.optBoolean(NodeConfiguration.Field.output.toString(), false)){
 			en.setConnectableOutputNode(true);
 		}
@@ -1698,6 +1705,37 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		VariableList logicVarList = getLogicNode().getExpressionVariables();
 		List<Variable> list = ((List<String>)logicVarList.getAllVariableNames()).stream().map(varName -> getVariable(varName)).collect(Collectors.toList());
 		return Collections.unmodifiableList(list);
+	}
+	
+	public boolean setCustomPercentiles(double lowerPercentile, double upperPercentile){
+		if (!(logicNode instanceof ContinuousEN)){
+			return false;
+		}
+		
+		ContinuousEN cien = (ContinuousEN) logicNode;
+		cien.setPercentileSettingsOnNodeForScenario(null, lowerPercentile, upperPercentile);
+		
+		return true;
+	}
+	
+	public double getLowerPercentileSetting(){
+		try {
+			if (logicNode instanceof ContinuousEN){
+				return (Double)((ContinuousEN)logicNode).getPercentileSettingsOnNodeForScenario(null).get(1);
+			}
+		}
+		catch (Exception ex){}
+		return 25d;
+	}
+	
+	public double getUpperPercentileSetting(){
+		try {
+			if (logicNode instanceof ContinuousEN){
+				return (Double)((ContinuousEN)logicNode).getPercentileSettingsOnNodeForScenario(null).get(2);
+			}
+		}
+		catch (Exception ex){}
+		return 75d;
 	}
 
 }

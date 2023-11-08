@@ -17,7 +17,6 @@ import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
 
 /**
- * This is a stub class that only contains field values for input/output to XML and JSON format.
  * 
  * @author Eugene Dementiev
  */
@@ -32,7 +31,17 @@ public class NodeConfiguration {
 		simulated,
 		simulationConvergence,
 		input,
-		output
+		output,
+		percentiles
+	}
+	
+	/**
+	 * This is set of fields for input/output to XML and JSON format
+	 */
+	public static enum Percentiles {
+		lowerPercentile,
+		upperPercentile,
+		customPercentiles
 	}
 	
 	/**

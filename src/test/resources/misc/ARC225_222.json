@@ -1,0 +1,45 @@
+{
+	"model": {
+		"links": [{
+				"sourceNode": "original",
+				"sourceNetwork": "net1",
+				"targetNetwork": "net2",
+				"type": "LowerPercentile",
+				"targetNode": "derivative"
+			}],
+		"networks": [{
+				"nodes": [{
+						"configuration": {
+							"output": true,
+							"percentiles": {
+								"lowerPercentile": 15.3,
+								"upperPercentile": 25
+							},
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"type": "Expression",
+								"expressions": ["Normal(0.0,1000000.0)"]
+							}
+						},
+						"id": "original"
+					}],
+				"id": "net1"
+			}, {
+				"nodes": [{
+						"configuration": {
+							"input": true,
+							"variables": [],
+							"simulated": true,
+							"type": "ContinuousInterval",
+							"table": {
+								"type": "Expression",
+								"expressions": ["Arithmetic(dynamic_original)"]
+							}
+						},
+						"id": "derivative"
+					}],
+				"id": "net2"
+			}]
+	}
+}

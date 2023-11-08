@@ -56,6 +56,7 @@ public class XMLAdapter {
 		WRAPPER_MAP.put(Meta.Field.notes.toString(), Meta.Field.note.toString());
 		WRAPPER_MAP.put(Audit.Field.changelog.toString(), Audit.Field.change.toString());
 		WRAPPER_MAP.put(Graphics.CanvasData.canvasData.toString(), Graphics.CanvasData.canvas.toString());
+		WRAPPER_MAP.put(NodeConfiguration.Percentiles.customPercentiles.toString(), "customPercentile");
 		
 		WRAPPER_MAP.put(Network.Field.description.toString(), "CDATA");
 		WRAPPER_MAP.put(Node.Field.description.toString(), "CDATA");

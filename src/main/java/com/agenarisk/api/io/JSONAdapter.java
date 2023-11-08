@@ -17,6 +17,7 @@ import com.agenarisk.api.model.State;
 import com.agenarisk.api.model.ResultValue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -615,6 +616,17 @@ public class JSONAdapter {
 				if (cen.getEntropyConvergenceThreshold() >= 0){
 					jsonConfig.put(NodeConfiguration.Field.simulationConvergence.toString(), cen.getEntropyConvergenceThreshold());
 				}
+			}
+			
+			List<Double> listPercentiles = cen.getPercentileSettingsOnNodeForScenario(null).subList(1, 3);
+			if(Objects.equals(listPercentiles.get(0), 25d) &&  Objects.equals(listPercentiles.get(1), 75d)){
+				// Default percentiles, ignore
+			}
+			else {
+				JSONObject jPercentiles = new JSONObject();
+				jPercentiles.put(NodeConfiguration.Percentiles.lowerPercentile.toString(), listPercentiles.get(0));
+				jPercentiles.put(NodeConfiguration.Percentiles.upperPercentile.toString(), listPercentiles.get(1));
+				jsonConfig.put(NodeConfiguration.Field.percentiles.toString(), jPercentiles);
 			}
 		}
 		
