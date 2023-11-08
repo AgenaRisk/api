@@ -595,7 +595,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		if (jPercentiles != null){
 			Double lowerPercentile = jPercentiles.optDouble(NodeConfiguration.Percentiles.lowerPercentile.toString(), 25d);
 			Double upperPercentile = jPercentiles.optDouble(NodeConfiguration.Percentiles.upperPercentile.toString(), 75d);
-			node.setCustomPercentiles(lowerPercentile, upperPercentile);
+			node.setCustomPercentileSettings(lowerPercentile, upperPercentile);
 		}
 		
 		if (jsonConfiguration.optBoolean(NodeConfiguration.Field.output.toString(), false)){
@@ -1707,7 +1707,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		return Collections.unmodifiableList(list);
 	}
 	
-	public boolean setCustomPercentiles(double lowerPercentile, double upperPercentile){
+	public boolean setCustomPercentileSettings(double lowerPercentile, double upperPercentile){
 		if (!(logicNode instanceof ContinuousEN)){
 			return false;
 		}
