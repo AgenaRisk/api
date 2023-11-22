@@ -116,7 +116,6 @@ public class Launcher {
 		}
 
 		if (cmd.hasOption("licenseSummary")){
-			System.out.println("License summary:");
 			System.out.println(License.getSummary().toString(10));
 		}
 	}
