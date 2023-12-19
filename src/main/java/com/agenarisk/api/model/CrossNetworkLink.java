@@ -173,6 +173,7 @@ public class CrossNetworkLink extends Link implements Storable {
 					es2.setName(new NameDescription(es1.getName().getShortDescription(), es1.getName().getLongDescription()));
 					es2.setRange(es1.getRange());
 					es2.setNumericalValue(es1.getNumericalValue());
+					es2.setId(es1.getId());
 					states.add(es2);
 				}
 
