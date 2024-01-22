@@ -677,7 +677,37 @@ public class Model implements IdContainer<ModelException>, Storable {
 	@Override
 	public JSONObject toJson() {
 		try {
-			return JSONAdapter.toJSONObject(logicModel);
+			JSONObject modelJson = JSONAdapter.toJSONObject(logicModel);
+			
+			// Preserve graphics if nodes are still in the model
+			try {
+				JSONArray jNetworks = modelJson.getJSONArray(Network.Field.networks.toString());
+				for (int ixNets = 0; ixNets < jNetworks.length(); ixNets++){
+					JSONObject jNetwork = jNetworks.getJSONObject(ixNets);
+					String netId = jNetwork.getString(Network.Field.id.toString());
+					Network oldNet = getNetwork(netId);
+					if (oldNet == null){
+						continue;
+					}
+					jNetwork.put(Graphics.Field.graphics.toString(), oldNet.getGraphicsJson());
+					
+					JSONArray jNodes = jNetwork.getJSONArray(Node.Field.nodes.toString());
+					for (int ixNodes = 0; ixNodes < jNodes.length(); ixNodes++){
+						JSONObject jNode = jNodes.getJSONObject(ixNodes);
+						String nodeId = jNode.getString(Node.Field.id.toString());
+						Node oldNode = oldNet.getNode(nodeId);
+						if (oldNode == null){
+							continue;
+						}
+						jNode.put(Graphics.Field.graphics.toString(), oldNode.getGraphicsJson());
+					}
+				}
+			}
+			catch (Exception gEx){
+				Logger.printThrowableIfDebug(gEx);
+			}
+			
+			return modelJson;
 		}
 		catch (AdapterException | JSONException ex){
 			throw new AgenaRiskRuntimeException("Failed to convert model to JSON", ex);
@@ -916,7 +946,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 				getLogicModel().save(path);
 			}
 			else {
-				JSONObject json = JSONAdapter.toJSONObject(logicModel);
+				JSONObject json = toJson();
 				
 				String content;
 				
@@ -930,7 +960,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 				Files.write(Paths.get(path), content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			}
 		}
-		catch (FileHandlingException | AdapterException | IOException | JSONException ex){
+		catch (FileHandlingException | IOException | JSONException ex){
 			throw new FileIOException("Failed to save the model", ex);
 		}
 	}
@@ -1031,7 +1061,8 @@ public class Model implements IdContainer<ModelException>, Storable {
 		}
 		catch (NullPointerException | JSONException ex){
 			Logger.printThrowableIfDebug(ex);
-			return JSONAdapter.toJSONObject(logicModel);
+			// Try again without any modifications
+			return toJson();
 		}
 		
 		return json;

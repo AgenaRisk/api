@@ -110,7 +110,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	/**
 	 * This stores graphics for the Node, and should be set on model load
 	 */
-	private JSONObject jsonGraphics;
+	private JSONObject jsonGraphics = new JSONObject();
 	
 	/**
 	 * Cache of Variables
@@ -1475,6 +1475,10 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		json.put(Graphics.Field.graphics.toString(), jsonGraphics);
 		json.put(Meta.Field.meta.toString(), jsonMeta);
 		return json;
+	}
+	
+	public JSONObject getGraphicsJson(){
+		return jsonGraphics;
 	}
 	
 	/**

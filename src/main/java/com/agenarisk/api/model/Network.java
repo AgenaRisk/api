@@ -31,6 +31,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import com.agenarisk.api.model.interfaces.IdContainer;
 import com.agenarisk.api.util.Advisory;
+import java.util.Optional;
 
 /**
  * Network class represents an equivalent to a Risk Object in AgenaRisk Desktop or ExtendedBN in AgenaRisk Java API v1.
@@ -73,7 +74,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	/**
 	 * Should be set on model load, and then saved on model save
 	 */
-	private JSONObject graphics, riskTable, texts, pictures;
+	private JSONObject jsonGraphics, riskTable, texts, pictures;
 	
 	
 	/**
@@ -213,7 +214,7 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		// Load stored JSON objects
 		
 		if (jsonNetwork.has(Graphics.Field.graphics.toString())){
-			network.graphics = jsonNetwork.optJSONObject(Graphics.Field.graphics.toString());
+			network.jsonGraphics = Optional.ofNullable(jsonNetwork.optJSONObject(Graphics.Field.graphics.toString())).orElse(new JSONObject());
 		}
 		
 		if (jsonNetwork.has(RiskTable.Field.riskTable.toString())){
@@ -634,6 +635,10 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	@Override
 	public JSONObject toJson() {
 		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
+	public JSONObject getGraphicsJson(){
+		return jsonGraphics;
 	}
 
 	/**
