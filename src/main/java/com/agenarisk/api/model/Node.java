@@ -662,11 +662,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		
 		// Load graphics
 		try {
-			boolean visible = jsonNode.optJSONObject(NodeGraphics.Field.graphics.toString()).optBoolean(NodeGraphics.Field.visible.toString());
+			boolean visible = jsonNode.optJSONObject(NodeGraphics.Field.graphics.toString()).optBoolean(NodeGraphics.Field.visible.toString(), true);
 			node.getLogicNode().setVisible(visible);
 		}
 		catch(NullPointerException ex){
-			// Ignore, property not set
+			// Ignore, node graphics not set
 		}
 		
 		return node;
