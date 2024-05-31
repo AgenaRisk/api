@@ -215,7 +215,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			throw new ModelException("File does not exist or is not readable: " + filePath.toAbsolutePath());
 		}
 		
-		if (path.toLowerCase().endsWith(".cmp") || path.toLowerCase().endsWith(".ast")){
+		if (path.toLowerCase().endsWith(".cmp") || path.toLowerCase().endsWith(".ast") || path.toLowerCase().endsWith(".net")){
 			try {
 				model = Model.createModel(uk.co.agena.minerva.model.Model.load(path, uk.co.agena.minerva.model.Model.suppressMessages));
 			}
