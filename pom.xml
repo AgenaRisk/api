@@ -132,7 +132,7 @@
 							<goal>wget</goal>
 						</goals>
 						<configuration>
-							<url>https://resources.agenarisk.com/download/archive/lib-v3.zip</url>
+							<url>https://resources.agena.ai/download/archive/lib-v3.zip</url>
 							<outputDirectory>${project.basedir}/lib</outputDirectory>
 							<unpack>true</unpack>
 							<overwrite>true</overwrite>
@@ -146,7 +146,7 @@
 							<goal>wget</goal>
 						</goals>
 						<configuration>
-							<url>https://resources.agenarisk.com/products/zip/developer.zip</url>
+							<url>https://resources.agena.ai/products/zip/developer.zip</url>
 							<outputDirectory>${project.basedir}/lib/</outputDirectory>
 							<unpack>true</unpack>
 							<overwrite>true</overwrite>
@@ -159,7 +159,7 @@
 							<goal>wget</goal>
 						</goals>
 						<configuration>
-							<url>https://resources.agenarisk.com/products/v3/developer/product.json</url>
+							<url>https://resources.agena.ai/products/v3/developer/product.json</url>
 							<outputDirectory>${project.basedir}/lib/</outputDirectory>
 							<overwrite>true</overwrite>
 						</configuration>
