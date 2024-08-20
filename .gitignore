@@ -9,3 +9,6 @@ nbactions.xml
 .classpath
 .settings
 /vpproject/
+/lib-dev
+/lib-enterprise
+/src/main/java/adev
