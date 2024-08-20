@@ -612,7 +612,11 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 				
 				// Constant
 				if (jsonObservation.has(Observation.Field.constantName.toString())){
-					setObservationConstant(node, jsonObservation.getString(Observation.Field.constantName.toString()), Double.valueOf(value));
+					String constantName = jsonObservation.getString(Observation.Field.constantName.toString());
+					if (node.getVariable(constantName) == null){
+						throw new DataSetException("Node variable `" + constantName + "` does not exist in node " + node.toStringExtra());
+					}
+					setObservationConstant(node, constantName, Double.valueOf(value));
 					return;
 				}
 				
