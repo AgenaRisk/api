@@ -1671,6 +1671,9 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		try {
 			VariableList logicVarList = getLogicNode().getExpressionVariables();
 			uk.co.agena.minerva.util.model.Variable logicVar = logicVarList.getVariable(varName);
+			if (logicVar == null){
+				return null;
+			}
 			Variable variable = new Variable(this, logicVar);
 			variablesCache.put(varName, variable);
 			return variable;
