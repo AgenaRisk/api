@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure.config;
 
+import java.util.Optional;
 import org.json.JSONObject;
 
 /**
@@ -38,7 +39,7 @@ public class GesConfigurer extends LearningConfigurer<GesConfigurer> implements 
 		
 	@Override
 	public GesConfigurer configureFromJson(JSONObject jConfig) {
-		configureBicLogFromJson(jConfig);
+		configureBicLogFromJson(Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject()));
 		return this;
 	}
 }

@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure.config;
 
+import java.util.Optional;
 import org.json.JSONObject;
 
 /**
@@ -38,8 +39,9 @@ public class TabuConfigurer extends PrunableLearningConfigurer<TabuConfigurer> i
 	
 	@Override
 	public TabuConfigurer configureFromJson(JSONObject jConfig) {
-		configureBicLogFromJson(jConfig);
-		configurePruningFromJson(jConfig);
+		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
+		configureBicLogFromJson(jParameters);
+		configurePruningFromJson(jParameters);
 		return this;
 	}
 }

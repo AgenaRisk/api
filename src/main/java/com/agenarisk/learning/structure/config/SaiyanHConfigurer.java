@@ -1,6 +1,7 @@
 package com.agenarisk.learning.structure.config;
 
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import java.util.Optional;
 import org.json.JSONObject;
 
 /**
@@ -98,10 +99,11 @@ public class SaiyanHConfigurer extends LearningConfigurer implements Configurabl
 	
 	@Override
 	public SaiyanHConfigurer configureFromJson(JSONObject jConfig) {
-		configureBicLogFromJson(jConfig);
-		if (jConfig.has("maximumMeanDiscrepancyType")){
+		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
+		configureBicLogFromJson(jParameters);
+		if (jParameters.has("maximumMeanDiscrepancyType")){
 			try {
-				DiscrepancyType mmdType = DiscrepancyType.valueOf(jConfig.getString("maximumMeanDiscrepancyType"));
+				DiscrepancyType mmdType = DiscrepancyType.valueOf(jParameters.getString("maximumMeanDiscrepancyType"));
 				setDiscrepancyType(mmdType);
 			}
 			catch(Exception ex){

@@ -1,6 +1,7 @@
 package com.agenarisk.learning.structure.config;
 
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import java.util.Optional;
 import org.json.JSONObject;
 
 /**
@@ -61,10 +62,11 @@ public class MahcConfigurer extends PrunableLearningConfigurer<MahcConfigurer> i
 	
 	@Override
 	public MahcConfigurer configureFromJson(JSONObject jConfig) {
-		configureBicLogFromJson(jConfig);
-		configurePruningFromJson(jConfig);
-		if (jConfig.has("maxInDegreePreProcessing")){
-			setMaxInDegreePreProcessing(jConfig.getInt("maxInDegreePreProcessing"));
+		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
+		configureBicLogFromJson(jParameters);
+		configurePruningFromJson(jParameters);
+		if (jParameters.has("maxInDegreePreProcessing")){
+			setMaxInDegreePreProcessing(jParameters.getInt("maxInDegreePreProcessing"));
 		}
 		return this;
 	}
