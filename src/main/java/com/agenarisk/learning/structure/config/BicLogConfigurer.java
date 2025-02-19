@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * @author Eugene Dementiev
  * @param <T> Actual implementation type of LearningConfigurer
  */
-public abstract class BicLogConfigurer<T extends LearningConfigurer> extends Configurer implements Configurable{
+public abstract class BicLogConfigurer<T extends Configurer> extends Configurer implements Configurable{
 	public BicLogConfigurer(Config config) {
 		super(config);
 	}

@@ -29,16 +29,6 @@ public class MahcConfigurer extends PrunableLearningConfigurer<MahcConfigurer> i
 	}
 	
 	/**
-	 * Allowed values: 2, 10, e
-	 * @param log
-	 * @return this configurer
-	 */
-	@Override
-	public MahcConfigurer setBicLog(String log) {
-		return (MahcConfigurer)super.setBicLog(log);
-	}
-	
-	/**
 	 * Allows to add custom configuration of the knowledge component
 	 * 
 	 * @return 

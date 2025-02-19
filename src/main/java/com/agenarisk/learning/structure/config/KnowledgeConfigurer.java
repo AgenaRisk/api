@@ -131,6 +131,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 
 	/**
 	 * If set, all variables in the training data must be connected within the same graph and no disjointed variables are allowed
+	 * @param allVariablesRelevant
 	 * @return
 	 */
     public KnowledgeConfigurer<T> setAllVariablesRelevant(Boolean allVariablesRelevant) {
