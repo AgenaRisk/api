@@ -1,12 +1,14 @@
 package com.agenarisk.learning.structure.config;
 
 import com.agenarisk.api.model.Model;
+import com.agenarisk.api.util.CsvWriter;
 import com.agenarisk.api.util.TempDirCleanup;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.result.Discovery;
 import com.agenarisk.learning.structure.execution.result.Evaluation;
 import com.agenarisk.learning.structure.execution.result.Result;
 import com.agenarisk.learning.structure.logger.BLogger;
+import com.agenarisk.learning.structure.utility.CmpxStructureExtractor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.NotImplementedException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,6 +26,8 @@ import org.json.JSONObject;
  * @author Eugene Dementiev
  */
 public class ConfiguredExecutor {
+	private static final Pattern INVALID_LABEL_PATTERN = Pattern.compile("[\\\\/:*?\"<>|]|(\\.\\.)|[/]");
+	
 	private ArrayList<ArrayList<String>> data = null;
 	private Path dataFilePath = null;
 	private Path outputDirPath = null;
@@ -175,10 +180,57 @@ public class ConfiguredExecutor {
 					}
 					break;
 				case "evaluation":
-//					executioner.configureForEvaluation(jExecution);
-					throw new NotImplementedException("Evaluation execution not implemented yet");
+					configurableExecution = new EvaluationConfigurer(executor.getConfig()).configureFromJson(jExecution);
+					break;
 				default:
 					throw new StructureLearningException("Invalid execution type: " + executionType);
+			}
+			
+			if (executionType.equals("evaluation")){
+				executor.getConfig().setPathOutput(executor.getOutputDirPath().toString());
+				if (!jExecution.has("evaluationDataPath")){
+					BLogger.logConditional("Specific evaluation data set not provided, using training data set for evaluation");
+					executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
+					executor.getConfig().setPathInput(executor.getDataFilePath().getParent().toString());
+				}
+				
+				for (String modelFilePrefix: discoveryPrefixes.keySet()){
+					Evaluation evaluation = new Evaluation();
+					executor.getResult().getEvaluations().add(evaluation);
+					evaluation.setModelLabel(discoveryPrefixes.get(modelFilePrefix));
+					evaluation.setLabel(executionLabel);
+					try {
+						Path modelPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".cmpx");
+						Path csvPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".csv");
+						executor.getConfig().setFileOutputDagLearnedCsv(csvPath.getFileName().toString());
+						if (!Files.exists(csvPath)){
+							// Need to generate structure CSV from CMPX
+							if (!Files.exists(modelPath)){
+								String message = "Model file missing, can't evaluate: " + modelPath.toString();
+								BLogger.logConditional(message);
+								evaluation.setSuccess(false);
+								evaluation.setMessage(message);
+								continue;
+							}
+
+							CsvWriter.writeCsv(CmpxStructureExtractor.extract(Model.loadModel(modelPath.toString())), csvPath);
+							csvPath.toFile().deleteOnExit();
+						}
+						configurableExecution.apply().execute();
+
+						evaluation.setSuccess(true);
+						evaluation.setBicScore(executor.getConfig().getCache().getBicScore());
+						evaluation.setLogLikelihoodScore(executor.getConfig().getCache().getLogLikelihoodScore());
+						evaluation.setComplexityScore(executor.getConfig().getCache().getComplexityScore());
+						evaluation.setFreeParameters(executor.getConfig().getCache().getFreeParameters());
+					}
+					catch (Exception ex){
+						String message = "Failed to evaluate " + modelFilePrefix+".cmpx: " + ex.getMessage();
+						BLogger.logConditional(message);
+						evaluation.setSuccess(false);
+						evaluation.setMessage(message);
+					}
+				}
 			}
 			
 			if (executionType.equals("discovery")){
