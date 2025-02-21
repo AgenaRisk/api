@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure;
 
+import com.agenarisk.api.util.CsvWriter;
 import com.agenarisk.learning.structure.config.Config;
 import com.agenarisk.learning.structure.config.ConfiguredExecutor;
 import com.agenarisk.learning.structure.config.GesConfigurer;
@@ -8,6 +9,11 @@ import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.json.JSONObject;
 
 /**
@@ -53,6 +59,37 @@ public class StructureLearner {
 	}
 	
 	public void executeJson(JSONObject json){
-		ConfiguredExecutor.executeFromJson(json);
+		ConfiguredExecutor executor = ConfiguredExecutor.executeFromJson(json);
+		
+		boolean print = json.optBoolean("printSummary", false);
+		boolean save = json.optBoolean("saveSummary", false);
+		if (print || save){
+			List<Object> headers = Arrays.asList(
+					"Discovery Label",
+					"Algorithm",
+					"Model file prefix",
+					"Evaluation Label",
+					"BIC Score",
+					"LL Score",
+					"Complexity Score",
+					"Free Parameters",
+					"Model path"
+			);
+			ArrayList<List<Object>> lines = executor.getResult().getSummary();
+			lines.add(0, headers);
+			
+			if (print){
+				lines.stream().map(line -> line.stream().map(el -> el+"").collect(Collectors.joining("\t"))).forEach(System.out::println);
+			}
+			
+			if (save){
+				try {
+					CsvWriter.writeCsv(lines, Paths.get(executor.getOutputDirPath().resolve("summary.csv").toString()));
+				}
+				catch(Exception ex){
+					throw new StructureLearningException("Failed to write summary to file", ex);
+				}
+			}
+		}
 	}
 }
