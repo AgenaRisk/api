@@ -19,7 +19,7 @@ public class CsvWriter {
      * @param path The path to write the CSV file to.
      * @throws IOException If an I/O error occurs.
      */
-    public static void writeCsv(List<List<String>> data, Path path) throws IOException {
+    public static void writeCsv(List<List<Object>> data, Path path) throws IOException {
         writeCsv(data, path, ",");
     }
 
@@ -30,10 +30,11 @@ public class CsvWriter {
      * @param separator The separator to use in the CSV file, defaults to ',' if null.
      * @throws IOException If an I/O error occurs.
      */
-    public static void writeCsv(List<List<String>> data, Path path, String separator) throws IOException {
+    public static void writeCsv(List<List<Object>> data, Path path, String separator) throws IOException {
 		String actualSeparator = Optional.ofNullable(separator).orElseGet(() -> ",");
         List<String> lines = data.stream()
                 .map(row -> row.stream()
+						.map(String::valueOf)
                         .map(CsvWriter::escapeCsvField)
                         .collect(Collectors.joining(actualSeparator)))
                 .collect(Collectors.toList());

@@ -177,7 +177,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 		
 		try {
 			if (jKnowledge.has("reduceDimensionalityPenaltyForVariables")){
-				ArrayList<List<String>> lines = new ArrayList<>();
+				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Target node"));
 				JSONArray jArray = jKnowledge.getJSONArray("reduceDimensionalityPenaltyForVariables");
 				for(int i = 0; i < jArray.length(); i+=1){
@@ -189,7 +189,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			}
 			
 			if (jKnowledge.has("connectionsInitialGuess")){
-				ArrayList<List<String>> lines = new ArrayList<>();
+				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Parent", "Child"));
 				JSONArray jArray = jKnowledge.getJSONArray("connectionsInitialGuess");
 				for(int i = 0; i < jArray.length(); i+=1){
@@ -202,7 +202,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			}
 			
 			if (jKnowledge.has("connectionsDirected")){
-				ArrayList<List<String>> lines = new ArrayList<>();
+				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Parent", "Child"));
 				JSONArray jArray = jKnowledge.getJSONArray("connectionsDirected");
 				for(int i = 0; i < jArray.length(); i+=1){
@@ -215,7 +215,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			}
 			
 			if (jKnowledge.has("connectionsUndirected")){
-				ArrayList<List<String>> lines = new ArrayList<>();
+				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Var1", "Var2"));
 				JSONArray jArray = jKnowledge.getJSONArray("connectionsUndirected");
 				for(int i = 0; i < jArray.length(); i+=1){
@@ -228,7 +228,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			}
 			
 			if (jKnowledge.has("connectionsForbidden")){
-				ArrayList<List<String>> lines = new ArrayList<>();
+				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Var1", "Var2"));
 				JSONArray jArray = jKnowledge.getJSONArray("connectionsForbidden");
 				for(int i = 0; i < jArray.length(); i+=1){
@@ -241,17 +241,17 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			}
 			
 			if (jKnowledge.has("connectionsTemporal")){
-				ArrayList<List<String>> lines = new ArrayList<>();
+				ArrayList<List<Object>> lines = new ArrayList<>();
 				JSONArray jTiers = jKnowledge.getJSONArray("connectionsTemporal");
-				ArrayList<String> headers = new ArrayList<>();
+				ArrayList<Object> headers = new ArrayList<>();
 				headers.add("ID");
 				for(int i = 0; i < jTiers.length(); i += 1){
 					headers.add("Tier " + (i+1));
 					JSONArray jTier = jTiers.getJSONArray(i);
 					for(int j = 0; j < jTier.length(); j += 1 ){
-						List<String> line;
+						List<Object> line;
 						if (lines.size() - 1 <= j){
-							line = new ArrayList<String>();
+							line = new ArrayList<>();
 							line.add(String.valueOf(j + 1));
 							lines.add(line);
 						}
