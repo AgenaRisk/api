@@ -3,12 +3,17 @@ package com.agenarisk.learning.structure.config;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.util.TempDirCleanup;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import com.agenarisk.learning.structure.execution.result.Discovery;
+import com.agenarisk.learning.structure.execution.result.Evaluation;
+import com.agenarisk.learning.structure.execution.result.Result;
+import com.agenarisk.learning.structure.logger.BLogger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.apache.commons.lang3.NotImplementedException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,6 +27,8 @@ public class ConfiguredExecutor {
 	private Path dataFilePath = null;
 	private Path outputDirPath = null;
 	private Path inputDirPath = null;
+	
+	private Result result = new Result();
 	
 	private Config config;
 
@@ -72,6 +79,10 @@ public class ConfiguredExecutor {
 	private void setConfig(Config config) {
 		this.config = config;
 	}
+
+	public Result getResult() {
+		return result;
+	}
 	
 	private void createTempDirs(JSONObject jConfig){
 		try {
@@ -96,7 +107,8 @@ public class ConfiguredExecutor {
 		}
 	}
 	
-	public static void executeFromJson(JSONObject jConfig){
+	public static ConfiguredExecutor executeFromJson(JSONObject jConfig){
+		HashMap<String, String> discoveryPrefixes = new HashMap<>();
 		ConfiguredExecutor executor = new ConfiguredExecutor(Config.getInstance());
 		
 		try {
@@ -113,11 +125,11 @@ public class ConfiguredExecutor {
 		JSONArray jExecutions = jConfig.optJSONArray("executions");
 		if (jExecutions == null){
 			// Nothing to do
-			return;
+			return executor;
 		}
 				
-		for(int i = 0; i < jExecutions.length(); i++){
-			JSONObject jExecution = jExecutions.optJSONObject(i);
+		for(int iExecution = 0; iExecution < jExecutions.length(); iExecution++){
+			JSONObject jExecution = jExecutions.optJSONObject(iExecution);
 			if (jExecution == null){
 				continue;
 			}
@@ -126,12 +138,10 @@ public class ConfiguredExecutor {
 			BicLogConfigurer configurableExecution;
 
 			String executionType = jExecution.optString("execution");
+			String executionLabel = jExecution.optString("label");
 			
-			if (executionType.equals("discovery")){
-				// If we are using discovery, no point to copy the data file
-				executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
-				executor.setInputDirPath(executor.getDataFilePath().getParent());
-			}
+			executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
+			executor.setInputDirPath(executor.getDataFilePath().getParent());
 			executor.getConfig().setPathInput(executor.getInputDirPath().toString());
 			
 			switch (executionType) {
@@ -171,42 +181,61 @@ public class ConfiguredExecutor {
 					throw new StructureLearningException("Invalid execution type: " + executionType);
 			}
 			
-			executor.createTempDirs(jConfig);
-			try {
-				Files.createDirectories(executor.getInputDirPath());
-				Files.createDirectories(executor.getOutputDirPath());
-				// Output directory for Bayesys is the temporary folder
-				configurableExecution.getConfig().setPathOutput(executor.getInputDirPath().toString());
-			}
-			catch (Exception ex){
-				throw new StructureLearningException("Failed to create directory structure", ex);
-			}
-			
-			String modelFilePrefix = "model_" + i;
-			configurableExecution.getConfig().setFileOutputCmp(modelFilePrefix+".cmp");
-			
-//			System.out.println("Temp input dir: "+ executor.getConfig().getPathInput());
-//			System.out.println("Data file:" + executor.getConfig().getFileInputTrainingDataCsv());
-//			System.out.println("Temp output dir: "+executor.getConfig().getPathOutput());
-//			System.out.println("Temp out file: "+executor.getConfig().getFileOutputCmp());
-//			System.out.println("Output dir: "+executor.getOutputDirPath());
-			
-			configurableExecution.apply().execute();
-			
-			try {
-				Model model = Model.loadModel(configurableExecution.getConfig().getPathOutput().resolve(modelFilePrefix+".cmp").toString());
-				// Now we save the cmpx version to the desired output location
-				model.save(executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx").toString());
-				Files.copy(
-						executor.getConfig().getPathOutput().resolve(executor.getConfig().getFileOutputDagLearnedCsv()),
-						executor.getOutputDirPath().resolve(modelFilePrefix+".csv"),
-						StandardCopyOption.REPLACE_EXISTING
-				);
-			}
-			catch(Exception ex){
-				throw new StructureLearningException("Failed to load discovered structure from file", ex);
+			if (executionType.equals("discovery")){
+				Discovery discovery = new Discovery();
+				executor.getResult().getDiscoveries().add(discovery);
+				executor.createTempDirs(jConfig);
+				try {
+					Files.createDirectories(executor.getInputDirPath());
+					Files.createDirectories(executor.getOutputDirPath());
+					// Result directory for Bayesys is the temporary folder
+					configurableExecution.getConfig().setPathOutput(executor.getInputDirPath().toString());
+				}
+				catch (Exception ex){
+					String message = "Failed to create directory structure: " + ex.getMessage();
+					BLogger.logConditional(message);
+					discovery.setSuccess(false);
+					discovery.setMessage(message);
+				}
+
+				String modelFilePrefix = "model_" + jExecution.optString("algorithm","") + "_" + iExecution;
+				if (executionLabel == null || executionLabel.isEmpty()){
+					executionLabel = modelFilePrefix;
+				}
+				discoveryPrefixes.put(modelFilePrefix, executionLabel);
+				
+				discovery.setAlgorithm(jExecution.optString("algorithm",""));
+				discovery.setLabel(executionLabel);
+				discovery.setModelFilePrefix(modelFilePrefix);
+				
+				configurableExecution.getConfig().setFileOutputCmp(modelFilePrefix+".cmp");
+				
+				configurableExecution.apply().execute();
+				
+				try {
+					Model model = Model.loadModel(configurableExecution.getConfig().getPathOutput().resolve(modelFilePrefix+".cmp").toString());
+					// Now we save the cmpx version to the desired result location
+					String modelFilePathString = executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx").toString();
+					model.save(executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx").toString());
+					Files.copy(
+							executor.getConfig().getPathOutput().resolve(executor.getConfig().getFileOutputDagLearnedCsv()),
+							executor.getOutputDirPath().resolve(modelFilePrefix+".csv"),
+							StandardCopyOption.REPLACE_EXISTING
+					);
+					discovery.setModelPath(modelFilePathString);
+					discovery.setModel(model.toJson().optJSONObject("model"));
+					discovery.setSuccess(true);
+				}
+				catch(Exception ex){
+					String message = "Failed to load discovered structure from file: " + ex.getMessage();
+					BLogger.logConditional(message);
+					discovery.setSuccess(false);
+					discovery.setMessage(message);
+				}
 			}
 		}
+		
+		return executor;
 	}
 	
 }
