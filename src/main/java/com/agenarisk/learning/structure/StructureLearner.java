@@ -2,7 +2,7 @@ package com.agenarisk.learning.structure;
 
 import com.agenarisk.api.util.CsvWriter;
 import com.agenarisk.learning.structure.config.Config;
-import com.agenarisk.learning.structure.config.ConfiguredExecutor;
+import com.agenarisk.learning.structure.execution.ConfiguredExecutor;
 import com.agenarisk.learning.structure.config.GesConfigurer;
 import com.agenarisk.learning.structure.config.HcConfigurer;
 import com.agenarisk.learning.structure.config.MahcConfigurer;

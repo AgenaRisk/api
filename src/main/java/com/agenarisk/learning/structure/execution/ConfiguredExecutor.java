@@ -1,8 +1,16 @@
-package com.agenarisk.learning.structure.config;
+package com.agenarisk.learning.structure.execution;
 
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.util.CsvWriter;
 import com.agenarisk.api.util.TempDirCleanup;
+import com.agenarisk.learning.structure.config.BicLogConfigurer;
+import com.agenarisk.learning.structure.config.Config;
+import com.agenarisk.learning.structure.config.EvaluationConfigurer;
+import com.agenarisk.learning.structure.config.GesConfigurer;
+import com.agenarisk.learning.structure.config.HcConfigurer;
+import com.agenarisk.learning.structure.config.MahcConfigurer;
+import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
+import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.result.Discovery;
 import com.agenarisk.learning.structure.execution.result.Evaluation;
