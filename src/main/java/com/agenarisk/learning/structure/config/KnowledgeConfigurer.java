@@ -1,8 +1,10 @@
 package com.agenarisk.learning.structure.config;
 
 import com.agenarisk.api.util.CsvWriter;
+import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -183,8 +185,9 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				for(int i = 0; i < jArray.length(); i+=1){
 					lines.add(Arrays.asList(String.valueOf(i+1), jArray.getString(i)));
 				}
-				CsvWriter.writeCsv(lines, config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TARGET));
-				config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TARGET).toFile().deleteOnExit();
+				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TARGET);
+				CsvWriter.writeCsv(lines, filePath);
+				TempFileCleanup.registerTempFile(filePath.toFile(), config);
 				config.setConstraintsTargetPenaltyReductionRateEnabled(true);
 			}
 			
@@ -196,8 +199,9 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 					JSONArray jRow = jArray.getJSONArray(i);
 					lines.add(Arrays.asList(String.valueOf(i+1), jRow.getString(0), jRow.getString(1)));
 				}
-				CsvWriter.writeCsv(lines, config.getPathInput().resolve(Config.FILE_CONSTRAINTS_GRAPH));
-				config.getPathInput().resolve(Config.FILE_CONSTRAINTS_GRAPH).toFile().deleteOnExit();
+				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_GRAPH);
+				CsvWriter.writeCsv(lines, filePath);
+				TempFileCleanup.registerTempFile(filePath.toFile(), config);
 				config.setConstraintsInitialGraph(true);
 			}
 			
@@ -209,8 +213,9 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 					JSONArray jRow = jArray.getJSONArray(i);
 					lines.add(Arrays.asList(String.valueOf(i+1), jRow.getString(0), jRow.getString(1)));
 				}
-				CsvWriter.writeCsv(lines, config.getPathInput().resolve(Config.FILE_CONSTRAINTS_DIRECTED));
-				config.getPathInput().resolve(Config.FILE_CONSTRAINTS_DIRECTED).toFile().deleteOnExit();
+				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_DIRECTED);
+				CsvWriter.writeCsv(lines, filePath);
+				TempFileCleanup.registerTempFile(filePath.toFile(), config);
 				config.setConstraintsDirectedEnabled(true);
 			}
 			
@@ -222,8 +227,9 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 					JSONArray jRow = jArray.getJSONArray(i);
 					lines.add(Arrays.asList(String.valueOf(i+1), jRow.getString(0), jRow.getString(1)));
 				}
-				CsvWriter.writeCsv(lines, config.getPathInput().resolve(Config.FILE_CONSTRAINTS_UNDIRECTED));
-				config.getPathInput().resolve(Config.FILE_CONSTRAINTS_UNDIRECTED).toFile().deleteOnExit();
+				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_UNDIRECTED);
+				CsvWriter.writeCsv(lines, filePath);
+				TempFileCleanup.registerTempFile(filePath.toFile(), config);
 				config.setConstraintsUndirectedEnabled(true);
 			}
 			
@@ -235,8 +241,9 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 					JSONArray jRow = jArray.getJSONArray(i);
 					lines.add(Arrays.asList(String.valueOf(i+1), jRow.getString(0), jRow.getString(1)));
 				}
-				CsvWriter.writeCsv(lines, config.getPathInput().resolve(Config.FILE_CONSTRAINTS_FORBIDDEN));
-				config.getPathInput().resolve(Config.FILE_CONSTRAINTS_FORBIDDEN).toFile().deleteOnExit();
+				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_FORBIDDEN);
+				CsvWriter.writeCsv(lines, filePath);
+				TempFileCleanup.registerTempFile(filePath.toFile(), config);
 				config.setConstraintsForbiddenEnabled(true);
 			}
 			
@@ -264,8 +271,9 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				headers.add("END");
 				lines.add(0, headers);
 				
-				CsvWriter.writeCsv(lines, config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TEMPORAL));
-				config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TEMPORAL).toFile().deleteOnExit();
+				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TEMPORAL);
+				CsvWriter.writeCsv(lines, filePath);
+				TempFileCleanup.registerTempFile(filePath.toFile(), config);
 				config.setConstraintsTemporalEnabled(true);
 			}
 			

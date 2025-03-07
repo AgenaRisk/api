@@ -1,8 +1,10 @@
 package com.agenarisk.learning.structure.execution;
 
+import BNlearning.Database;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.util.CsvWriter;
 import com.agenarisk.api.util.TempDirCleanup;
+import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.config.BicLogConfigurer;
 import com.agenarisk.learning.structure.config.Config;
 import com.agenarisk.learning.structure.config.EvaluationConfigurer;
@@ -147,7 +149,10 @@ public class ConfiguredExecutor {
 				continue;
 			}
 			
-			executor.setConfig(Config.reset());
+			executor.setConfig(Config.reset((config) -> {
+				TempFileCleanup.cleanup(config);
+				Database.reset();
+			}));
 			BicLogConfigurer configurableExecution;
 
 			String executionType = jExecution.optString("execution");
