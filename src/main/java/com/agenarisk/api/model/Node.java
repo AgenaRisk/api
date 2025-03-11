@@ -467,7 +467,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				// Inner network link
 				if (fromNode.hasDescendant(fromNode)){
 					fromNode.removeLink(link);
-					throw new LinkException("This link would create a loop in the network");
+					throw new LinkException("The link from "+fromNode.toStringExtra()+" to "+toNode.toStringExtra()+" would create a loop in the network");
 				}
 			}
 			else {
