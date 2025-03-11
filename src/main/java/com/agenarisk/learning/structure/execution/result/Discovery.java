@@ -15,6 +15,7 @@ public class Discovery {
     private JSONObject model = new JSONObject();
     private String modelPath = "";
 	private String modelFilePrefix = "";
+	private boolean average = false;
 
     public String getLabel() {
         return label;
@@ -71,6 +72,14 @@ public class Discovery {
 	public void setModelFilePrefix(String modelFilePrefix) {
 		this.modelFilePrefix = modelFilePrefix;
 	}
+
+	public boolean isAverage() {
+		return average;
+	}
+
+	public void setAverage(boolean average) {
+		this.average = average;
+	}
 	
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
@@ -81,6 +90,7 @@ public class Discovery {
         json.put("model", model);
         json.put("modelPath", modelPath);
 		json.put("modelFilePrefix", modelFilePrefix);
+		json.put("average", average);
         return json;
     }
 }

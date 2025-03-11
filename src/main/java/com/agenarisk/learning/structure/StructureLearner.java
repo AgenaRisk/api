@@ -67,8 +67,10 @@ public class StructureLearner {
 			List<Object> headers = Arrays.asList(
 					"Discovery Label",
 					"Algorithm",
+					"Discovery Success",
 					"Model file prefix",
 					"Evaluation Label",
+					"Evaluation Success",
 					"BIC Score",
 					"LL Score",
 					"Complexity Score",

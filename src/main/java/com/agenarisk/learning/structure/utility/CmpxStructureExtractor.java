@@ -13,9 +13,12 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedNode;
  * @author Eugene Dementiev
  */
 public class CmpxStructureExtractor {
-	public static ArrayList<List<Object>> extract(Model model){
+	
+	public static ArrayList<List<Object>> extract(Model model, List<Object> headers){
 		ArrayList<List<Object>> lines = new ArrayList<>();
-		lines.add(Arrays.asList("ID", "Variable 1", "Dependency", "Variable 2"));
+		if (headers != null && !headers.isEmpty()){
+			lines.add(headers);
+		}
 		
 		try {
 			int i = 1;
@@ -32,5 +35,9 @@ public class CmpxStructureExtractor {
 		}
 		
 		return lines;
+	}
+	
+	public static ArrayList<List<Object>> extract(Model model){
+		return extract(model, Arrays.asList("ID", "Variable 1", "Dependency", "Variable 2"));
 	}
 }

@@ -47,12 +47,14 @@ public class Result {
             for (Discovery discovery : discoveries) {
                 List<Object> row = new ArrayList<>();
                 row.add(discovery.getLabel());
+				row.add(discovery.isSuccess());
                 row.add(discovery.getAlgorithm());
                 row.add(discovery.getModelFilePrefix());
                 row.add("");
                 row.add("");
                 row.add("");
                 row.add("");
+				row.add("");
                 row.add("");
                 row.add(discovery.getModelPath());
                 summary.add(row);
@@ -66,9 +68,11 @@ public class Result {
                 if (evaluation.getModelLabel().equals(discovery.getLabel())) {
                     List<Object> row = new ArrayList<>();
                     row.add(discovery.getLabel());
+					row.add(discovery.isSuccess()+"");
                     row.add(discovery.getAlgorithm());
                     row.add(discovery.getModelFilePrefix());
                     row.add(evaluation.getLabel());
+					row.add(evaluation.isSuccess()+"");
                     row.add(evaluation.getBicScore());
                     row.add(evaluation.getLogLikelihoodScore());
                     row.add(evaluation.getComplexityScore());
@@ -81,10 +85,12 @@ public class Result {
             if (!matchFound) {
                 List<Object> row = new ArrayList<>();
                 row.add(discovery.getLabel());
+				row.add(discovery.isSuccess());
                 row.add(discovery.getAlgorithm());
                 row.add(discovery.getModelFilePrefix());
                 row.add("");
                 row.add("");
+				row.add("");
                 row.add("");
                 row.add("");
                 row.add("");
