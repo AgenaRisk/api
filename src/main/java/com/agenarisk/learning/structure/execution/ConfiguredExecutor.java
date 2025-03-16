@@ -10,6 +10,8 @@ import com.agenarisk.learning.structure.config.ApplicableConfigurer;
 import com.agenarisk.learning.structure.config.AveragingConfigurer;
 import com.agenarisk.learning.structure.config.Config;
 import com.agenarisk.learning.structure.config.EvaluationConfigurer;
+import com.agenarisk.learning.structure.config.GenerationConfigurer;
+import com.agenarisk.learning.structure.config.GenerationExecutor;
 import com.agenarisk.learning.structure.config.GesConfigurer;
 import com.agenarisk.learning.structure.config.HcConfigurer;
 import com.agenarisk.learning.structure.config.MahcConfigurer;
@@ -117,14 +119,6 @@ public class ConfiguredExecutor {
 				throw new StructureLearningException("Failed to create output directory", ioex);
 			}
 		}
-
-		try {
-			setInputDirPath(Files.createTempDirectory("agenarisk"));
-			TempDirCleanup.registerTempDirectory(getInputDirPath());
-		}
-		catch (IOException ioex){
-			throw new StructureLearningException("Failed to create output directory", ioex);
-		}
 	}
 	
 	public static ConfiguredExecutor executeFromJson(JSONObject jConfig){
@@ -133,9 +127,20 @@ public class ConfiguredExecutor {
 		
 		try {
 			executor.setDataFilePath(Paths.get(jConfig.optString("dataFilePath")));
+			executor.setInputDirPath(executor.getDataFilePath().getParent());
 		}
 		catch (Exception ex){
 			throw new StructureLearningException("Failed to read dataFilePath from JSON", ex);
+		}
+		
+		try {
+			Files.createDirectories(executor.getInputDirPath());
+			executor.setOutputDirPath(Paths.get(jConfig.optString("outputDirPath", "")));
+			Files.createDirectories(executor.getOutputDirPath());
+		}
+		catch (Exception ex){
+			String message = "Failed to create directory structure: " + ex.getMessage();
+			throw new StructureLearningException(message, ex);
 		}
 		
 		if (jConfig.has("data")){
@@ -147,7 +152,7 @@ public class ConfiguredExecutor {
 			// Nothing to do
 			return executor;
 		}
-				
+
 		for(int iExecution = 0; iExecution < jExecutions.length(); iExecution++){
 			JSONObject jExecution = jExecutions.optJSONObject(iExecution);
 			if (jExecution == null){
@@ -203,8 +208,46 @@ public class ConfiguredExecutor {
 				case "averaging":
 					configurableExecution = new AveragingConfigurer(executor.getConfig()).configureFromJson(jExecution);
 					break;
+				case "generation":
+					configurableExecution = new GenerationConfigurer(executor.getConfig()).configureFromJson(jExecution);
+					break;
 				default:
 					throw new StructureLearningException("Invalid execution type: " + executionType);
+			}
+			
+			if (executionType.equals("generation")){
+				executor.createTempDirs(jConfig);
+				GenerationConfigurer genConfigurer = (GenerationConfigurer) configurableExecution;
+				Discovery discovery = new Discovery();
+				executor.getResult().getDiscoveries().add(discovery);
+
+				String modelFilePrefix = "model_generated" + "_" + iExecution;
+				if (executionLabel == null || executionLabel.isEmpty()){
+					executionLabel = modelFilePrefix;
+				}
+				modelPrefixes.put(modelFilePrefix, executionLabel);
+				
+				discovery.setAlgorithm(jExecution.optString("generation-" + genConfigurer.getStrategy().name(), ""));
+				discovery.setLabel(executionLabel);
+				discovery.setModelFilePrefix(modelFilePrefix);
+				
+				genConfigurer.setDataPath(executor.getDataFilePath());
+				genConfigurer.setModelPath(executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx"));
+				
+				try {
+					GenerationExecutor genExecutor = (GenerationExecutor) configurableExecution.apply();
+					genExecutor.setOriginalConfigurer(genConfigurer);
+					genExecutor.execute();
+					discovery.setModelPath(genConfigurer.getModelPath().toString());
+					discovery.setModel(genConfigurer.getModel().toJson().optJSONObject("model"));
+					discovery.setSuccess(true);
+				}
+				catch(Exception ex){
+					String message = "Failed to generate model: " + ex.getMessage();
+					BLogger.logThrowableIfDebug(ex);
+					discovery.setSuccess(false);
+					discovery.setMessage(message);
+				}
 			}
 			
 			if (executionType.equals("evaluation")){
@@ -258,18 +301,8 @@ public class ConfiguredExecutor {
 				Discovery discovery = new Discovery();
 				executor.getResult().getDiscoveries().add(discovery);
 				executor.createTempDirs(jConfig);
-				try {
-					Files.createDirectories(executor.getInputDirPath());
-					Files.createDirectories(executor.getOutputDirPath());
-					// Result directory for Bayesys is the temporary folder
-					configurableExecution.getConfig().setPathOutput(executor.getInputDirPath().toString());
-				}
-				catch (Exception ex){
-					String message = "Failed to create directory structure: " + ex.getMessage();
-					BLogger.logConditional(message);
-					discovery.setSuccess(false);
-					discovery.setMessage(message);
-				}
+				// Result directory for Bayesys is the temporary folder
+				configurableExecution.getConfig().setPathOutput(executor.getInputDirPath().toString());
 
 				String modelFilePrefix = "model_" + jExecution.optString("algorithm","") + "_" + iExecution;
 				if (executionLabel == null || executionLabel.isEmpty()){
