@@ -52,6 +52,7 @@ public class GenerationExecutor extends Configurer<GenerationExecutor> implement
 						Node node2 = nodes.get((int)Math.round(Math.random()*randMult));
 						node1.linkTo(node2);
 						edgeCount++;
+						failedAttempt = 0;
 					}
 					catch (Exception ex){
 						failedAttempt++;
