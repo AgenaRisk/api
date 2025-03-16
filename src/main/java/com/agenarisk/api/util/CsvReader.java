@@ -26,4 +26,14 @@ public class CsvReader {
 
         return data;
     }
+	
+	public static List<String> readHeaders(Path filePath) throws IOException {
+        try (BufferedReader br = Files.newBufferedReader(filePath)) {
+			String line = br.readLine();
+			if (line == null){
+				return new ArrayList<>();
+			}
+            return Arrays.asList(line.split(","));
+        }
+    }
 }
