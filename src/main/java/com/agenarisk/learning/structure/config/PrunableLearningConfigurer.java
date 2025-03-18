@@ -47,9 +47,9 @@ public abstract class PrunableLearningConfigurer<T extends LearningConfigurer> e
 		return (T)this;
 	}
 	
-	protected T configurePruningFromJson(JSONObject jConfig){
-		if (jConfig.has("pruningLevel")){
-			this.setPruningLevel(jConfig.getInt("pruningLevel"));
+	protected T configurePruningFromJson(JSONObject jParameters){
+		if (jParameters.has("pruningLevel")){
+			this.setPruningLevel(jParameters.getInt("pruningLevel"));
 		}
 		return (T)this;
 	}
