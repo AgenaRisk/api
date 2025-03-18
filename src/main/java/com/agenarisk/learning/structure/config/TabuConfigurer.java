@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure.config;
 
+import com.agenarisk.learning.structure.exception.StructureLearningException;
 import java.util.Optional;
 import org.json.JSONObject;
 
@@ -42,6 +43,12 @@ public class TabuConfigurer extends PrunableLearningConfigurer<TabuConfigurer> i
 		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
 		configureBicLogFromJson(jParameters);
 		configurePruningFromJson(jParameters);
+		try {
+			getKnowledgeConfiguration().configureFromJson(jConfig);
+		}
+		catch(Exception ex){
+			throw new StructureLearningException("Failed to read knowledge configuration from JSON", ex);
+		}
 		return this;
 	}
 }

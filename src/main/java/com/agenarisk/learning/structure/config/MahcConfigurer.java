@@ -58,6 +58,12 @@ public class MahcConfigurer extends PrunableLearningConfigurer<MahcConfigurer> i
 		if (jParameters.has("maxInDegreePreProcessing")){
 			setMaxInDegreePreProcessing(jParameters.getInt("maxInDegreePreProcessing"));
 		}
+		try {
+			getKnowledgeConfiguration().configureFromJson(jConfig);
+		}
+		catch(Exception ex){
+			throw new StructureLearningException("Failed to read knowledge configuration from JSON", ex);
+		}
 		return this;
 	}
 	

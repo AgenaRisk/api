@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure.config;
 
+import com.agenarisk.learning.structure.exception.StructureLearningException;
 import java.util.Optional;
 import org.json.JSONObject;
 
@@ -40,6 +41,12 @@ public class GesConfigurer extends LearningConfigurer<GesConfigurer> implements 
 	@Override
 	public GesConfigurer configureFromJson(JSONObject jConfig) {
 		configureBicLogFromJson(Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject()));
+		try {
+			getKnowledgeConfiguration().configureFromJson(jConfig);
+		}
+		catch(Exception ex){
+			throw new StructureLearningException("Failed to read knowledge configuration from JSON", ex);
+		}
 		return this;
 	}
 }
