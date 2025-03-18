@@ -66,8 +66,8 @@ public class StructureLearner {
 		if (print || save){
 			List<Object> headers = Arrays.asList(
 					"Discovery Label",
-					"Algorithm",
 					"Discovery Success",
+					"Algorithm",
 					"Model file prefix",
 					"Evaluation Label",
 					"Evaluation Success",
