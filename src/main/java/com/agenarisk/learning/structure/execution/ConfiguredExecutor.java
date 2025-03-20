@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.NotImplementedException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import uk.co.agena.minerva.util.io.MinervaProperties;
 
 /**
  *
@@ -319,7 +320,8 @@ public class ConfiguredExecutor {
 				configurablePipeline.apply().execute();
 				
 				try {
-					Model model = Model.loadModel(configurablePipeline.getConfig().getPathOutput().resolve(modelFilePrefix+".cmp").toString());
+					Path cmpModelPath = configurablePipeline.getConfig().getPathOutput().resolve(modelFilePrefix+".cmp");
+					Model model = Model.loadModel(cmpModelPath.toString());
 					// Now we save the cmpx version to the desired result location
 					String modelFilePathString = executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx").toString();
 					model.save(executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx").toString());
@@ -331,6 +333,11 @@ public class ConfiguredExecutor {
 					discovery.setModelPath(modelFilePathString);
 					discovery.setModel(model.toJson().optJSONObject("model"));
 					discovery.setSuccess(true);
+					if (Boolean.parseBoolean(MinervaProperties.getProperty("com.agenarisk.learning.structure.deleteTransientFiles", "true"))){
+						TempFileCleanup.registerTempFile(cmpModelPath.toFile(), executor.getConfig());
+						TempFileCleanup.registerTempFile(configurablePipeline.getConfig().getPathOutput().resolve("CPDAGlearned.csv").toFile(), executor.getConfig());
+						TempFileCleanup.registerTempFile(configurablePipeline.getConfig().getPathOutput().resolve("DAGlearned.csv").toFile(), executor.getConfig());
+					}
 				}
 				catch(Exception ex){
 					String message = "Failed to load discovered structure from file: " + ex.getMessage();
