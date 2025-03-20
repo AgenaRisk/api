@@ -147,15 +147,15 @@ public class ConfiguredExecutor {
 			throw new NotImplementedException("data in JSON not yet supported");
 		}
 		
-		JSONArray jExecutions = jConfig.optJSONArray("executions");
-		if (jExecutions == null){
+		JSONArray jPipeline = jConfig.optJSONArray("pipeline");
+		if (jPipeline == null){
 			// Nothing to do
 			return executor;
 		}
 
-		for(int iExecution = 0; iExecution < jExecutions.length(); iExecution++){
-			JSONObject jExecution = jExecutions.optJSONObject(iExecution);
-			if (jExecution == null){
+		for(int iStage = 0; iStage < jPipeline.length(); iStage++){
+			JSONObject jStage = jPipeline.optJSONObject(iStage);
+			if (jStage == null){
 				continue;
 			}
 			
@@ -163,19 +163,19 @@ public class ConfiguredExecutor {
 				TempFileCleanup.cleanup(config);
 				Database.reset();
 			}));
-			ApplicableConfigurer configurableExecution;
+			ApplicableConfigurer configurablePipeline;
 
-			String executionType = jExecution.optString("execution");
-			String executionLabel = jExecution.optString("label");
+			String stageType = jStage.optString("stage");
+			String stageLabel = jStage.optString("label");
 			
 			executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
 			executor.setInputDirPath(executor.getDataFilePath().getParent());
 			executor.getConfig().setPathInput(executor.getInputDirPath().toString());
 			
-			switch (executionType) {
+			switch (stageType) {
 				case "discovery":
 					Config.LearningAlgorithm algorithm;
-					String algorithmName = jExecution.optString("algorithm");
+					String algorithmName = jStage.optString("algorithm");
 					try {
 						algorithm = Config.LearningAlgorithm.valueOf(algorithmName);
 					}
@@ -184,58 +184,58 @@ public class ConfiguredExecutor {
 					}
 					switch (algorithm) {
 						case SaiyanH:
-							configurableExecution = new SaiyanHConfigurer(executor.getConfig()).configureFromJson(jExecution);
+							configurablePipeline = new SaiyanHConfigurer(executor.getConfig()).configureFromJson(jStage);
 							break;
 						case HC:
-							configurableExecution = new HcConfigurer(executor.getConfig()).configureFromJson(jExecution);
+							configurablePipeline = new HcConfigurer(executor.getConfig()).configureFromJson(jStage);
 							break;
 						case GES:
-							configurableExecution = new GesConfigurer(executor.getConfig()).configureFromJson(jExecution);
+							configurablePipeline = new GesConfigurer(executor.getConfig()).configureFromJson(jStage);
 							break;
 						case MAHC:
-							configurableExecution = new MahcConfigurer(executor.getConfig()).configureFromJson(jExecution);
+							configurablePipeline = new MahcConfigurer(executor.getConfig()).configureFromJson(jStage);
 							break;
 						case TABU:
-							configurableExecution = new TabuConfigurer(executor.getConfig()).configureFromJson(jExecution);
+							configurablePipeline = new TabuConfigurer(executor.getConfig()).configureFromJson(jStage);
 							break;
 						default:
 							throw new StructureLearningException("Invalid algorithm " + algorithmName);
 					}
 					break;
 				case "evaluation":
-					configurableExecution = new EvaluationConfigurer(executor.getConfig()).configureFromJson(jExecution);
+					configurablePipeline = new EvaluationConfigurer(executor.getConfig()).configureFromJson(jStage);
 					break;
 				case "averaging":
-					configurableExecution = new AveragingConfigurer(executor.getConfig()).configureFromJson(jExecution);
+					configurablePipeline = new AveragingConfigurer(executor.getConfig()).configureFromJson(jStage);
 					break;
 				case "generation":
-					configurableExecution = new GenerationConfigurer(executor.getConfig()).configureFromJson(jExecution);
+					configurablePipeline = new GenerationConfigurer(executor.getConfig()).configureFromJson(jStage);
 					break;
 				default:
-					throw new StructureLearningException("Invalid execution type: " + executionType);
+					throw new StructureLearningException("Invalid stage type: " + stageType);
 			}
 			
-			if (executionType.equals("generation")){
+			if (stageType.equals("generation")){
 				executor.createTempDirs(jConfig);
-				GenerationConfigurer genConfigurer = (GenerationConfigurer) configurableExecution;
+				GenerationConfigurer genConfigurer = (GenerationConfigurer) configurablePipeline;
 				Discovery discovery = new Discovery();
 				executor.getResult().getDiscoveries().add(discovery);
 
-				String modelFilePrefix = "model_generated" + "_" + iExecution;
-				if (executionLabel == null || executionLabel.isEmpty()){
-					executionLabel = modelFilePrefix;
+				String modelFilePrefix = "model_generated" + "_" + iStage;
+				if (stageLabel == null || stageLabel.isEmpty()){
+					stageLabel = modelFilePrefix;
 				}
-				modelPrefixes.put(modelFilePrefix, executionLabel);
+				modelPrefixes.put(modelFilePrefix, stageLabel);
 				
-				discovery.setAlgorithm(jExecution.optString("generation-" + genConfigurer.getStrategy().name(), ""));
-				discovery.setLabel(executionLabel);
+				discovery.setAlgorithm(jStage.optString("generation-" + genConfigurer.getStrategy().name(), ""));
+				discovery.setLabel(stageLabel);
 				discovery.setModelFilePrefix(modelFilePrefix);
 				
 				genConfigurer.setDataPath(executor.getDataFilePath());
 				genConfigurer.setModelPath(executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx"));
 				
 				try {
-					GenerationExecutor genExecutor = (GenerationExecutor) configurableExecution.apply();
+					GenerationExecutor genExecutor = (GenerationExecutor) configurablePipeline.apply();
 					genExecutor.setOriginalConfigurer(genConfigurer);
 					genExecutor.execute();
 					discovery.setModelPath(genConfigurer.getModelPath().toString());
@@ -250,9 +250,9 @@ public class ConfiguredExecutor {
 				}
 			}
 			
-			if (executionType.equals("evaluation")){
+			if (stageType.equals("evaluation")){
 				executor.getConfig().setPathOutput(executor.getOutputDirPath().toString());
-				if (!jExecution.has("evaluationDataPath")){
+				if (!jStage.has("evaluationDataPath")){
 					BLogger.logConditional("Specific evaluation data set not provided, using training data set for evaluation");
 					executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
 					executor.getConfig().setPathInput(executor.getDataFilePath().getParent().toString());
@@ -262,7 +262,7 @@ public class ConfiguredExecutor {
 					Evaluation evaluation = new Evaluation();
 					executor.getResult().getEvaluations().add(evaluation);
 					evaluation.setModelLabel(modelPrefixes.get(modelFilePrefix));
-					evaluation.setLabel(executionLabel);
+					evaluation.setLabel(stageLabel);
 					try {
 						Path modelPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".cmpx");
 						Path csvPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".csv");
@@ -280,7 +280,7 @@ public class ConfiguredExecutor {
 							CsvWriter.writeCsv(CmpxStructureExtractor.extract(Model.loadModel(modelPath.toString())), csvPath);
 							csvPath.toFile().deleteOnExit();
 						}
-						configurableExecution.apply().execute();
+						configurablePipeline.apply().execute();
 
 						evaluation.setSuccess(true);
 						evaluation.setBicScore(executor.getConfig().getCache().getBicScore());
@@ -297,29 +297,29 @@ public class ConfiguredExecutor {
 				}
 			}
 			
-			if (executionType.equals("discovery")){
+			if (stageType.equals("discovery")){
 				Discovery discovery = new Discovery();
 				executor.getResult().getDiscoveries().add(discovery);
 				executor.createTempDirs(jConfig);
 				// Result directory for Bayesys is the temporary folder
-				configurableExecution.getConfig().setPathOutput(executor.getInputDirPath().toString());
+				configurablePipeline.getConfig().setPathOutput(executor.getInputDirPath().toString());
 
-				String modelFilePrefix = "model_" + jExecution.optString("algorithm","") + "_" + iExecution;
-				if (executionLabel == null || executionLabel.isEmpty()){
-					executionLabel = modelFilePrefix;
+				String modelFilePrefix = "model_" + jStage.optString("algorithm","") + "_" + iStage;
+				if (stageLabel == null || stageLabel.isEmpty()){
+					stageLabel = modelFilePrefix;
 				}
-				modelPrefixes.put(modelFilePrefix, executionLabel);
+				modelPrefixes.put(modelFilePrefix, stageLabel);
 				
-				discovery.setAlgorithm(jExecution.optString("algorithm",""));
-				discovery.setLabel(executionLabel);
+				discovery.setAlgorithm(jStage.optString("algorithm",""));
+				discovery.setLabel(stageLabel);
 				discovery.setModelFilePrefix(modelFilePrefix);
 				
-				configurableExecution.getConfig().setFileOutputCmp(modelFilePrefix+".cmp");
+				configurablePipeline.getConfig().setFileOutputCmp(modelFilePrefix+".cmp");
 				
-				configurableExecution.apply().execute();
+				configurablePipeline.apply().execute();
 				
 				try {
-					Model model = Model.loadModel(configurableExecution.getConfig().getPathOutput().resolve(modelFilePrefix+".cmp").toString());
+					Model model = Model.loadModel(configurablePipeline.getConfig().getPathOutput().resolve(modelFilePrefix+".cmp").toString());
 					// Now we save the cmpx version to the desired result location
 					String modelFilePathString = executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx").toString();
 					model.save(executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx").toString());
@@ -340,7 +340,7 @@ public class ConfiguredExecutor {
 				}
 			}
 			
-			if (executionType.equals("averaging")){
+			if (stageType.equals("averaging")){
 				executor.getConfig().setPathInput(executor.getOutputDirPath().toString());
 				executor.getConfig().setPathOutput(executor.getOutputDirPath().toString());
 				List<List<Object>> lines = new ArrayList<>();
@@ -348,15 +348,15 @@ public class ConfiguredExecutor {
 				
 				Discovery discovery = new Discovery();
 				executor.getResult().getDiscoveries().add(discovery);
-				String avgPrefix = "model_average_" + iExecution;
+				String avgPrefix = "model_average_" + iStage;
 				
-				if (executionLabel == null || executionLabel.isEmpty()){
-					executionLabel = avgPrefix;
+				if (stageLabel == null || stageLabel.isEmpty()){
+					stageLabel = avgPrefix;
 				}
 				
-				discovery.setLabel(executionLabel);
+				discovery.setLabel(stageLabel);
 				discovery.setAverage(true);
-				discovery.setAlgorithm(jExecution.optString("algorithm","averaging"));
+				discovery.setAlgorithm(jStage.optString("algorithm","averaging"));
 				
 				for (String modelFilePrefix: modelPrefixes.keySet()){
 					try {
@@ -386,7 +386,7 @@ public class ConfiguredExecutor {
 					Path csvInput = executor.getOutputDirPath().resolve(Config.FILE_AVERAGING_INPUT);
 					CsvWriter.writeCsv(lines, csvInput);
 					csvInput.toFile().deleteOnExit();
-					configurableExecution.apply().execute();
+					configurablePipeline.apply().execute();
 					
 					Path csvOutput = executor.getOutputDirPath().resolve(Config.FILE_AVERAGING_OUTPUT);
 					csvOutput.toFile().deleteOnExit();
@@ -406,7 +406,7 @@ public class ConfiguredExecutor {
 					discovery.setModel(model.toJson().optJSONObject("model"));
 					discovery.setModelFilePrefix(avgPrefix);
 					discovery.setSuccess(true);
-					modelPrefixes.put(avgPrefix, executionLabel);
+					modelPrefixes.put(avgPrefix, stageLabel);
 				}
 				catch(Exception ex){
 					String message = "Failed to produce average structure: " + ex.getMessage();
