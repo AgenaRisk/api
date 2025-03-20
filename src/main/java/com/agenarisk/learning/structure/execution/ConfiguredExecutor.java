@@ -420,8 +420,7 @@ public class ConfiguredExecutor {
 					BLogger.logConditional(message);
 					discovery.setSuccess(false);
 					discovery.setMessage(message);
-					ex.printStackTrace();
-				}
+					BLogger.logThrowableIfDebug(ex);
 			}
 		}
 		
