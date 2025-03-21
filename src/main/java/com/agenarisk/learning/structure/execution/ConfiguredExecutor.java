@@ -15,6 +15,8 @@ import com.agenarisk.learning.structure.config.GenerationExecutor;
 import com.agenarisk.learning.structure.config.GesConfigurer;
 import com.agenarisk.learning.structure.config.HcConfigurer;
 import com.agenarisk.learning.structure.config.MahcConfigurer;
+import com.agenarisk.learning.structure.config.MergerConfigurer;
+import com.agenarisk.learning.structure.config.MergerExecutor;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
@@ -31,6 +33,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -211,6 +214,9 @@ public class ConfiguredExecutor {
 					break;
 				case "generation":
 					configurablePipeline = new GenerationConfigurer(executor.getConfig()).configureFromJson(jStage);
+					break;
+				case "merger":
+					configurablePipeline = new MergerConfigurer(executor.getConfig());
 					break;
 				default:
 					throw new StructureLearningException("Invalid stage type: " + stageType);
@@ -421,6 +427,25 @@ public class ConfiguredExecutor {
 					discovery.setSuccess(false);
 					discovery.setMessage(message);
 					BLogger.logThrowableIfDebug(ex);
+				}
+			}
+			
+			if (stageType.equals("merger")){
+				executor.createTempDirs(jConfig);
+				MergerConfigurer mergerConfigurer = (MergerConfigurer) configurablePipeline;
+				String modelFilePrefix = "model_merged" + "_" + iStage;
+//				if (stageLabel == null || stageLabel.isEmpty()){
+//					stageLabel = modelFilePrefix;
+//				}
+				
+				mergerConfigurer.setInputDirPath(executor.getOutputDirPath());
+				mergerConfigurer.setOutputDirPath(executor.getOutputDirPath());
+				mergerConfigurer.setModelPrefix(modelFilePrefix);
+				mergerConfigurer.setModelPrefixes(Collections.unmodifiableMap(modelPrefixes));
+				
+				MergerExecutor mergerExecutor = mergerConfigurer.apply();
+				mergerExecutor.setOriginalConfigurer(mergerConfigurer);
+				mergerExecutor.execute();
 			}
 		}
 		

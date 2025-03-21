@@ -336,7 +336,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws ModelException if failed to create any of the components
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
-	protected void absorb(JSONObject json) throws ModelException, JSONException {
+	public void absorb(JSONObject json) throws ModelException, JSONException {
 		
 		Model model = this;
 		
