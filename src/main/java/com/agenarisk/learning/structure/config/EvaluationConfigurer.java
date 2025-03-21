@@ -32,7 +32,7 @@ public class EvaluationConfigurer extends BicLogConfigurer<EvaluationConfigurer>
 		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
 		configureBicLogFromJson(jParameters);
 		config.setEvalBic(true);
-		config.setLogLikelyhoodScore(jParameters.optBoolean("logLikelyhoodScore", false));
+		config.setlogLikelihoodScore(jParameters.optBoolean("logLikelihoodScore", false));
 		if (jParameters.has("evaluationDataPath")){
 			Path dataPath = Paths.get(jParameters.getString("evaluationDataPath"));
 			config.setFileInputTrainingDataCsv(dataPath.getFileName().toString());
