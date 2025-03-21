@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>com.agenarisk</groupId>
 			<artifactId>com.agenarisk.learning.structure</artifactId>
-			<version>0.0.11</version>
+			<version>0.0.12</version>
 		</dependency>
 		
 		<dependency>
