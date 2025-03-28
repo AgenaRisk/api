@@ -1,0 +1,248 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "agena.ai Structure Learning Pipeline Configuration Schema",
+    "type": "object",
+    "properties": {
+        "dataFilePath": {
+            "type": "string",
+            "description": "Path to the input data file (relative or absolute)."
+        },
+        "outputDirPath": {
+            "type": "string",
+            "description": "Path to the output directory (relative or absolute)."
+        },
+        "printSummary": {
+            "type": "boolean",
+            "default": false,
+            "description": "Flag to indicate whether to print a summary of discovery and evaluation."
+        },
+        "saveSummary": {
+            "type": "boolean",
+            "default": false,
+            "description": "Flag to indicate whether to save a CSV summary of discovery and evaluation."
+        },
+        "pipeline": {
+            "type": "array",
+            "description": "Sequence of pipeline stages.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "stage": {
+                        "type": "string",
+                        "enum": [
+                            "generation",
+                            "discovery",
+                            "averaging",
+                            "evaluation",
+                            "merger"
+                        ],
+                        "description": "Pipeline stage type."
+                    },
+                    "algorithm": {
+                        "type": "string",
+                        "enum": [
+                            "HC",
+                            "SaiyanH",
+                            "GES",
+                            "TABU",
+                            "MAHC"
+                        ],
+                        "description": "Algorithm used for the stage (if applicable)."
+                    },
+                    "label": {
+                        "type": "string",
+                        "description": "Label for this stage."
+                    },
+                    "knowledge": {
+                        "type": "object",
+                        "description": "Prior knowledge constraints.",
+                        "properties": {
+                            "connectionsDirected": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Directed edges."
+                            },
+                            "connectionsUndirected": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Undirected edges."
+                            },
+                            "connectionsForbidden": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Forbidden connections."
+                            },
+                            "connectionsTemporal": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Temporal orderings (array of tiers, each tier is an array of variables in that tier)."
+                            },
+                            "prohibitConnectionsSameTemporalTier": {
+                                "type": "boolean",
+                                "description": "Disallow connections within the same tier.",
+                                "default": false
+                            },
+                            "connectionsInitialGuess": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Initial connection guesses, which may inform the starting point of discovery but are not required to appear in the final structure."
+                            },
+                            "variablesAreRelevant": {
+                                "type": "boolean",
+                                "default": false,
+                                "description": "Mark all variables as relevant, which prohibits islands of variables."
+                            },
+                            "reduceDimensionalityPenaltyForVariables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Variables for which dimensionality penalty is reduced."
+                            }
+                        },
+                        "dimensionalityReductionRate": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 30,
+                            "description": "Rate of dimensionality reduction. Must be between 2 and 30."
+                        },
+                        "maxInDegreePreProcessing": {
+                            "type": "integer",
+                            "enum": [
+                                2,
+                                3
+                            ],
+                            "default": 3,
+                            "description": "Maximum in-degree before processing."
+                        }
+                    }
+                },
+                "parameters": {
+                    "type": "object",
+                    "description": "Stage-specific parameters.",
+                    "properties": {
+                        "pruningLevel": {
+                            "type": "integer",
+                            "default": 0,
+                            "minimum": 0,
+                            "maximum": 3
+                        },
+                        "bicLog": {
+                            "type": "string",
+                            "enum": [
+                                "2",
+                                "10",
+                                "e"
+                            ]
+                        },
+                        "logLikelyhoodScore": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "minimumEdgeAppearanceCountToKeep": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        },
+                        "evaluationDataPath": {
+                            "type": "string",
+                            "description": "Path to the evaluation data file to be used only during evaluation (relative or absolute)."
+                        },
+                        "maximumEdgeCount": {
+                            "type": "integer",
+                            "default": 0,
+                            "description": "Maximum number of edges for generation."
+                        },
+                        "maximumMeanDiscrepancyType": {
+                            "type": "string",
+                            "enum": [
+                                "Mutual_Information",
+                                "Mean_Absolute",
+                                "Max_Absolute",
+                                "MeanMax_Absolute",
+                                "Mean_Relative",
+                                "Max_Relative"
+                            ],
+                            "default": "Mean_Absolute",
+                            "description": "Maximum Mean Discrepancy (MMD) type and Score and Distance types for SaiyanH."
+                        }
+                    }
+                }
+            },
+            "required": [
+                "stage"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "algorithm": {
+                                "enum": [
+                                    "HC",
+                                    "TABU",
+                                    "MAHC"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "knowledge": {
+                                "properties": {
+                                    "pruningLevel": {
+                                        "type": "integer",
+                                        "default": 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "stage": {
+                                "const": "discovery"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "algorithm"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "required": [
+        "dataFilePath",
+        "outputDirPath",
+        "pipeline"
+    ]
+}
