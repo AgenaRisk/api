@@ -123,7 +123,7 @@ Only applies when `stage` is `discovery`.
 - Enum: `2`, `10`, `e`
 - (Applies when: `stage` is `discovery` or `evaluation`)
 
-### `logLikelyhoodScore`
+### `logLikelihoodScore`
 - Type: `boolean`
 - Default: `False`
 - (Applies to `stage` is `evaluation`)

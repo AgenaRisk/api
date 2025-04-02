@@ -160,7 +160,7 @@
                                 "e"
                             ]
                         },
-                        "logLikelyhoodScore": {
+                        "logLikelihoodScore": {
                             "type": "boolean",
                             "default": false
                         },
