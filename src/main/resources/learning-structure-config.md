@@ -125,7 +125,7 @@ Only applies when `stage` is `discovery`.
 
 ### `logLikelihoodScore`
 - Type: `boolean`
-- Default: `False`
+- Default: `false`
 - (Applies to `stage` is `evaluation`)
 
 ### `minimumEdgeAppearanceCountToKeep`
@@ -141,6 +141,11 @@ Only applies when `stage` is `discovery`.
 - Type: `integer`
 - Default: `0`
 - Maximum number of edges for generation. (Applies when `stage` is `generation`)
+
+### `statesFromData`
+- Type: `boolean`
+- Default: `false`
+- When set to true, whole training dataset is processed to collect unique states and configure nodes accordingly. (Applies when `stage` is `generation`)
 
 ### `maximumMeanDiscrepancyType`
 - Type: `string`

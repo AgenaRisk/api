@@ -173,6 +173,11 @@
                             "type": "string",
                             "description": "Path to the evaluation data file to be used only during evaluation (relative or absolute)."
                         },
+                        "statesFromData": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "When set to true during generation, whole training dataset is processed to collect unique states and configure nodes accordingly."
+                        },
                         "maximumEdgeCount": {
                             "type": "integer",
                             "default": 0,
