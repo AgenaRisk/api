@@ -342,7 +342,13 @@ public class Model implements IdContainer<ModelException>, Storable {
 		
 		Model model = this;
 		
-		JSONObject jsonModel = json.getJSONObject(Field.model.toString());
+		JSONObject jsonModel;
+		if (!json.has(Model.Field.model.toString()) && json.has(Network.Field.networks.toString())){
+			jsonModel = json;
+		}
+		else {
+			jsonModel = json.getJSONObject(Field.model.toString());
+		}
 		
 		// Retrieve extra fields from JSON that can be used outside of this API
 		model.jsonTexts = jsonModel.optJSONArray(Text.Field.texts.toString());
