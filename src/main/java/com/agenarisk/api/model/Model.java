@@ -74,7 +74,9 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * This is set of fields for input/output to XML and JSON format
 	 */
 	public static enum Field {
-		model
+		model,
+		version,
+		lastSaved
 	}
 	
 	public static enum ExportFlag {
