@@ -54,7 +54,7 @@ public class ConfiguredExecutor {
 	private Path outputDirPath = null;
 	private Path inputDirPath = null;
 	
-	private Result result = new Result();
+	private final Result result = new Result();
 	
 	private Config config;
 
@@ -148,7 +148,7 @@ public class ConfiguredExecutor {
 		}
 		
 		if (jConfig.has("data")){
-			throw new NotImplementedException("data in JSON not yet supported");
+			throw new NotImplementedException("Data in JSON not yet supported");
 		}
 		
 		JSONArray jPipeline = jConfig.optJSONArray("pipeline");
