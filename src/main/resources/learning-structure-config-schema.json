@@ -169,14 +169,14 @@
                             "minimum": 1,
                             "default": 1
                         },
-                        "evaluationDataPath": {
-                            "type": "string",
-                            "description": "Path to the evaluation data file to be used only during evaluation (relative or absolute)."
-                        },
                         "statesFromData": {
                             "type": "boolean",
                             "default": false,
                             "description": "When set to true during generation, whole training dataset is processed to collect unique states and configure nodes accordingly."
+                        },
+                        "dataPath": {
+                            "type": "string",
+                            "description": "Path to the data file (relative or absolute). When used with generation stage, this file informs the states to be created for relevant variables. When used with evaluation stage, this file will be used to evaluate the models against. When used in tableLearning stage, this data is used to learn state probabilities using EM algorithm."
                         },
                         "maximumEdgeCount": {
                             "type": "integer",
