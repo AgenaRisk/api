@@ -15,6 +15,9 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.State;
 import com.agenarisk.api.model.ResultValue;
+import com.agenarisk.api.util.VersionApi;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +50,7 @@ import uk.co.agena.minerva.model.questionnaire.Questionnaire;
 import uk.co.agena.minerva.model.scenario.Observation;
 import uk.co.agena.minerva.model.scenario.Scenario;
 import uk.co.agena.minerva.util.Logger;
+import uk.co.agena.minerva.util.VersionCore;
 import uk.co.agena.minerva.util.model.DataPoint;
 import uk.co.agena.minerva.util.model.DataSet;
 import uk.co.agena.minerva.util.model.IntervalDataPoint;
@@ -95,6 +99,12 @@ public class JSONAdapter {
 		// Pictures
 		
 		// Graphics
+		
+		JSONObject jVersion = new JSONObject();
+		json.put(com.agenarisk.api.model.Model.Field.version.toString(), jVersion);
+		jVersion.put("com-agenarisk-core", VersionCore.getVersionText());
+		jVersion.put("com-agenarisk-api", VersionApi.getVersionText());
+		json.put(com.agenarisk.api.model.Model.Field.lastSaved.toString(), ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 		
 		return json;
 	}
