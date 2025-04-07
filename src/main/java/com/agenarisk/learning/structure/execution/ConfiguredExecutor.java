@@ -18,6 +18,8 @@ import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.MergerConfigurer;
 import com.agenarisk.learning.structure.config.MergerExecutor;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
+import com.agenarisk.learning.structure.config.TableLearningConfigurer;
+import com.agenarisk.learning.structure.config.TableLearningExecutor;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.result.Discovery;
@@ -36,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.NotImplementedException;
 import org.json.JSONArray;
@@ -48,6 +51,10 @@ import uk.co.agena.minerva.util.io.MinervaProperties;
  */
 public class ConfiguredExecutor {
 	private static final Pattern INVALID_LABEL_PATTERN = Pattern.compile("[\\\\/:*?\"<>|]|(\\.\\.)|[/]");
+	
+	public static enum Stage {
+		generation, discovery, averaging, evaluation, merger, tableLearning
+	}
 	
 	private ArrayList<ArrayList<String>> data = null;
 	private Path dataFilePath = null;
@@ -218,6 +225,9 @@ public class ConfiguredExecutor {
 				case "merger":
 					configurablePipeline = new MergerConfigurer(executor.getConfig());
 					break;
+				case "tableLearning":
+					configurablePipeline = new TableLearningConfigurer(executor.getConfig()).configureFromJson(jStage);
+					break;
 				default:
 					throw new StructureLearningException("Invalid stage type: " + stageType);
 			}
@@ -238,7 +248,6 @@ public class ConfiguredExecutor {
 				discovery.setLabel(stageLabel);
 				discovery.setModelFilePrefix(modelFilePrefix);
 				
-				genConfigurer.setDataPath(executor.getDataFilePath());
 				genConfigurer.setModelPath(executor.getOutputDirPath().resolve(modelFilePrefix+".cmpx"));
 				
 				try {
@@ -254,6 +263,36 @@ public class ConfiguredExecutor {
 					BLogger.logThrowableIfDebug(ex);
 					discovery.setSuccess(false);
 					discovery.setMessage(message);
+				}
+			}
+			
+			if (stageType.equals("tableLearning")){
+				TableLearningConfigurer configurer = (TableLearningConfigurer) configurablePipeline;
+				Discovery targetDiscovery = executor.getResult().getDiscoveries().stream().filter(discovery -> Objects.equals(configurer.getModelStageLabel(), discovery.getLabel())).findAny().orElse(null);
+				if (targetDiscovery == null){
+					BLogger.logConditional("No model with label found: " + configurer.getModelStageLabel());
+					continue;
+				}
+
+				configurer.setModelPrefix(targetDiscovery.getModelFilePrefix());
+				configurer.setModelPath(executor.getOutputDirPath().resolve(targetDiscovery.getModelFilePrefix()+".cmpx"));
+				
+				try {
+					configurer.setModel(Model.createModel(targetDiscovery.getModel()));
+					TableLearningExecutor stageExecutor = (TableLearningExecutor) configurablePipeline.apply();
+					stageExecutor.setOriginalConfigurer(configurer);
+					
+					if (targetDiscovery.getAlgorithm().startsWith("generation-")){
+						// Model was generated from variable names, which means it has bogus variable states
+					}
+					
+					stageExecutor.execute();
+					targetDiscovery.setModel(configurer.getModel().toJson().optJSONObject("model"));
+				}
+				catch(Exception ex){
+					String message = "Failed to learn tables: " + ex.getMessage();
+					BLogger.logThrowableIfDebug(ex);
+					BLogger.logConditional(message);
 				}
 			}
 			
