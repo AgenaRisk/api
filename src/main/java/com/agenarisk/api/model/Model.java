@@ -1080,8 +1080,13 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 */
 	public void saveEssentials(String path, boolean keepMeta) throws FileIOException {
 		try {
-			
-			JSONObject json = export(Model.ExportFlag.CLOUD_DATASET);
+			JSONObject json;
+			if (keepMeta){
+				json = export(Model.ExportFlag.CLOUD_DATASET, Model.ExportFlag.KEEP_META);
+			}
+			else {
+				json = export(Model.ExportFlag.CLOUD_DATASET);
+			}
 			Files.write(Paths.get(path), json.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			
 		}
