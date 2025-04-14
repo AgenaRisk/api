@@ -56,7 +56,7 @@
                     },
                     "knowledge": {
                         "type": "object",
-                        "description": "Prior knowledge configuration and constraints. Applies when stage is discovery or tableLearning.",
+                        "description": "Prior knowledge configuration and constraints. Applies when stage is `discovery` or `tableLearning`.",
                         "properties": {
                             "connectionsDirected": {
                                 "type": "array",
@@ -140,6 +140,12 @@
                             ],
                             "default": 3,
                             "description": "Maximum in-degree before processing."
+                        },
+                        "dataWeight": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "description": "Relative weight of this knowledge entry when used for model estimation. Must be between 0 and 1."
                         }
                     }
                 },
@@ -196,6 +202,20 @@
                             ],
                             "default": "Mean_Absolute",
                             "description": "Maximum Mean Discrepancy (MMD) type and Score and Distance types for SaiyanH."
+                        },
+                        "modelStageLabel": {
+                            "type": "string",
+                            "description": "Label of the model stage to which this table learning step applies. Required when stage is `tableLearning`."
+                        },
+                        "missingValue": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Symbol used to represent missing values. Applies to `tableLearning`."
+                        },
+                        "valueSeparator": {
+                            "type": "string",
+                            "default": ",",
+                            "description": "Separator character for values in the input file. Applies to `tableLearning`."
                         }
                     }
                 }
@@ -207,24 +227,17 @@
                 {
                     "if": {
                         "properties": {
-                            "algorithm": {
-                                "enum": [
-                                    "HC",
-                                    "TABU",
-                                    "MAHC"
-                                ]
+                            "stage": {
+                                "const": "tableLearning"
                             }
                         }
                     },
                     "then": {
                         "properties": {
-                            "knowledge": {
-                                "properties": {
-                                    "pruningLevel": {
-                                        "type": "integer",
-                                        "default": 0
-                                    }
-                                }
+                            "parameters": {
+                                "required": [
+                                    "modelStageLabel"
+                                ]
                             }
                         }
                     }
