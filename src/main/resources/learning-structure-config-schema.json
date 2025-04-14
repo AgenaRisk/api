@@ -124,6 +124,13 @@
                                     "type": "string"
                                 },
                                 "description": "Variables for which dimensionality penalty is reduced."
+                            },
+                            "skipNodes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of nodes to skip from structure learning."
                             }
                         },
                         "dimensionalityReductionRate": {
@@ -218,16 +225,16 @@
                             "description": "Separator character for values in the input file. Applies to `tableLearning`."
                         },
                         "maxIterations": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 50,
-                          "description": "Maximum number of iterations before EM algorithm stops even if not converged."
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 50,
+                            "description": "Maximum number of iterations before EM algorithm stops even if not converged."
                         },
                         "convergenceThreshold": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1,
-                          "description": "Convergence threshold between 0 and 1. Once the entropy error is below this threshold, the EM algorithm is considered converged and stops."
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "description": "Convergence threshold between 0 and 1. Once the entropy error is below this threshold, the EM algorithm is considered converged and stops."
                         }
                     }
                 }
