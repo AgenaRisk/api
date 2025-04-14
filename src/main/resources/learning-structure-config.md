@@ -31,7 +31,7 @@
 ### `stage`
 - Type: `string`
 - Pipeline stage type.
-- Enum: `generation`, `discovery`, `averaging`, `evaluation`, `merger`
+- Enum: `generation`, `discovery`, `averaging`, `evaluation`, `merger`, `tableLearning`
     - `generation` stage allows to generate a model rather than use structure discovery algorithms.  
     For example, you could generate a null-hypothesis model where all variables are disconnected, or a randomised model where random edges are created.  
     Parameters:
@@ -55,7 +55,17 @@
         - `dataPath`
     - `merger` stage is designed for local use only and will merge all previously generated or discovered models into a single CMPX file, such that each model appears as a network in this file.  
     This file can be viewed in agena .ai modeller desktop or in the [online model viewer](https://portal.agena.ai/modeller).
-
+    - `tableLearning` stage can be used to learn variable state probabilities.  
+    EM algorithm is used.  
+    This stage allows to specify `knowledge` constraints to guide EM algorithm. Knowledge vs data weights can be applied on a model-wide level or individually to variables. In this context, the knowledge is considered to be the existing probabilities in the model prior to table learning.  
+    Parameters:
+        - `dataPath`
+        - `modelStageLabel`
+        - `convergenceThreshold`
+        - `maxIterations`
+        - `missingValue`
+        - `valueSeparator`
+        
 ### `algorithm`
 - Type: `string`
 - Enum: `HC`, `SaiyanH`, `GES`, `TABU`, `MAHC`

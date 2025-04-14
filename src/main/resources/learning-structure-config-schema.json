@@ -34,7 +34,8 @@
                             "discovery",
                             "averaging",
                             "evaluation",
-                            "merger"
+                            "merger",
+                            "tableLearning"
                         ],
                         "description": "Pipeline stage type."
                     },
@@ -55,7 +56,7 @@
                     },
                     "knowledge": {
                         "type": "object",
-                        "description": "Prior knowledge constraints.",
+                        "description": "Prior knowledge configuration and constraints. Applies when stage is discovery or tableLearning.",
                         "properties": {
                             "connectionsDirected": {
                                 "type": "array",
