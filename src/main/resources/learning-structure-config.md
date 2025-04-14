@@ -133,6 +133,18 @@ Only applies when `stage` is `discovery`.
 - Default: `3`
 - Maximum in-degree before processing.
 
+### `skipNodes`
+- Type: `array`
+- Items: `string`
+- List of nodes to skip from structure learning.
+- Applies when: `stage` is `tableLearning`.
+
+### `nodeDataWeightsCustom`
+- Type: `array`
+- Items: arrays with exactly two elements: `[string, number]`
+- Custom data weights per node. First element is the node name, second is the weight.
+- Applies when: `stage` is `tableLearning`.
+
 ---
 
 ## `pipeline[].parameters`
@@ -140,27 +152,27 @@ Only applies when `stage` is `discovery`.
 ### `pruningLevel`
 - Type: `integer`
 - Default: `0`
-- Applies when: `stage` is `discovery` and `algorithm` is one of: `HC`, `TABU`, `MAHC`
+- Applies when: `stage` is `discovery` and `algorithm` is one of: `HC`, `TABU`, `MAHC`.
 
 ### `bicLog`
 - Type: `string`
 - Enum: `2`, `10`, `e`
-- Applies when: `stage` is `discovery` or `evaluation`
+- Applies when: `stage` is `discovery` or `evaluation`.
 
 ### `logLikelihoodScore`
 - Type: `boolean`
 - Default: `false`
-- Applies when `stage` is `evaluation`
+- Applies when `stage` is `evaluation`.
 
 ### `minimumEdgeAppearanceCountToKeep`
 - Type: `integer`
 - Default: `1`
-- Applies when `stage` is `averaging`
+- Applies when `stage` is `averaging`.
 
 ### `evaluationDataPath`
 - Type: `string`
 - Path to the evaluation data file to be used only during evaluation (relative or absolute).
-- Applies when `stage` is `evaluation`
+- Applies when `stage` is `evaluation`.
 
 ### `dataPath`
 - Type: `string`
@@ -168,23 +180,52 @@ Only applies when `stage` is `discovery`.
 When used with `generation` stage, this file informs the states to be created for relevant variables.  
 When used with `evaluation` stage, this file will be used to evaluate the models against.  
 When used with `tableLearning` stage, this data is used to learn state probabilities using EM algorithm.
-- Applies when `stage` is `evaluation`, `generation` or `tableLearning`
+- Applies when `stage` is `evaluation`, `generation` or `tableLearning`.
 
 ### `maximumEdgeCount`
 - Type: `integer`
 - Default: `0`
 - Maximum number of edges for generation.
-- Applies when `stage` is `generation`
+- Applies when `stage` is `generation`.
 
 ### `statesFromData`
 - Type: `boolean`
 - Default: `false`
 - When set to true, whole training dataset is processed to collect unique states and configure nodes accordingly.
-- Applies when `stage` is `generation`
+- Applies when `stage` is `generation`.
 
 ### `maximumMeanDiscrepancyType`
 - Type: `string`
 - Enum: `Mutual_Information`, `Mean_Absolute`, `Max_Absolute`, `MeanMax_Absolute`, `Mean_Relative`, `Max_Relative`
 - Default: `Mean_Absolute`
 - Maximum Mean Discrepancy (MMD) type and Score and Distance types for SaiyanH.
-- Applies when `stage` is `discovery` and `algorithm` is `SaiyanH`
+- Applies when `stage` is `discovery` and `algorithm` is `SaiyanH`.
+
+### `modelStageLabel`
+- Type: `string`
+- Label of the model stage to which this table learning step applies.
+- Required when: `stage` is `tableLearning`.
+
+### `missingValue`
+- Type: `string`
+- Default: `""`
+- Symbol used to represent missing values in the input data file.
+- Applies when: `stage` is `tableLearning`.
+
+### `valueSeparator`
+- Type: `string`
+- Default: `","`
+- Separator character for values in the input file.
+- Applies when: `stage` is `tableLearning`.
+
+### `maxIterations`
+- Type: `integer`
+- Range: `0` to `50`
+- Maximum number of iterations before the EM algorithm stops, even if it has not converged.
+- Applies when: `stage` is `tableLearning`.
+
+### `convergenceThreshold`
+- Type: `number`
+- Range: `0` to `1`
+- Convergence threshold for the EM algorithm. Once the entropy error is below this threshold, the algorithm is considered converged and stops.
+- Applies when: `stage` is `tableLearning`.
