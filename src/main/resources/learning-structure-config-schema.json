@@ -131,6 +131,23 @@
                                     "type": "string"
                                 },
                                 "description": "List of nodes to skip from structure learning."
+                            },
+                            "nodeDataWeightsCustom": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        }
+                                    ],
+                                    "minItems": 2,
+                                    "maxItems": 2
+                                },
+                                "description": "Custom data weights per node. Each item must be a [string, number] pair."
                             }
                         },
                         "dimensionalityReductionRate": {
