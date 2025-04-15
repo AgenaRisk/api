@@ -6,7 +6,7 @@ import org.json.JSONObject;
  * @author Eugene Dementiev
  */
 
-public class Evaluation {
+public class StructureEvaluation {
     
     private String label = "";
     private boolean success = false;

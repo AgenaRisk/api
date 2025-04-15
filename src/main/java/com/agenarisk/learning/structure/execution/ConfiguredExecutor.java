@@ -23,7 +23,7 @@ import com.agenarisk.learning.structure.config.TableLearningExecutor;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.result.Discovery;
-import com.agenarisk.learning.structure.execution.result.Evaluation;
+import com.agenarisk.learning.structure.execution.result.StructureEvaluation;
 import com.agenarisk.learning.structure.execution.result.Result;
 import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.utility.CmpxStructureExtractor;
@@ -213,7 +213,7 @@ public class ConfiguredExecutor {
 							throw new StructureLearningException("Invalid algorithm " + algorithmName);
 					}
 					break;
-				case "evaluation":
+				case "structureEvaluation":
 					configurablePipeline = new EvaluationConfigurer(executor.getConfig()).configureFromJson(jStage);
 					break;
 				case "averaging":
@@ -296,7 +296,7 @@ public class ConfiguredExecutor {
 				}
 			}
 			
-			if (stageType.equals("evaluation")){
+			if (stageType.equals("structureEvaluation")){
 				executor.getConfig().setPathOutput(executor.getOutputDirPath().toString());
 				if (!jStage.has("evaluationDataPath")){
 					BLogger.logConditional("Specific evaluation data set not provided, using training data set for evaluation");
@@ -305,8 +305,8 @@ public class ConfiguredExecutor {
 				}
 				
 				for (String modelFilePrefix: modelPrefixes.keySet()){
-					Evaluation evaluation = new Evaluation();
-					executor.getResult().getEvaluations().add(evaluation);
+					StructureEvaluation evaluation = new StructureEvaluation();
+					executor.getResult().getStructureEvaluations().add(evaluation);
 					evaluation.setModelLabel(modelPrefixes.get(modelFilePrefix));
 					evaluation.setLabel(stageLabel);
 					try {

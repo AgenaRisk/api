@@ -31,7 +31,7 @@
 ### `stage`
 - Type: `string`
 - Pipeline stage type.
-- Enum: `generation`, `discovery`, `averaging`, `evaluation`, `merger`, `tableLearning`
+- Enum: `generation`, `discovery`, `averaging`, `structureEvaluation`, `merger`, `tableLearning`
     - `generation` stage allows to generate a model rather than use structure discovery algorithms.  
     For example, you could generate a null-hypothesis model where all variables are disconnected, or a randomised model where random edges are created.  
     Parameters:
@@ -49,7 +49,7 @@
     - `averaging` stage generates an average model based on all previously generated or discovered models.  
     Parameters:
         - `minimumEdgeAppearanceCountToKeep`
-    - `evaluation` stage calculates a score for each previously generated or discovered model so it is possible to rank or compare.  
+    - `structureEvaluation` stage calculates a score for each previously generated or discovered model so it is possible to rank or compare.  
     Bayesian Information Criterion (BIC) and Log-Likelihood (LL) scores can be calculated.  
     Parameters:
         - `dataPath`
@@ -157,12 +157,12 @@ Only applies when `stage` is `discovery`.
 ### `bicLog`
 - Type: `string`
 - Enum: `2`, `10`, `e`
-- Applies when: `stage` is `discovery` or `evaluation`.
+- Applies when: `stage` is `discovery` or `structureEvaluation`.
 
 ### `logLikelihoodScore`
 - Type: `boolean`
 - Default: `false`
-- Applies when `stage` is `evaluation`.
+- Applies when `stage` is `structureEvaluation`.
 
 ### `minimumEdgeAppearanceCountToKeep`
 - Type: `integer`
@@ -172,15 +172,15 @@ Only applies when `stage` is `discovery`.
 ### `evaluationDataPath`
 - Type: `string`
 - Path to the evaluation data file to be used only during evaluation (relative or absolute).
-- Applies when `stage` is `evaluation`.
+- Applies when `stage` is `structureEvaluation`.
 
 ### `dataPath`
 - Type: `string`
 - Path to the data file (relative or absolute).  
 When used with `generation` stage, this file informs the states to be created for relevant variables.  
-When used with `evaluation` stage, this file will be used to evaluate the models against.  
+When used with `structureEvaluation` stage, this file will be used to evaluate the models against.  
 When used with `tableLearning` stage, this data is used to learn state probabilities using EM algorithm.
-- Applies when `stage` is `evaluation`, `generation` or `tableLearning`.
+- Applies when `stage` is `structureEvaluation`, `generation` or `tableLearning`.
 
 ### `maximumEdgeCount`
 - Type: `integer`

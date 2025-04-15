@@ -33,7 +33,7 @@
                             "generation",
                             "discovery",
                             "averaging",
-                            "evaluation",
+                            "structureEvaluation",
                             "merger",
                             "tableLearning"
                         ],

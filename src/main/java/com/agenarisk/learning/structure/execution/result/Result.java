@@ -12,14 +12,14 @@ import org.json.JSONObject;
 
 public class Result {
     private final ArrayList<Discovery> discoveries = new ArrayList<>();
-    private final ArrayList<Evaluation> evaluations = new ArrayList<>();
+    private final ArrayList<StructureEvaluation> structureEvaluations = new ArrayList<>();
 
     public ArrayList<Discovery> getDiscoveries() {
         return discoveries;
     }
 
-    public ArrayList<Evaluation> getEvaluations() {
-        return evaluations;
+    public ArrayList<StructureEvaluation> getStructureEvaluations() {
+        return structureEvaluations;
     }
 
     public JSONObject toJson() {
@@ -31,19 +31,19 @@ public class Result {
             discoveryArray.put(discovery.toJson());
         }
 
-        for (Evaluation evaluation : evaluations) {
+        for (StructureEvaluation evaluation : structureEvaluations) {
             evaluationArray.put(evaluation.toJson());
         }
 
         json.put("discoveries", discoveryArray);
-        json.put("evaluations", evaluationArray);
+        json.put("structureEvaluations", evaluationArray);
         return json;
     }
 
     public ArrayList<List<Object>> getSummary() {
         ArrayList<List<Object>> summary = new ArrayList<>();
 
-        if (evaluations.isEmpty()) {
+        if (structureEvaluations.isEmpty()) {
             for (Discovery discovery : discoveries) {
                 List<Object> row = new ArrayList<>();
                 row.add(discovery.getLabel());
@@ -64,7 +64,7 @@ public class Result {
 
         for (Discovery discovery : discoveries) {
             boolean matchFound = false;
-            for (Evaluation evaluation : evaluations) {
+            for (StructureEvaluation evaluation : structureEvaluations) {
                 if (evaluation.getModelLabel().equals(discovery.getLabel())) {
                     List<Object> row = new ArrayList<>();
                     row.add(discovery.getLabel());
