@@ -308,7 +308,10 @@ public class ConfiguredExecutor {
 					executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
 					executor.getConfig().setPathInput(executor.getDataFilePath().getParent().toString());
 				}
-					BLogger.logConditional("Specific evaluation data set not provided, using training data set for evaluation");
+				
+				if (stageLabel == null || stageLabel.isEmpty()){
+					stageLabel = "structure-eval-" + iStage;
+				}
 					executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
 					executor.getConfig().setPathInput(executor.getDataFilePath().getParent().toString());
 				}
