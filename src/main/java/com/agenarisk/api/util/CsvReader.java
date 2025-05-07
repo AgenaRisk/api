@@ -13,27 +13,36 @@ import java.util.List;
  * @author Eugene Dementiev
  */
 public class CsvReader {
-	public static List<List<String>> readCsv(Path filePath) throws IOException {
+
+    public static List<List<String>> readCsv(Path filePath) throws IOException {
+        return readCsv(filePath, ",");
+    }
+
+    public static List<List<String>> readCsv(Path filePath, String separator) throws IOException {
         List<List<String>> data = new ArrayList<>();
 
         try (BufferedReader br = Files.newBufferedReader(filePath)) {
             String line;
             while ((line = br.readLine()) != null) {
-                List<String> row = Arrays.asList(line.split(","));
+                List<String> row = Arrays.asList(line.split(separator));
                 data.add(row);
             }
         }
 
         return data;
     }
-	
-	public static List<String> readHeaders(Path filePath) throws IOException {
+
+    public static List<String> readHeaders(Path filePath) throws IOException {
+        return readHeaders(filePath, ",");
+    }
+
+    public static List<String> readHeaders(Path filePath, String separator) throws IOException {
         try (BufferedReader br = Files.newBufferedReader(filePath)) {
-			String line = br.readLine();
-			if (line == null){
-				return new ArrayList<>();
-			}
-            return Arrays.asList(line.split(","));
+            String line = br.readLine();
+            if (line == null) {
+                return new ArrayList<>();
+            }
+            return Arrays.asList(line.split(separator));
         }
     }
 }
