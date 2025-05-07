@@ -34,6 +34,7 @@
                             "discovery",
                             "averaging",
                             "structureEvaluation",
+                            "performanceEvaluation",
                             "merger",
                             "tableLearning"
                         ],
@@ -207,7 +208,7 @@
                         },
                         "dataPath": {
                             "type": "string",
-                            "description": "Path to the data file (relative or absolute). When used with generation stage, this file informs the states to be created for relevant variables. When used with evaluation stage, this file will be used to evaluate the models against. When used in tableLearning stage, this data is used to learn state probabilities using EM algorithm."
+                            "description": "Path to the data file (relative or absolute). When used with generation stage, this file informs the states to be created for relevant variables. When used with `structureEvaluation` or `performanceEvaluation` stage, this file will be used to evaluate the models against. When used in `tableLearning` stage, this data is used to learn state probabilities using EM algorithm."
                         },
                         "maximumEdgeCount": {
                             "type": "integer",
@@ -252,6 +253,15 @@
                             "minimum": 0,
                             "maximum": 1,
                             "description": "Convergence threshold between 0 and 1. Once the entropy error is below this threshold, the EM algorithm is considered converged and stops."
+                        },
+                        "target": {
+                            "type": "string",
+                            "description": "ID of the target node used for performance evaluation. Required when stage is `performanceEvaluation`."
+                        },
+                        "calculateRoc": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Whether to calculate points for a ROC graph. Available when stage is `performanceEvaluation`."
                         }
                     }
                 }
