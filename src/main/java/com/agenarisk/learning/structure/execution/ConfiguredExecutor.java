@@ -17,12 +17,15 @@ import com.agenarisk.learning.structure.config.HcConfigurer;
 import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.MergerConfigurer;
 import com.agenarisk.learning.structure.config.MergerExecutor;
+import com.agenarisk.learning.structure.config.PerformanceEvaluationConfigurer;
+import com.agenarisk.learning.structure.config.PerformanceEvaluationExecutor;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
 import com.agenarisk.learning.structure.config.TableLearningConfigurer;
 import com.agenarisk.learning.structure.config.TableLearningExecutor;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.result.Discovery;
+import com.agenarisk.learning.structure.execution.result.PerformanceEvaluation;
 import com.agenarisk.learning.structure.execution.result.StructureEvaluation;
 import com.agenarisk.learning.structure.execution.result.Result;
 import com.agenarisk.learning.structure.logger.BLogger;
@@ -183,6 +186,8 @@ public class ConfiguredExecutor {
 			executor.setInputDirPath(executor.getDataFilePath().getParent());
 			executor.getConfig().setPathInput(executor.getInputDirPath().toString());
 			
+			BLogger.logConditional("Entering stage " + iStage + ": "+ stageType + " ("+stageLabel+")");
+			
 			switch (stageType) {
 				case "discovery":
 					Config.LearningAlgorithm algorithm;
@@ -215,6 +220,9 @@ public class ConfiguredExecutor {
 					break;
 				case "structureEvaluation":
 					configurablePipeline = new EvaluationConfigurer(executor.getConfig()).configureFromJson(jStage);
+					break;
+				case "performanceEvaluation":
+					configurablePipeline = new PerformanceEvaluationConfigurer(executor.getConfig()).configureFromJson(jStage);
 					break;
 				case "averaging":
 					configurablePipeline = new AveragingConfigurer(executor.getConfig()).configureFromJson(jStage);
@@ -305,9 +313,65 @@ public class ConfiguredExecutor {
 				if (stageLabel == null || stageLabel.isEmpty()){
 					stageLabel = "structure-eval-" + iStage;
 				}
-					executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
-					executor.getConfig().setPathInput(executor.getDataFilePath().getParent().toString());
+				
+				for (String modelFilePrefix: modelPrefixes.keySet()){
+					StructureEvaluation evaluation = new StructureEvaluation();
+					executor.getResult().getStructureEvaluations().add(evaluation);
+					evaluation.setModelLabel(modelPrefixes.get(modelFilePrefix));
+					evaluation.setLabel(stageLabel);
+					try {
+						Path modelPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".cmpx");
+						Path csvPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".csv");
+						executor.getConfig().setFileOutputDagLearnedCsv(csvPath.getFileName().toString());
+						if (!Files.exists(csvPath)){
+							// Need to generate structure CSV from CMPX
+							if (!Files.exists(modelPath)){
+								String message = "Model file missing, can't evaluate: " + modelPath.toString();
+								BLogger.logConditional(message);
+								evaluation.setSuccess(false);
+								evaluation.setMessage(message);
+								continue;
+							}
+
+							CsvWriter.writeCsv(CmpxStructureExtractor.extract(Model.loadModel(modelPath.toString())), csvPath);
+							csvPath.toFile().deleteOnExit();
+						}
+						configurablePipeline.apply().execute();
+
+						evaluation.setSuccess(true);
+						evaluation.setBicScore(executor.getConfig().getCache().getBicScore());
+						evaluation.setLogLikelihoodScore(executor.getConfig().getCache().getLogLikelihoodScore());
+						evaluation.setComplexityScore(executor.getConfig().getCache().getComplexityScore());
+						evaluation.setFreeParameters(executor.getConfig().getCache().getFreeParameters());
+					}
+					catch (Exception ex){
+						String message = "Failed to evaluate " + modelFilePrefix+".cmpx: " + ex.getMessage();
+						BLogger.logConditional(message);
+						evaluation.setSuccess(false);
+						evaluation.setMessage(message);
+					}
 				}
+			}
+			
+			if (stageType.equals("performanceEvaluation")){
+				executor.getConfig().setPathOutput(executor.getOutputDirPath().toString());
+				if (!jStage.has("dataPath")){
+					BLogger.logConditional("Specific evaluation data set not provided, using training data set for evaluation");
+				}
+				
+				if (stageLabel == null || stageLabel.isEmpty()){
+					stageLabel = "structure-eval-" + iStage;
+				}
+				
+				PerformanceEvaluationConfigurer stageConfigurer = (PerformanceEvaluationConfigurer)configurablePipeline;
+				stageConfigurer.setModelPrefixes(modelPrefixes);
+				stageConfigurer.setOutputDirPath(executor.getOutputDirPath());
+				stageConfigurer.setStageLabel(stageLabel);
+				stageConfigurer.setPipelineResult(executor.getResult());
+				PerformanceEvaluationExecutor stageExecutor = stageConfigurer.apply();
+				stageExecutor.setOriginalConfigurer(stageConfigurer);
+				
+				stageExecutor.execute();
 				
 				for (String modelFilePrefix: modelPrefixes.keySet()){
 					StructureEvaluation evaluation = new StructureEvaluation();

@@ -11,6 +11,7 @@ import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.result.PerformanceEvaluation;
 import com.agenarisk.learning.structure.logger.BLogger;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -128,6 +129,14 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 							double sphericalScore = calculateSphericalScore(actualValue, predictedDistributionMap);
 							evaluation.setSphericalScore(evaluation.getSphericalScore()+ sphericalScore);
 							
+							for (String classLabel : targetNodeStates) {
+								double predictedProb = predictedDistributionMap.getOrDefault(classLabel, 0.0);
+
+								// Initialize ROC data containers if not yet created
+								evaluation.getRocScores().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(predictedProb);
+								evaluation.getRocTruths().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(actualValue.equals(classLabel) ? 1 : 0);
+							}
+							
 							evaluation.setSuccess(true);
 							successRows += 1;
 						}
@@ -137,9 +146,41 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 							BLogger.logConditional(message);
 						}
 					}
+					
 					if (successRows == 0){
 						throw new StructureLearningException("All cases failed to calculate");
 					}
+					
+					List<Double> allAucs = new ArrayList<>();
+					List<Double> allScores = new ArrayList<>();
+					List<Integer> allTruths = new ArrayList<>();
+					for (String classLabel : targetNodeStates) {
+						List<Double> scores = evaluation.getRocScores().get(classLabel);
+						List<Integer> truths = evaluation.getRocTruths().get(classLabel);
+
+						if (scores != null && truths != null && scores.size() == truths.size()) {
+							double auc = computeAUC(scores, truths);
+							evaluation.addRocAuc(classLabel, auc);
+							allAucs.add(auc);
+
+							allScores.addAll(scores);
+							allTruths.addAll(truths);
+
+							List<double[]> rocCurve = computeRocCurve(scores, truths, 1000);
+							evaluation.addRocCurve(classLabel, rocCurve);
+						}
+					}
+
+					if (!allAucs.isEmpty()) {
+						double macroAuc = allAucs.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+						evaluation.setMacroAuc(macroAuc);
+					}
+
+					if (!allScores.isEmpty() && allScores.size() == allTruths.size()) {
+						double microAuc = computeAUC(allScores, allTruths);
+						evaluation.setMicroAuc(microAuc);
+					}
+					
 					evaluation.setAbsoluteError(evaluation.getAbsoluteError()/successRows);
 					evaluation.setBrierScore(evaluation.getBrierScore()/successRows);
 					evaluation.setSphericalScore(evaluation.getSphericalScore()/successRows);
@@ -209,4 +250,57 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 
         return pTrue / norm;
     }
+
+	private double computeAUC(List<Double> scores, List<Integer> truths) {
+		List<int[]> pairs = new ArrayList<>();
+		for (int i = 0; i < scores.size(); i++) {
+			pairs.add(new int[] { i, truths.get(i) });
+		}
+		pairs.sort((a, b) -> Double.compare(scores.get(b[0]), scores.get(a[0]))); // descending order
+
+		int tp = 0, fp = 0;
+		int posCount = 0, negCount = 0;
+		for (int t : truths) {
+			if (t == 1) posCount++; else negCount++;
+		}
+
+		double auc = 0.0;
+		for (int[] pair : pairs) {
+			int actual = pair[1];
+			if (actual == 1) {
+				tp++;
+			} else {
+				auc += tp;
+				fp++;
+			}
+		}
+		if (posCount == 0 || negCount == 0) return 0.0;
+		return auc / (posCount * (double) negCount);
+	}
+
+	private List<double[]> computeRocCurve(List<Double> scores, List<Integer> truths, int steps) {
+		List<double[]> curve = new ArrayList<>();
+		int totalPos = 0, totalNeg = 0;
+		for (int label : truths) {
+			if (label == 1) totalPos++;
+			else totalNeg++;
+		}
+
+		for (int i = 0; i <= steps; i++) {
+			double threshold = i / (double) steps;
+			int tp = 0, fp = 0;
+			for (int j = 0; j < scores.size(); j++) {
+				double score = scores.get(j);
+				int actual = truths.get(j);
+				if (score >= threshold) {
+					if (actual == 1) tp++;
+					else fp++;
+				}
+			}
+			double tpr = totalPos == 0 ? 0.0 : tp / (double) totalPos;
+			double fpr = totalNeg == 0 ? 0.0 : fp / (double) totalNeg;
+			curve.add(new double[] { fpr, tpr });
+		}
+		return curve;
+	}
 }

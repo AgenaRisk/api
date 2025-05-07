@@ -94,10 +94,20 @@ public class Result {
                 row.add(matchedPerformance.getLabel());
                 row.add(matchedPerformance.isSuccess());
                 row.add(matchedPerformance.getAbsoluteError());
+                row.add(matchedPerformance.getBrierScore());
+                row.add(matchedPerformance.getSphericalScore());
+                row.add(matchedPerformance.getMacroAuc());
+                row.add(matchedPerformance.getMicroAuc());
+                row.add(matchedPerformance.getMessage());
             } else {
                 row.add(""); // performance label
                 row.add(""); // performance success
                 row.add(""); // absolute error
+                row.add(""); // brier score
+                row.add(""); // spherical score
+                row.add(""); // macro AUC
+                row.add(""); // micro AUC
+                row.add(""); // message
             }
 
             row.add(discovery.getModelPath());

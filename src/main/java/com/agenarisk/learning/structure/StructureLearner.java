@@ -69,16 +69,24 @@ public class StructureLearner {
 		boolean saveResult = json.optBoolean("saveResult", false);
 		if (printSummary || saveSummary){
 			List<Object> headers = Arrays.asList(
-					"Discovery Label",
-					"Discovery Success",
+					"Discovery label",
+					"Discovery success",
 					"Algorithm",
 					"Model file prefix",
-					"Evaluation Label",
-					"Evaluation Success",
-					"BIC Score",
-					"LL Score",
-					"Complexity Score",
-					"Free Parameters",
+					"Structure evaluation label",
+					"Structure evaluation success",
+					"BIC score",
+					"LL score",
+					"Complexity score",
+					"Free parameters",
+					"Performance evaluation label",
+					"Performance evaluation success",
+					"Absolute error",
+					"Brier score",
+					"Spherical score",
+					"Macro AUC",
+					"Micro AUC",
+					"Performance evaluation message",
 					"Model path"
 			);
 			Result result = executor.getResult();
