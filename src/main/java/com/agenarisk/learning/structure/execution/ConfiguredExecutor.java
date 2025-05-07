@@ -298,15 +298,8 @@ public class ConfiguredExecutor {
 			
 			if (stageType.equals("structureEvaluation")){
 				executor.getConfig().setPathOutput(executor.getOutputDirPath().toString());
-				if (jStage.has("dataPath")){
-					Path dataFilePath = Paths.get(jStage.getString("dataPath"));
-					executor.getConfig().setFileInputTrainingDataCsv(dataFilePath.getFileName().toString());
-					executor.getConfig().setPathInput(dataFilePath.getParent().toString());
-				}
-				else {
+				if (!jStage.has("dataPath")){
 					BLogger.logConditional("Specific evaluation data set not provided, using training data set for evaluation");
-					executor.getConfig().setFileInputTrainingDataCsv(executor.getDataFilePath().getFileName().toString());
-					executor.getConfig().setPathInput(executor.getDataFilePath().getParent().toString());
 				}
 				
 				if (stageLabel == null || stageLabel.isEmpty()){
