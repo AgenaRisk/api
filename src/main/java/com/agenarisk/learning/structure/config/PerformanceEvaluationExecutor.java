@@ -132,9 +132,11 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 							for (String classLabel : targetNodeStates) {
 								double predictedProb = predictedDistributionMap.getOrDefault(classLabel, 0.0);
 
-								// Initialize ROC data containers if not yet created
-								evaluation.getRocScores().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(predictedProb);
-								evaluation.getRocTruths().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(actualValue.equals(classLabel) ? 1 : 0);
+								if (originalConfigurer.isCalculateRoc()){
+									// Initialize ROC data containers if not yet created
+									evaluation.getRocScores().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(predictedProb);
+									evaluation.getRocTruths().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(actualValue.equals(classLabel) ? 1 : 0);
+								}
 							}
 							
 							evaluation.setSuccess(true);
@@ -151,34 +153,36 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 						throw new StructureLearningException("All cases failed to calculate");
 					}
 					
-					List<Double> allAucs = new ArrayList<>();
-					List<Double> allScores = new ArrayList<>();
-					List<Integer> allTruths = new ArrayList<>();
-					for (String classLabel : targetNodeStates) {
-						List<Double> scores = evaluation.getRocScores().get(classLabel);
-						List<Integer> truths = evaluation.getRocTruths().get(classLabel);
+					if (originalConfigurer.isCalculateRoc()){
+						List<Double> allAucs = new ArrayList<>();
+						List<Double> allScores = new ArrayList<>();
+						List<Integer> allTruths = new ArrayList<>();
+						for (String classLabel : targetNodeStates) {
+							List<Double> scores = evaluation.getRocScores().get(classLabel);
+							List<Integer> truths = evaluation.getRocTruths().get(classLabel);
 
-						if (scores != null && truths != null && scores.size() == truths.size()) {
-							double auc = computeAUC(scores, truths);
-							evaluation.addRocAuc(classLabel, auc);
-							allAucs.add(auc);
+							if (scores != null && truths != null && scores.size() == truths.size()) {
+								double auc = computeAUC(scores, truths);
+								evaluation.addRocAuc(classLabel, auc);
+								allAucs.add(auc);
 
-							allScores.addAll(scores);
-							allTruths.addAll(truths);
+								allScores.addAll(scores);
+								allTruths.addAll(truths);
 
-							List<double[]> rocCurve = computeRocCurve(scores, truths, 1000);
-							evaluation.addRocCurve(classLabel, rocCurve);
+								List<double[]> rocCurve = computeRocCurve(scores, truths, 1000);
+								evaluation.addRocCurve(classLabel, rocCurve);
+							}
 						}
-					}
 
-					if (!allAucs.isEmpty()) {
-						double macroAuc = allAucs.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-						evaluation.setMacroAuc(macroAuc);
-					}
+						if (!allAucs.isEmpty()) {
+							double macroAuc = allAucs.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+							evaluation.setMacroAuc(macroAuc);
+						}
 
-					if (!allScores.isEmpty() && allScores.size() == allTruths.size()) {
-						double microAuc = computeAUC(allScores, allTruths);
-						evaluation.setMicroAuc(microAuc);
+						if (!allScores.isEmpty() && allScores.size() == allTruths.size()) {
+							double microAuc = computeAUC(allScores, allTruths);
+							evaluation.setMicroAuc(microAuc);
+						}
 					}
 					
 					evaluation.setAbsoluteError(evaluation.getAbsoluteError()/successRows);

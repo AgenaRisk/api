@@ -96,8 +96,8 @@ public class Result {
                 row.add(matchedPerformance.getAbsoluteError());
                 row.add(matchedPerformance.getBrierScore());
                 row.add(matchedPerformance.getSphericalScore());
-                row.add(matchedPerformance.getMacroAuc());
-                row.add(matchedPerformance.getMicroAuc());
+                row.add(matchedPerformance.getMacroAuc() != null ? matchedPerformance.getMacroAuc() : "");
+                row.add(matchedPerformance.getMicroAuc() != null ? matchedPerformance.getMicroAuc() : "");
                 row.add(matchedPerformance.getMessage());
             } else {
                 row.add(""); // performance label

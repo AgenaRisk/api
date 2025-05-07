@@ -20,12 +20,12 @@ public class PerformanceEvaluation {
 	private double absoluteError = 1;
 	private double sphericalScore = 0;
 	
-	private Map<String, List<Double>> rocScores = new HashMap<>(); // class label -> list of predicted probabilities
-	private Map<String, List<Integer>> rocTruths = new HashMap<>(); // class label -> list of binary actuals
+	private final Map<String, List<Double>> rocScores = new HashMap<>(); // class label -> list of predicted probabilities
+	private final Map<String, List<Integer>> rocTruths = new HashMap<>(); // class label -> list of binary actuals
 	private Map<String, Double> rocAucs = new HashMap<>(); // class label -> AUC value
 	private Map<String, List<double[]>> rocPoints = new HashMap<>(); // class label -> list of (FPR, TPR) pairs
-	private double macroAuc = 0.0; // average of rocAucs
-	private double microAuc = 0.0; // micro-average AUC
+	private Double macroAuc = null; // average of rocAucs
+	private Double microAuc = null; // micro-average AUC
 
     public String getLabel() {
         return label;
@@ -83,11 +83,11 @@ public class PerformanceEvaluation {
         this.sphericalScore = sphericalScore;
     }
 
-	public double getMacroAuc() {
+	public Double getMacroAuc() {
 		return macroAuc;
 	}
 
-	public double getMicroAuc() {
+	public Double getMicroAuc() {
 		return microAuc;
 	}
 	
@@ -138,27 +138,35 @@ public class PerformanceEvaluation {
         json.put("absoluteError", absoluteError);
 		json.put("brierScore", brierScore);
         json.put("sphericalScore", sphericalScore);
-		json.put("macroAuc", macroAuc);
-		json.put("microAuc", microAuc);
-
-		JSONObject aucJson = new JSONObject();
-		for (Map.Entry<String, Double> entry : rocAucs.entrySet()) {
-			aucJson.put(entry.getKey(), entry.getValue());
+		if (macroAuc != null){
+			json.put("macroAuc", macroAuc);
 		}
-		json.put("rocAucs", aucJson);
+		if (microAuc != null){
+			json.put("microAuc", microAuc);
+		}
 
-		JSONObject rocPointsJson = new JSONObject();
-		for (Map.Entry<String, List<double[]>> entry : rocPoints.entrySet()) {
-			JSONArray pointsArray = new JSONArray();
-			for (double[] pair : entry.getValue()) {
-				JSONArray point = new JSONArray();
-				point.put(pair[0]);
-				point.put(pair[1]);
-				pointsArray.put(point);
+		if (!rocAucs.isEmpty()){
+			JSONObject aucJson = new JSONObject();
+			for (Map.Entry<String, Double> entry : rocAucs.entrySet()) {
+				aucJson.put(entry.getKey(), entry.getValue());
 			}
-			rocPointsJson.put(entry.getKey(), pointsArray);
+			json.put("rocAucs", aucJson);
 		}
-		json.put("rocPoints", rocPointsJson);
+		
+		if (!rocPoints.isEmpty()){
+			JSONObject rocPointsJson = new JSONObject();
+			for (Map.Entry<String, List<double[]>> entry : rocPoints.entrySet()) {
+				JSONArray pointsArray = new JSONArray();
+				for (double[] pair : entry.getValue()) {
+					JSONArray point = new JSONArray();
+					point.put(pair[0]);
+					point.put(pair[1]);
+					pointsArray.put(point);
+				}
+				rocPointsJson.put(entry.getKey(), pointsArray);
+			}
+			json.put("rocPoints", rocPointsJson);
+		}
 
 		return json;
     }
