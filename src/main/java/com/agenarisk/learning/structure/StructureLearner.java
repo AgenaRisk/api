@@ -9,7 +9,10 @@ import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import com.agenarisk.learning.structure.execution.result.Result;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,9 +64,10 @@ public class StructureLearner {
 	public void executeJson(JSONObject json){
 		ConfiguredExecutor executor = ConfiguredExecutor.executeFromJson(json);
 		
-		boolean print = json.optBoolean("printSummary", false);
-		boolean save = json.optBoolean("saveSummary", false);
-		if (print || save){
+		boolean printSummary = json.optBoolean("printSummary", false);
+		boolean saveSummary = json.optBoolean("saveSummary", false);
+		boolean saveResult = json.optBoolean("saveResult", false);
+		if (printSummary || saveSummary){
 			List<Object> headers = Arrays.asList(
 					"Discovery Label",
 					"Discovery Success",
@@ -77,19 +81,29 @@ public class StructureLearner {
 					"Free Parameters",
 					"Model path"
 			);
-			ArrayList<List<Object>> lines = executor.getResult().getSummary();
+			Result result = executor.getResult();
+			ArrayList<List<Object>> lines = result.getSummary();
 			lines.add(0, headers);
 			
-			if (print){
+			if (printSummary){
 				lines.stream().map(line -> line.stream().map(el -> el+"").collect(Collectors.joining("\t"))).forEach(System.out::println);
 			}
 			
-			if (save){
+			if (saveSummary){
 				try {
 					CsvWriter.writeCsv(lines, Paths.get(executor.getOutputDirPath().resolve("summary.csv").toString()));
 				}
 				catch(Exception ex){
 					throw new StructureLearningException("Failed to write summary to file", ex);
+				}
+			}
+			
+			if (saveResult){
+				try {
+					Files.write(executor.getOutputDirPath().resolve("result.json"), result.toJson().toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+				}
+				catch(Exception ex){
+					throw new StructureLearningException("Failed to write result to file", ex);
 				}
 			}
 		}
