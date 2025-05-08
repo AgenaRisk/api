@@ -51,55 +51,77 @@ public class Result {
         ArrayList<List<Object>> summary = new ArrayList<>();
 
         for (Discovery discovery : discoveries) {
-            StructureEvaluation matchedStructure = null;
-            PerformanceEvaluation matchedPerformance = null;
-
+            // Add row for each structure evaluation
+            boolean hasStructureEval = false;
             for (StructureEvaluation se : structureEvaluations) {
                 if (se.getModelLabel().equals(discovery.getLabel())) {
-                    matchedStructure = se;
-                    break;
+                    hasStructureEval = true;
+                    List<Object> row = new ArrayList<>();
+                    row.add(discovery.getLabel());
+                    row.add(discovery.isSuccess());
+                    row.add(discovery.getAlgorithm());
+                    row.add(discovery.getModelFilePrefix());
+                    row.add(se.getLabel());
+                    row.add(se.isSuccess());
+                    row.add(se.getBicScore());
+                    row.add(se.getLogLikelihoodScore());
+                    row.add(se.getComplexityScore());
+                    row.add(se.getFreeParameters());
+                    row.add(""); // performance label
+                    row.add(""); // performance success
+                    row.add(""); // absolute error
+                    row.add(""); // brier score
+                    row.add(""); // spherical score
+                    row.add(""); // macro AUC
+                    row.add(""); // micro AUC
+                    row.add(""); // message
+                    row.add(discovery.getModelPath());
+                    summary.add(row);
                 }
             }
 
+            // Add row for each performance evaluation
+            boolean hasPerformanceEval = false;
             for (PerformanceEvaluation pe : performanceEvaluations) {
                 if (pe.getModelLabel().equals(discovery.getLabel())) {
-                    matchedPerformance = pe;
-                    break;
+                    hasPerformanceEval = true;
+                    List<Object> row = new ArrayList<>();
+                    row.add(discovery.getLabel());
+                    row.add(discovery.isSuccess());
+                    row.add(discovery.getAlgorithm());
+                    row.add(discovery.getModelFilePrefix());
+                    row.add(""); // structure label
+                    row.add(""); // structure success
+                    row.add(""); // bic
+                    row.add(""); // logLikelihood
+                    row.add(""); // complexity
+                    row.add(""); // free parameters
+                    row.add(pe.getLabel());
+                    row.add(pe.isSuccess());
+                    row.add(pe.getAbsoluteError());
+                    row.add(pe.getBrierScore());
+                    row.add(pe.getSphericalScore());
+                    row.add(pe.getMacroAuc() != null ? pe.getMacroAuc() : "");
+                    row.add(pe.getMicroAuc() != null ? pe.getMicroAuc() : "");
+                    row.add(pe.getMessage());
+                    row.add(discovery.getModelPath());
+                    summary.add(row);
                 }
             }
 
-            List<Object> row = new ArrayList<>();
-            row.add(discovery.getLabel());
-            row.add(discovery.isSuccess());
-            row.add(discovery.getAlgorithm());
-            row.add(discovery.getModelFilePrefix());
-
-            if (matchedStructure != null) {
-                row.add(matchedStructure.getLabel());
-                row.add(matchedStructure.isSuccess());
-                row.add(matchedStructure.getBicScore());
-                row.add(matchedStructure.getLogLikelihoodScore());
-                row.add(matchedStructure.getComplexityScore());
-                row.add(matchedStructure.getFreeParameters());
-            } else {
+            // If no evaluations exist for this discovery, add one row
+            if (!hasStructureEval && !hasPerformanceEval) {
+                List<Object> row = new ArrayList<>();
+                row.add(discovery.getLabel());
+                row.add(discovery.isSuccess());
+                row.add(discovery.getAlgorithm());
+                row.add(discovery.getModelFilePrefix());
                 row.add(""); // structure label
                 row.add(""); // structure success
                 row.add(""); // bic
                 row.add(""); // logLikelihood
                 row.add(""); // complexity
                 row.add(""); // free parameters
-            }
-
-            if (matchedPerformance != null) {
-                row.add(matchedPerformance.getLabel());
-                row.add(matchedPerformance.isSuccess());
-                row.add(matchedPerformance.getAbsoluteError());
-                row.add(matchedPerformance.getBrierScore());
-                row.add(matchedPerformance.getSphericalScore());
-                row.add(matchedPerformance.getMacroAuc() != null ? matchedPerformance.getMacroAuc() : "");
-                row.add(matchedPerformance.getMicroAuc() != null ? matchedPerformance.getMicroAuc() : "");
-                row.add(matchedPerformance.getMessage());
-            } else {
                 row.add(""); // performance label
                 row.add(""); // performance success
                 row.add(""); // absolute error
@@ -108,10 +130,9 @@ public class Result {
                 row.add(""); // macro AUC
                 row.add(""); // micro AUC
                 row.add(""); // message
+                row.add(discovery.getModelPath());
+                summary.add(row);
             }
-
-            row.add(discovery.getModelPath());
-            summary.add(row);
         }
 
         return summary;
