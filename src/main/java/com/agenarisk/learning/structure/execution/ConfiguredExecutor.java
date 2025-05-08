@@ -25,7 +25,6 @@ import com.agenarisk.learning.structure.config.TableLearningExecutor;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.result.Discovery;
-import com.agenarisk.learning.structure.execution.result.PerformanceEvaluation;
 import com.agenarisk.learning.structure.execution.result.StructureEvaluation;
 import com.agenarisk.learning.structure.execution.result.Result;
 import com.agenarisk.learning.structure.logger.BLogger;

@@ -5,13 +5,8 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.util.CsvReader;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
-import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.utility.NodeStatesFromDataPopulator;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  *
