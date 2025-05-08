@@ -49,6 +49,8 @@
     - `averaging` stage generates an average model based on all previously generated or discovered models.  
     Parameters:
         - `minimumEdgeAppearanceCountToKeep`
+        - `statesFromData`
+        - `dataPath`
     - `tableLearning` stage can be used to learn variable state probabilities.  
     EM algorithm is used.  
     This stage allows to specify `knowledge` constraints to guide EM algorithm. Knowledge vs data weights can be applied on a model-wide level or individually to variables. In this context, the knowledge is considered to be the existing probabilities in the model prior to table learning.  
@@ -198,7 +200,7 @@ When used with `tableLearning` stage, this data is used to learn state probabili
 - Type: `boolean`
 - Default: `false`
 - When set to true, whole training dataset is processed to collect unique states and configure nodes accordingly.
-- Applies when `stage` is `generation`.
+- Applies when `stage` is `generation` or `averaging`.
 
 ### `maximumMeanDiscrepancyType`
 - Type: `string`

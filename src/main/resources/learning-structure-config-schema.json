@@ -204,11 +204,11 @@
                         "statesFromData": {
                             "type": "boolean",
                             "default": false,
-                            "description": "When set to true during generation, whole training dataset is processed to collect unique states and configure nodes accordingly."
+                            "description": "When set to true during `generation` or `averaging` stage, whole training dataset is processed to collect unique states and configure nodes accordingly."
                         },
                         "dataPath": {
                             "type": "string",
-                            "description": "Path to the data file (relative or absolute). When used with generation stage, this file informs the states to be created for relevant variables. When used with `structureEvaluation` or `performanceEvaluation` stage, this file will be used to evaluate the models against. When used in `tableLearning` stage, this data is used to learn state probabilities using EM algorithm."
+                            "description": "Path to the data file (relative or absolute). When used with `generation` or `averaging` stage, this file informs the states to be created for relevant variables. When used with `structureEvaluation` or `performanceEvaluation` stage, this file will be used to evaluate the models against. When used in `tableLearning` stage, this data is used to learn state probabilities using EM algorithm."
                         },
                         "maximumEdgeCount": {
                             "type": "integer",
