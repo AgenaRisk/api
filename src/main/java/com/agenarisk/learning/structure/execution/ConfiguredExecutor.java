@@ -31,6 +31,7 @@ import com.agenarisk.learning.structure.execution.result.Result;
 import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.utility.CmpxStructureExtractor;
 import com.agenarisk.learning.structure.utility.ModelFromCsvCreator;
+import com.agenarisk.learning.structure.utility.NodeStatesFromDataPopulator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -513,6 +514,11 @@ public class ConfiguredExecutor {
 					csvOutput.toFile().deleteOnExit();
 
 					Model model = ModelFromCsvCreator.create(CsvReader.readCsv(csvOutput), discovery.getModelFilePrefix(), discovery.getLabel());
+					
+					AveragingConfigurer stageConfigurer = (AveragingConfigurer)configurablePipeline;
+					if (stageConfigurer.isStatesFromData()){
+						NodeStatesFromDataPopulator.populate(model.getNetworkList().get(0), stageConfigurer.getDataPath());
+					}
 					
 					String modelFilePathString = executor.getOutputDirPath().resolve(avgPrefix+".cmpx").toString();
 					model.save(modelFilePathString);

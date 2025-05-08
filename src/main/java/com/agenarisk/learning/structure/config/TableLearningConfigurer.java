@@ -61,23 +61,25 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 		maxIterations = jParameters.optInt("maxIterations", maxIterations);
 		convergenceThreshold = jParameters.optDouble("convergenceThreshold", convergenceThreshold);
 		
-		JSONObject jKnowledge = jConfig.getJSONObject("knowledge");
-		dataWeight = jParameters.optDouble("dataWeight", dataWeight);
-		JSONArray jSkipNodes = jKnowledge.optJSONArray("skipNodes");
-		if (jSkipNodes != null){
-			for (int i = 0; i < jSkipNodes.length(); i++) {
-				String nodeId = jSkipNodes.getString(i);
-				nodeDataWeightsCustom.put(nodeId, 0d);
+		JSONObject jKnowledge = jConfig.optJSONObject("knowledge");
+		if (jKnowledge != null){
+			dataWeight = jParameters.optDouble("dataWeight", dataWeight);
+			JSONArray jSkipNodes = jKnowledge.optJSONArray("skipNodes");
+			if (jSkipNodes != null){
+				for (int i = 0; i < jSkipNodes.length(); i++) {
+					String nodeId = jSkipNodes.getString(i);
+					nodeDataWeightsCustom.put(nodeId, 0d);
+				}
 			}
-		}
 		
-		JSONArray jNodeDataWeightsCustom = jKnowledge.optJSONArray("nodeDataWeightsCustom");
-		if (jNodeDataWeightsCustom != null){
-			for (int i = 0; i < jNodeDataWeightsCustom.length(); i++) {
-				JSONArray nodeWeight = jNodeDataWeightsCustom.getJSONArray(i);
-				String nodeId = nodeWeight.getString(0);
-				double weight = nodeWeight.getDouble(1);
-				nodeDataWeightsCustom.put(nodeId, weight);
+			JSONArray jNodeDataWeightsCustom = jKnowledge.optJSONArray("nodeDataWeightsCustom");
+			if (jNodeDataWeightsCustom != null){
+				for (int i = 0; i < jNodeDataWeightsCustom.length(); i++) {
+					JSONArray nodeWeight = jNodeDataWeightsCustom.getJSONArray(i);
+					String nodeId = nodeWeight.getString(0);
+					double weight = nodeWeight.getDouble(1);
+					nodeDataWeightsCustom.put(nodeId, weight);
+				}
 			}
 		}
 			
