@@ -1,4 +1,4 @@
-package com.agenarisk.learning.structure.execution.result;
+package com.agenarisk.learning.structure.result;
 
 import java.util.HashMap;
 import java.util.List;

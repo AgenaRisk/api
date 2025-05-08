@@ -8,7 +8,7 @@ import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.ResultValue;
 import com.agenarisk.api.util.CsvReader;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
-import com.agenarisk.learning.structure.execution.result.PerformanceEvaluation;
+import com.agenarisk.learning.structure.result.PerformanceEvaluation;
 import com.agenarisk.learning.structure.logger.BLogger;
 import java.nio.file.Path;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package com.agenarisk.learning.structure.config;
 
 import com.agenarisk.learning.structure.exception.StructureLearningException;
-import com.agenarisk.learning.structure.execution.result.Result;
+import com.agenarisk.learning.structure.result.Result;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

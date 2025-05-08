@@ -9,7 +9,7 @@ import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
-import com.agenarisk.learning.structure.execution.result.Result;
+import com.agenarisk.learning.structure.result.Result;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
