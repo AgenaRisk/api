@@ -252,7 +252,7 @@ public class ConfiguredExecutor {
 				}
 				modelPrefixes.put(modelFilePrefix, stageLabel);
 				
-				discovery.setAlgorithm(jStage.optString("generation-" + genConfigurer.getStrategy().name(), ""));
+				discovery.setAlgorithm("generation-" + genConfigurer.getStrategy().name());
 				discovery.setLabel(stageLabel);
 				discovery.setModelFilePrefix(modelFilePrefix);
 				
