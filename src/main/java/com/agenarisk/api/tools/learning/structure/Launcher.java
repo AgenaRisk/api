@@ -1,7 +1,8 @@
-package com.agenarisk.learning.structure;
+package com.agenarisk.api.tools.learning.structure;
 
 import com.agenarisk.api.tools.sensitivity.*;
 import com.agenarisk.api.util.*;
+import com.agenarisk.learning.structure.StructureLearner;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;

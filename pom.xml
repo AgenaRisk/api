@@ -228,6 +228,16 @@
 							<mainClass>com.agenarisk.api.tools.sensitivity.Launcher</mainClass>
 						</configuration>
 					</execution>
+					
+					<execution>
+						<id>structureLearning</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.agenarisk.api.tools.learning.structure.Launcher</mainClass>
+						</configuration>
+					</execution>
 
 				</executions>
 				<configuration>
