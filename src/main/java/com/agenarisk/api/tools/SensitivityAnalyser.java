@@ -241,19 +241,23 @@ public class SensitivityAnalyser {
 		 * and there are no simulation nodes without observations (if all simulated nodes are observed, we can assume the model is static)
 		 */
 		try {
+			uk.co.agena.minerva.model.Model.SMA = true;
 			model.calculate(
 					Arrays.asList(targetNode.getNetwork()),
 					Arrays.asList(dataSet),
 					Model.CalculationFlag.WITH_ANCESTORS,
 					Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS
 			);
+			uk.co.agena.minerva.model.Model.SMA = false;
 		}
 		catch (CalculationException ex){
+			uk.co.agena.minerva.model.Model.SMA = false;
 			throw new SensitivityAnalyserException("Failed to precalculate the model during initialization", ex);
 		}
 		
 		// Convert to static and calculate to get baseline calculation results
 		try {
+			uk.co.agena.minerva.model.Model.SMA = true;
 			model.convertToStatic(dataSet, Model.ConversionFlag.IgnoreErrors);
 			model.calculate(
 					Arrays.asList(targetNode.getNetwork()),
@@ -261,8 +265,10 @@ public class SensitivityAnalyser {
 					Model.CalculationFlag.WITH_ANCESTORS,
 					Model.CalculationFlag.KEEP_TAILS_ZERO_REGIONS
 			);
+			uk.co.agena.minerva.model.Model.SMA = false;
 		}
 		catch (AgenaRiskRuntimeException | CalculationException ex) {
+			uk.co.agena.minerva.model.Model.SMA = false;
 			throw new SensitivityAnalyserException("Static conversion failed", ex);
 		}
 
@@ -276,10 +282,18 @@ public class SensitivityAnalyser {
 	 * @throws SensitivityAnalyserException upon failure
 	 */
 	private void analyse() throws SensitivityAnalyserException {
-		calculateCombinations();
-		if (targetNode.isNumericInterval()){
-			calculateStats();
+		uk.co.agena.minerva.model.Model.SMA = true;
+		try {
+			calculateCombinations();
+			if (targetNode.isNumericInterval()){
+				calculateStats();
+			}
 		}
+		catch (Throwable ex){
+			uk.co.agena.minerva.model.Model.SMA = false;
+			throw ex;
+		}
+		uk.co.agena.minerva.model.Model.SMA = false;
 	}
 	
 	/**
