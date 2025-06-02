@@ -369,6 +369,7 @@ public class ConfiguredExecutor {
 				stageConfigurer.setStageLabel(stageLabel);
 				stageConfigurer.setPipelineResult(executor.getResult());
 				PerformanceEvaluationExecutor stageExecutor = stageConfigurer.apply();
+				stageExecutor.setStageIndex(iStage);
 				stageExecutor.setOriginalConfigurer(stageConfigurer);
 				
 				stageExecutor.execute();

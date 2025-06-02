@@ -25,6 +25,7 @@ import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
 public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluationExecutor> implements Executable {
 	
 	private PerformanceEvaluationConfigurer originalConfigurer;
+	private int stageIndex = 0;
 	
 	protected PerformanceEvaluationExecutor(Config config) {
 		super(config);
@@ -40,12 +41,15 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 	
 	@Override
 	public void execute() throws StructureLearningException {
-		BLogger.logConditional("Beginning performance evaluation " + originalConfigurer.getStageLabel());
+		BLogger.logConditional("Beginning performance evaluation " + stageIndex);
+
+		if (originalConfigurer == null){
+			BLogger.logConditional("Original performance evaluation configurer not set");
+			return;
+		}
+		
+		BLogger.logConditional("Performance evaluation label: " + originalConfigurer.getStageLabel());
 		try {
-			if (originalConfigurer == null){
-				BLogger.logConditional("Original performance evaluation configurer not set");
-				return;
-			}
 			Path csvPath = originalConfigurer.getDataPath();
 			BLogger.logConditional("Loading data from " + csvPath);
 			List<List<String>> data = CsvReader.readCsv(csvPath, originalConfigurer.getValueSeparator());
@@ -307,4 +311,9 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 		}
 		return curve;
 	}
+
+	public void setStageIndex(int stageIndex) {
+		this.stageIndex = stageIndex;
+	}
+	
 }
