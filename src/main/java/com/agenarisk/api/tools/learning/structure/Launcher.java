@@ -81,7 +81,7 @@ public class Launcher {
 			Logger.out().println("Application native libs directory: " + Config.getDirectoryNativeLibs());
 		}
 		
-		if (!cmd.hasOption("model") || !cmd.hasOption("out") || !cmd.hasOption("config")){
+		if (!cmd.hasOption("config")){
 			Logger.err().println("Parameters model, out and config are required");
 			System.exit(1);
 		}
