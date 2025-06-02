@@ -406,6 +406,7 @@ public class ConfiguredExecutor {
 					catch (Exception ex){
 						String message = "Failed to evaluate " + modelFilePrefix+".cmpx: " + ex.getMessage();
 						BLogger.logConditional(message);
+						BLogger.logThrowableIfDebug(ex);
 						evaluation.setSuccess(false);
 						evaluation.setMessage(message);
 					}
