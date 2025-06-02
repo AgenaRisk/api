@@ -43,7 +43,6 @@ public class TableLearningExecutor extends Configurer<TableLearningExecutor> imp
 			
 			Model model = originalConfigurer.getModel();
 			Data data = new Data(originalConfigurer.getDataPath().toString(), originalConfigurer.getMissingValue(), originalConfigurer.getValueSeparator());
-			uk.co.agena.minerva.model.Model.EM_ON = true;
 			Network network = model.getNetworkList().get(0);
 			network.getLogicNetwork().setConfidence(1-originalConfigurer.getDataWeight());
 			ArrayList<String> skipNodes = new ArrayList<>();
@@ -62,6 +61,7 @@ public class TableLearningExecutor extends Configurer<TableLearningExecutor> imp
 //			model.getLogicModel().setEMLogging(true);
 			model.getNetworkList().get(0).getLogicNetwork().reinitialise(false);
 			
+			uk.co.agena.minerva.model.Model.EM_ON = true;
 			EMCal emcal = new EMCal(model.getLogicModel(),
 					model.getNetworkList().get(0).getLogicNetwork(),
 					data,
@@ -77,8 +77,10 @@ public class TableLearningExecutor extends Configurer<TableLearningExecutor> imp
 			model.save(originalConfigurer.getModelPath().toString());
 			
 			originalConfigurer.setModel(model);
+			uk.co.agena.minerva.model.Model.EM_ON = false;
 		}
 		catch (Exception ex){
+			uk.co.agena.minerva.model.Model.EM_ON = false;
 			throw new StructureLearningException(ex.getMessage(), ex);
 		}
 	}
