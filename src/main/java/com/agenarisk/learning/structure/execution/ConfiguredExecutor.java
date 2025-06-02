@@ -372,7 +372,15 @@ public class ConfiguredExecutor {
 				stageExecutor.setStageIndex(iStage);
 				stageExecutor.setOriginalConfigurer(stageConfigurer);
 				
-				stageExecutor.execute();
+				try {
+					uk.co.agena.minerva.model.Model.TOOL_ON = true;
+					stageExecutor.execute();
+					uk.co.agena.minerva.model.Model.TOOL_ON = false;
+				}
+				catch (Throwable ex){
+					uk.co.agena.minerva.model.Model.TOOL_ON = false;
+					throw ex;
+				}
 				
 				for (String modelFilePrefix: modelPrefixes.keySet()){
 					StructureEvaluation evaluation = new StructureEvaluation();
