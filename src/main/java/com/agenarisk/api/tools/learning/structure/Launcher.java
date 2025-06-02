@@ -76,13 +76,13 @@ public class Launcher {
 			Logger.out().println("Application ome directory: " + Config.getDirectoryHomeAgenaRisk());
 			Logger.out().println("System temp directory: " + Config.getDirectoryTempSystem());
 			Logger.out().println("Application temp directory: " + Config.getDirectoryTempAgenaRisk());
-			Logger.out().println("Application config file: " + Config.getFilepathMinervaProperties());
+			Logger.out().println("agena.ai config file: " + Config.getFilepathMinervaProperties());
 			Logger.out().println("Application product directory: " + Config.getDirectoryAgenaRiskProduct());
 			Logger.out().println("Application native libs directory: " + Config.getDirectoryNativeLibs());
 		}
 		
 		if (!cmd.hasOption("config")){
-			Logger.err().println("Parameters model, out and config are required");
+			Logger.err().println("Config path is required");
 			System.exit(1);
 		}
 		
