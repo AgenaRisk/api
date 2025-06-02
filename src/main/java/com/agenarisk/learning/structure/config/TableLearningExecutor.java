@@ -2,16 +2,11 @@ package com.agenarisk.learning.structure.config;
 
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.model.Network;
-import com.agenarisk.api.model.Node;
-import com.agenarisk.api.util.CsvReader;
-import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.logger.BLogger;
 import java.util.ArrayList;
-import java.util.List;
 import uk.co.agena.minerva.util.EM.Data;
 import uk.co.agena.minerva.util.EM.EMCal;
-import uk.co.agena.minerva.util.EM.EMLogger;
 
 /**
  *
