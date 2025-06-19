@@ -318,10 +318,7 @@ public class CrossNetworkLink extends Link implements Storable {
 		mpls.setId(model.getMessagePassingLinks().size());
 		mpls.getLinks().add(logicLink);
 		model.getMessagePassingLinks().add(mpls);
-		if (!ThreadDataStore.getOptional(ThreadDataStore.Dictionary.SkipFireEvents.toString(), Boolean.class).orElse(false)){
-			model.fireModelChangedEvent(model, ModelEvent.MESSAGE_PASSING_LINKS_CHANGED, model.getMessagePassingLinks());
-		}
-		
+		model.fireModelChangedEvent(model, ModelEvent.MESSAGE_PASSING_LINKS_CHANGED, model.getMessagePassingLinks());
 	}
 	
 	/**
