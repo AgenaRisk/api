@@ -61,7 +61,9 @@ import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.Model.PropagationFlag;
+import uk.co.agena.minerva.model.ModelEvent;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
+import uk.co.agena.minerva.util.helpers.ThreadDataStore;
 
 /**
  * Model class represents an AgenaRisk model that may contain a number of Bayesian networks, datasets etc, equivalent to com.agenarisk.api.model.Model in AgenaRisk Java API v1.
@@ -319,8 +321,28 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
 	public static Model createModel(JSONObject json) throws ModelException, JSONException {
-		Model model = createModel();
-		model.absorb(json);
+		ThreadDataStore.getStore().put(ThreadDataStore.Dictionary.SkipFireEvents.toString(), true);
+		Model model = null;
+		try {
+			model = createModel();
+			model.absorb(json);
+		}
+		catch(ModelException | JSONException e){
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to create model from JSON", e);
+		} finally {
+			ThreadDataStore.getStore().remove(ThreadDataStore.Dictionary.SkipFireEvents.toString());
+		}
+		
+		model.getLogicModel().getMarginalDataStore().ensureAllNodesHaveAnMDIL();
+		model.getLogicModel().fireModelChangedEvent(
+			model.getLogicModel(),
+			ModelEvent.MESSAGE_PASSING_LINKS_CHANGED,
+			model.getLogicModel().getMessagePassingLinks()
+		);
+
 		return model;
 	}
 	

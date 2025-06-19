@@ -24,6 +24,7 @@ import uk.co.agena.minerva.util.helpers.MathsHelper;
 import com.agenarisk.api.model.interfaces.Storable;
 import org.json.JSONObject;
 import uk.co.agena.minerva.model.extendedbn.DiscreteRealEN;
+import uk.co.agena.minerva.util.helpers.ThreadDataStore;
 import uk.co.agena.minerva.util.model.MinervaRangeException;
 import uk.co.agena.minerva.util.model.NameDescription;
 import uk.co.agena.minerva.util.model.Variable;
@@ -317,7 +318,9 @@ public class CrossNetworkLink extends Link implements Storable {
 		mpls.setId(model.getMessagePassingLinks().size());
 		mpls.getLinks().add(logicLink);
 		model.getMessagePassingLinks().add(mpls);
-		model.fireModelChangedEvent(model, ModelEvent.MESSAGE_PASSING_LINKS_CHANGED, model.getMessagePassingLinks());
+		if (!ThreadDataStore.getOptional(ThreadDataStore.Dictionary.SkipFireEvents.toString(), Boolean.class).orElse(false)){
+			model.fireModelChangedEvent(model, ModelEvent.MESSAGE_PASSING_LINKS_CHANGED, model.getMessagePassingLinks());
+		}
 		
 	}
 	
