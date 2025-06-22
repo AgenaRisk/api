@@ -939,14 +939,14 @@ public class Model implements IdContainer<ModelException>, Storable {
 				throw new OutOfMemoryException(message, calcException);
 			}
 			
-			if (outputCaptured.contains("Inconsistent evidence in risk object")){
-				throw new InconsistentEvidenceException("Inconsistent evidence detected (observations resulting in mutually exclusive state combinations)");
+			if (outputCaptured.contains("Inconsistent evidence in Bayesian network")){
+				throw new InconsistentEvidenceException("Inconsistent evidence detected (observations or formulas resulting in mutually exclusive state combinations or sum-zero rows)");
 			}
 			
-			if (outputCaptured.contains("node has sum zero probability")){
-				message = outputCaptured.replaceFirst("(?s).*(?=(The entire node probability table for))", "");
+			if (outputCaptured.contains("sum zero probability")){
+				message = outputCaptured.replaceFirst("(?s).*(?=(The entire node probability table for the Bayesian network:))", "");
 				message = message.replaceFirst("(?s)(?<=(\\[Normal cannot have zero variance\\]\\.)).*", "");
-				message = message.replaceAll("<br/?>", "\n");
+				message = message.replaceAll("<br/?>", " ");
 				throw new InconsistentEvidenceException(message);
 			}
 			
