@@ -321,10 +321,10 @@ public class Model implements IdContainer<ModelException>, Storable {
 	 * @throws JSONException if JSON structure is invalid or inconsistent
 	 */
 	public static Model createModel(JSONObject json) throws ModelException, JSONException {
-		ThreadDataStore.getStore().put(ThreadDataStore.Dictionary.SkipFireEvents.toString(), true);
 		Model model = null;
 		try {
 			model = createModel();
+			ThreadDataStore.getStore().put(ThreadDataStore.Dictionary.SkipFireEvents.toString(), true);
 			model.absorb(json);
 		}
 		catch(ModelException | JSONException e){
