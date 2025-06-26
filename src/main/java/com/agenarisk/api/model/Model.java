@@ -246,7 +246,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 		
 		if (model.getDataSets().isEmpty()){
 			Logger.logIfDebug("Model has no DataSets, adding one automatically");
-			model.createDataSet("Scenario 1");
+			model.createDataSet("Case 1");
 		}
 	
 		Logger.logIfDebug("Model loaded");
