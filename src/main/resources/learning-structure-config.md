@@ -187,8 +187,9 @@ Only applies when `stage` is `discovery`.
 - Path to the data file (relative or absolute).  
 When used with `generation` stage, this file informs the states to be created for relevant variables.  
 When used with `structureEvaluation` stage, this file will be used to evaluate the models against.  
+When used with `performanceEvaluation` stage, this file will be used to evaluate predictive performance of the model against.
 When used with `tableLearning` stage, this data is used to learn state probabilities using EM algorithm.
-- Applies when `stage` is `structureEvaluation`, `generation` or `tableLearning`.
+- Applies when `stage` is `structureEvaluation`, `performanceEvaluation`, `generation` or `tableLearning`.
 
 ### `maximumEdgeCount`
 - Type: `integer`
