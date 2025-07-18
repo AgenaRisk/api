@@ -711,7 +711,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			
 			// Preserve graphics if nodes are still in the model
 			try {
-				JSONArray jNetworks = modelJson.getJSONArray(Network.Field.networks.toString());
+				JSONArray jNetworks = modelJson.getJSONObject(Model.Field.model.toString()).getJSONArray(Network.Field.networks.toString());
 				for (int ixNets = 0; ixNets < jNetworks.length(); ixNets++){
 					JSONObject jNetwork = jNetworks.getJSONObject(ixNets);
 					String netId = jNetwork.getString(Network.Field.id.toString());
