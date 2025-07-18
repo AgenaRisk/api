@@ -6,6 +6,8 @@ import com.agenarisk.api.model.Node;
 import com.agenarisk.api.util.CsvReader;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.logger.BLogger;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 /**
@@ -50,7 +52,8 @@ public class MergerExecutor extends Configurer<MergerExecutor> implements Execut
 					BLogger.logConditional(ex2);
 				}
 			});
-			model.save(originalConfigurer.getOutputDirPath().resolve(originalConfigurer.getModelPrefix()+".cmpx").toString());
+			byte[] bytes = model.export(Model.ExportFlag.KEEP_META, Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_RESULTS).toString().getBytes();
+			Files.write(originalConfigurer.getOutputDirPath().resolve(originalConfigurer.getModelPrefix()+".cmpx"), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			originalConfigurer.setModel(model);
 		}
 		catch (Exception ex){

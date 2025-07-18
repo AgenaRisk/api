@@ -263,7 +263,7 @@ public class ConfiguredExecutor {
 					genExecutor.setOriginalConfigurer(genConfigurer);
 					genExecutor.execute();
 					discovery.setModelPath(genConfigurer.getModelPath().toString());
-					discovery.setModel(genConfigurer.getModel().toJson().optJSONObject("model"));
+					discovery.setModel(genConfigurer.getModel().export(Model.ExportFlag.KEEP_META, Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_RESULTS).optJSONObject("model"));
 					discovery.setSuccess(true);
 				}
 				catch(Exception ex){

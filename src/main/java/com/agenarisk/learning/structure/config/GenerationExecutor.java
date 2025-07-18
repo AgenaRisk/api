@@ -6,6 +6,9 @@ import com.agenarisk.api.model.Node;
 import com.agenarisk.api.util.CsvReader;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.utility.NodeStatesFromDataPopulator;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 /**
@@ -64,7 +67,8 @@ public class GenerationExecutor extends Configurer<GenerationExecutor> implement
 					}
 				}
 			}
-			model.save(originalConfigurer.getModelPath().toString());
+			byte[] bytes = model.export(Model.ExportFlag.KEEP_META, Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_RESULTS).toString().getBytes();
+			Files.write(originalConfigurer.getModelPath(), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			originalConfigurer.setModel(model);
 		}
 		catch (Exception ex){

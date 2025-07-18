@@ -4,6 +4,8 @@ import com.agenarisk.api.model.Model;
 import com.agenarisk.api.model.Network;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.logger.BLogger;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import uk.co.agena.minerva.util.EM.Data;
 import uk.co.agena.minerva.util.EM.EMCal;
@@ -69,7 +71,8 @@ public class TableLearningExecutor extends Configurer<TableLearningExecutor> imp
 
 			emcal.calculateEM();
 
-			model.save(originalConfigurer.getModelPath().toString());
+			byte[] bytes = model.export(Model.ExportFlag.KEEP_META, Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_RESULTS).toString().getBytes();
+			Files.write(originalConfigurer.getModelPath(), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			
 			originalConfigurer.setModel(model);
 			uk.co.agena.minerva.model.Model.EM_ON = false;
