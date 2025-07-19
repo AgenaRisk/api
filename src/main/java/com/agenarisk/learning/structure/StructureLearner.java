@@ -58,7 +58,16 @@ public class StructureLearner {
 			throw new StructureLearningException("Failed to read config from JSON", ex);
 		}
 		
-		executeJson(json);
+		try {
+			uk.co.agena.minerva.model.Model.TOOL_ON = true;
+			executeJson(json);
+		}
+		catch (RuntimeException ex){
+			throw ex;
+		}
+		finally {
+			uk.co.agena.minerva.model.Model.TOOL_ON = false;
+		}
 	}
 	
 	public void executeJson(JSONObject json){

@@ -38,7 +38,9 @@ public class GenerationConfigurer extends ApplicableConfigurer implements Config
 
 	@Override
 	public GenerationExecutor apply() {
-		return new GenerationExecutor(config);
+		GenerationExecutor executor = new GenerationExecutor(config);
+		executor.setOriginalConfigurer(this);
+		return executor;
 	}
 
 	@Override

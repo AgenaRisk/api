@@ -71,7 +71,6 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 				int successRows = 0;
 				try {
 					Path modelPath = originalConfigurer.getOutputDirPath().resolve(modelFilePrefix + ".cmpx");
-					BLogger.logConditional("Loading model from " + modelPath);
 					Model model = Model.loadModel(modelPath.toString());
 					DataSet dataCase = model.getDataSetList().get(0);
 					Network network = model.getNetworkList().get(0);

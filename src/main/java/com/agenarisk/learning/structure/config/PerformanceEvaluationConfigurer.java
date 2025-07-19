@@ -63,7 +63,9 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 			throw new StructureLearningException("Target node not specified");
 		}
 		
-		return new PerformanceEvaluationExecutor(config);
+		PerformanceEvaluationExecutor executor = new PerformanceEvaluationExecutor(config);
+		executor.setOriginalConfigurer(this);
+		return executor;
 	}
 
 	public Path getDataPath() {

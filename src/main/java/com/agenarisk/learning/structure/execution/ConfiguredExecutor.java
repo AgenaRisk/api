@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -136,7 +137,7 @@ public class ConfiguredExecutor {
 	}
 	
 	public static ConfiguredExecutor executeFromJson(JSONObject jConfig){
-		HashMap<String, String> modelPrefixes = new HashMap<>();
+		HashMap<String, String> modelPrefixes = new LinkedHashMap<>();
 		ConfiguredExecutor executor = new ConfiguredExecutor(Config.getInstance());
 		
 		try {
@@ -260,7 +261,6 @@ public class ConfiguredExecutor {
 				
 				try {
 					GenerationExecutor genExecutor = (GenerationExecutor) configurablePipeline.apply();
-					genExecutor.setOriginalConfigurer(genConfigurer);
 					genExecutor.execute();
 					discovery.setModelPath(genConfigurer.getModelPath().toString());
 					discovery.setModel(genConfigurer.getModel().export(Model.ExportFlag.KEEP_META, Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_RESULTS).optJSONObject("model"));
@@ -288,7 +288,6 @@ public class ConfiguredExecutor {
 				try {
 					configurer.setModel(Model.createModel(targetDiscovery.getModel()));
 					TableLearningExecutor stageExecutor = (TableLearningExecutor) configurablePipeline.apply();
-					stageExecutor.setOriginalConfigurer(configurer);
 					
 					if (targetDiscovery.getAlgorithm().startsWith("generation-")){
 						// Model was generated from variable names, which means it has bogus variable states
@@ -372,15 +371,7 @@ public class ConfiguredExecutor {
 				stageExecutor.setStageIndex(iStage);
 				stageExecutor.setOriginalConfigurer(stageConfigurer);
 				
-				try {
-					uk.co.agena.minerva.model.Model.TOOL_ON = true;
-					stageExecutor.execute();
-					uk.co.agena.minerva.model.Model.TOOL_ON = false;
-				}
-				catch (Throwable ex){
-					uk.co.agena.minerva.model.Model.TOOL_ON = false;
-					throw ex;
-				}
+				stageExecutor.execute();
 				
 				for (String modelFilePrefix: modelPrefixes.keySet()){
 					StructureEvaluation evaluation = new StructureEvaluation();
@@ -567,7 +558,6 @@ public class ConfiguredExecutor {
 				mergerConfigurer.setModelPrefixes(Collections.unmodifiableMap(modelPrefixes));
 				
 				MergerExecutor mergerExecutor = mergerConfigurer.apply();
-				mergerExecutor.setOriginalConfigurer(mergerConfigurer);
 				mergerExecutor.execute();
 			}
 		}

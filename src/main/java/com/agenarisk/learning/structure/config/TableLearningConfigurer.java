@@ -91,7 +91,9 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 		if (dataPath == null || modelStageLabel == null || modelStageLabel.isEmpty() || modelPrefix == null || modelPrefix.isEmpty() || modelPath == null || model == null){
 			throw new StructureLearningException("TableLearnerConfigurer is not fully configured before applying");
 		}
-		return new TableLearningExecutor(config);
+		TableLearningExecutor executor = new TableLearningExecutor(config);
+		executor.setOriginalConfigurer(this);
+		return executor;
 	}
 
 	public String getModelPrefix() {

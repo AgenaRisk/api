@@ -30,7 +30,9 @@ public class MergerConfigurer extends ApplicableConfigurer implements Configurab
 		if (inputDirPath == null || outputDirPath == null || modelPrefix == null || modelPrefixes == null){
 			throw new StructureLearningException("MergerConfigurer not fully configured before applying");
 		}
-		return new MergerExecutor(config);
+		MergerExecutor executor = new MergerExecutor(config);
+		executor.setOriginalConfigurer(this);
+		return executor;
 	}
 
 	public Path getInputDirPath() {
