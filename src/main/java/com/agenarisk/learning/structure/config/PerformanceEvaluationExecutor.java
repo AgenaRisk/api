@@ -41,7 +41,7 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 	
 	@Override
 	public void execute() throws StructureLearningException {
-		BLogger.logConditional("Beginning performance evaluation " + stageIndex);
+		BLogger.logConditional("Beginning performance evaluation, stage: " + stageIndex);
 
 		if (originalConfigurer == null){
 			BLogger.logConditional("Original performance evaluation configurer not set");
