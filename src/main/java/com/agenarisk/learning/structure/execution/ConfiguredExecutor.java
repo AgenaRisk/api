@@ -371,45 +371,6 @@ public class ConfiguredExecutor {
 				stageExecutor.setStageIndex(iStage);
 				
 				stageExecutor.execute();
-				
-				for (String modelFilePrefix: modelPrefixes.keySet()){
-					StructureEvaluation evaluation = new StructureEvaluation();
-					executor.getResult().getStructureEvaluations().add(evaluation);
-					evaluation.setModelLabel(modelPrefixes.get(modelFilePrefix));
-					evaluation.setLabel(stageLabel);
-					try {
-						Path modelPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".cmpx");
-						Path csvPath = executor.getOutputDirPath().resolve(modelFilePrefix + ".csv");
-						executor.getConfig().setFileOutputDagLearnedCsv(csvPath.getFileName().toString());
-						if (!Files.exists(csvPath)){
-							// Need to generate structure CSV from CMPX
-							if (!Files.exists(modelPath)){
-								String message = "Model file missing, can't evaluate: " + modelPath.toString();
-								BLogger.logConditional(message);
-								evaluation.setSuccess(false);
-								evaluation.setMessage(message);
-								continue;
-							}
-
-							CsvWriter.writeCsv(CmpxStructureExtractor.extract(Model.loadModel(modelPath.toString())), csvPath);
-							csvPath.toFile().deleteOnExit();
-						}
-						configurablePipeline.apply().execute();
-
-						evaluation.setSuccess(true);
-						evaluation.setBicScore(executor.getConfig().getCache().getBicScore());
-						evaluation.setLogLikelihoodScore(executor.getConfig().getCache().getLogLikelihoodScore());
-						evaluation.setComplexityScore(executor.getConfig().getCache().getComplexityScore());
-						evaluation.setFreeParameters(executor.getConfig().getCache().getFreeParameters());
-					}
-					catch (Exception ex){
-						String message = "Failed to evaluate " + modelFilePrefix+".cmpx: " + ex.getMessage();
-						BLogger.logConditional(message);
-						BLogger.logThrowableIfDebug(ex);
-						evaluation.setSuccess(false);
-						evaluation.setMessage(message);
-					}
-				}
 			}
 			
 			if (stageType.equals("discovery")){
