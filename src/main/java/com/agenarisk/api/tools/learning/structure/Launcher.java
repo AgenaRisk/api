@@ -1,6 +1,5 @@
 package com.agenarisk.api.tools.learning.structure;
 
-import com.agenarisk.api.tools.sensitivity.*;
 import com.agenarisk.api.util.*;
 import com.agenarisk.learning.structure.StructureLearner;
 import java.nio.file.Files;
@@ -14,6 +13,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import uk.co.agena.minerva.util.Config;
+import uk.co.agena.minerva.util.Environment;
 import uk.co.agena.minerva.util.Logger;
 import uk.co.agena.minerva.util.VersionCore;
 
@@ -41,6 +41,7 @@ public class Launcher {
 	}
 	
 	public static void main(String[] args) {
+		Logger.out().println("com.agenarisk.api PID: " + Environment.PID);
 		
 		if (args.length > 0){
 			Config.init(args);
