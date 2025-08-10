@@ -15,22 +15,24 @@ import java.util.stream.Collectors;
 public class CsvWriter {
     /**
      * Writes the provided data to the specified path as a CSV file.
+	 * @param <T> Type of value in cells
      * @param data The data to write, represented as a List of List of Strings.
      * @param path The path to write the CSV file to.
      * @throws IOException If an I/O error occurs.
      */
-    public static void writeCsv(List<List<Object>> data, Path path) throws IOException {
+    public static <T extends Object> void writeCsv(List<List<T>> data, Path path) throws IOException {
         writeCsv(data, path, ",");
     }
 
 	/**
      * Writes the provided data to the specified path as a CSV file.
+	 * @param <T> Type of value in cells
      * @param data The data to write, represented as a List of List of Strings.
      * @param path The path to write the CSV file to.
      * @param separator The separator to use in the CSV file, defaults to ',' if null.
      * @throws IOException If an I/O error occurs.
      */
-    public static void writeCsv(List<List<Object>> data, Path path, String separator) throws IOException {
+    public static <T extends Object> void writeCsv(List<List<T>> data, Path path, String separator) throws IOException {
 		String actualSeparator = Optional.ofNullable(separator).orElseGet(() -> ",");
         List<String> lines = data.stream()
                 .map(row -> row.stream()
