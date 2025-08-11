@@ -3,6 +3,8 @@ package com.agenarisk.learning.structure.config;
 import com.agenarisk.api.util.CsvWriter;
 import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import com.agenarisk.learning.structure.logger.BLogger;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -187,7 +189,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				}
 				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TARGET);
 				CsvWriter.writeCsv(lines, filePath);
-				TempFileCleanup.registerTempFile(filePath.toFile(), config);
+				registerTempFileConditional(filePath.toFile());
 				config.setConstraintsTargetPenaltyReductionRateEnabled(true);
 			}
 			
@@ -201,7 +203,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				}
 				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_GRAPH);
 				CsvWriter.writeCsv(lines, filePath);
-				TempFileCleanup.registerTempFile(filePath.toFile(), config);
+				registerTempFileConditional(filePath.toFile());
 				config.setConstraintsInitialGraph(true);
 			}
 			
@@ -215,7 +217,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				}
 				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_DIRECTED);
 				CsvWriter.writeCsv(lines, filePath);
-				TempFileCleanup.registerTempFile(filePath.toFile(), config);
+				registerTempFileConditional(filePath.toFile());
 				config.setConstraintsDirectedEnabled(true);
 			}
 			
@@ -229,7 +231,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				}
 				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_UNDIRECTED);
 				CsvWriter.writeCsv(lines, filePath);
-				TempFileCleanup.registerTempFile(filePath.toFile(), config);
+				registerTempFileConditional(filePath.toFile());
 				config.setConstraintsUndirectedEnabled(true);
 			}
 			
@@ -243,7 +245,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				}
 				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_FORBIDDEN);
 				CsvWriter.writeCsv(lines, filePath);
-				TempFileCleanup.registerTempFile(filePath.toFile(), config);
+				registerTempFileConditional(filePath.toFile());
 				config.setConstraintsForbiddenEnabled(true);
 			}
 			
@@ -273,7 +275,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				
 				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_TEMPORAL);
 				CsvWriter.writeCsv(lines, filePath);
-				TempFileCleanup.registerTempFile(filePath.toFile(), config);
+				registerTempFileConditional(filePath.toFile());
 				config.setConstraintsTemporalEnabled(true);
 			}
 			
@@ -282,7 +284,18 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			throw new StructureLearningException(ex.getMessage(), ex);
 		}
 		
-		
 		return this;
+	}
+	
+	private void registerTempFileConditional(File file){
+		if (Boolean.parseBoolean(MinervaProperties.getProperty("com.agenarisk.learning.structure.deleteTransientFiles", "true"))){
+			TempFileCleanup.registerTempFile(file, config);
+		}
+		else {
+			if (BLogger.isPrintConditional()){
+				String path = file.getAbsolutePath();
+				BLogger.logConditional("Persisting temp files to: " + path);
+			}
+		}
 	}
 }
