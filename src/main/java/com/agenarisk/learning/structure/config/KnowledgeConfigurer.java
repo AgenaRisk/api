@@ -10,8 +10,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import uk.co.agena.minerva.util.io.MinervaProperties;
 
 /**
  *
@@ -250,23 +252,30 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			}
 			
 			if (jKnowledge.has("connectionsTemporal")){
-				ArrayList<List<Object>> lines = new ArrayList<>();
+				ArrayList<List<String>> lines = new ArrayList<>();
 				JSONArray jTiers = jKnowledge.getJSONArray("connectionsTemporal");
-				ArrayList<Object> headers = new ArrayList<>();
+				ArrayList<String> headers = new ArrayList<>();
 				headers.add("ID");
 				for(int i = 0; i < jTiers.length(); i += 1){
-					headers.add("Tier " + (i+1));
+					int tierIndex = i+1;
+					headers.add("Tier " + tierIndex);
 					JSONArray jTier = jTiers.getJSONArray(i);
 					for(int j = 0; j < jTier.length(); j += 1 ){
-						List<Object> line;
-						if (lines.size() - 1 <= j){
+						List<String> line;
+						if (lines.size() == j){
 							line = new ArrayList<>();
 							line.add(String.valueOf(j + 1));
 							lines.add(line);
 						}
 						else {
-							line = lines.get(j+1);
+							line = lines.get(j);
 						}
+						
+						int requiredPadding = tierIndex-line.size();
+						for(int k = 0; k < requiredPadding; k++){
+							line.add("");
+						}
+						
 						line.add(jTier.getString(j));
 					}
 				}
