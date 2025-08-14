@@ -100,46 +100,49 @@ Only applies when `stage` is `discovery`.
 ### `connectionsDirected`
 - Type: `array`
 - Directed edges.
+- Applies when: `stage` is `discovery`.
 
 ### `connectionsUndirected`
 - Type: `array`
 - Undirected edges.
+- Applies when: `stage` is `discovery`.
 
 ### `connectionsForbidden`
 - Type: `array`
 - Forbidden connections.
+- Applies when: `stage` is `discovery`.
 
 ### `connectionsTemporal`
 - Type: `array`
 - Temporal orderings (array of tiers, each tier is an array of variables in that tier).
+- Applies when: `stage` is `discovery`.
 
 ### `prohibitConnectionsSameTemporalTier`
 - Type: `boolean`
 - Default: `false`
 - Disallow connections within the same tier.
+- Applies when: `stage` is `discovery`.
 
 ### `connectionsInitialGuess`
 - Type: `array`
 - Initial connection guesses, which may inform the starting point of discovery but are not required to appear in the final structure.
+- Applies when: `stage` is `discovery`.
 
 ### `variablesAreRelevant`
 - Type: `boolean`
 - Default: `false`
 - Mark all variables as relevant, which prohibits islands of variables.
+- Applies when: `stage` is `discovery`.
 
 ### `reduceDimensionalityPenaltyForVariables`
 - Type: `array`
 - List of variable groups (as arrays) for which dimensionality penalty is reduced.
+- Applies when: `stage` is `discovery`.
 
 ### `dimensionalityReductionRate`
 - Type: `integer`
 - Rate of dimensionality reduction. Must be between 2 and 30.
-
-### `maxInDegreePreProcessing`
-- Type: `integer`
-- Enum: `2`, `3`
-- Default: `3`
-- Maximum in-degree before processing.
+- Applies when: `stage` is `discovery`.
 
 ### `skipNodes`
 - Type: `array`
@@ -161,6 +164,13 @@ Only applies when `stage` is `discovery`.
 - Type: `integer`
 - Default: `0`
 - Applies when: `stage` is `discovery` and `algorithm` is one of: `HC`, `TABU`, `MAHC`.
+
+### `maxInDegreePreProcessing`
+- Type: `integer`
+- Enum: `2`, `3`
+- Default: `3`
+- Maximum in-degree before processing.
+- Applies when: `stage` is `discovery` and `algorithm` is `MAHC`.
 
 ### `bicLog`
 - Type: `string`
