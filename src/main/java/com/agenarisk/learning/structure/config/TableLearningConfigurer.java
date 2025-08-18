@@ -23,7 +23,7 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 	private String modelStageLabel;
 	private String modelPrefix;
 	private Model model;
-	private String missingValue = "NA";
+	private String missingValue = "";
 	private String valueSeparator = ",";
 	private int maxIterations = 50;
 	private double convergenceThreshold = 0.01;
