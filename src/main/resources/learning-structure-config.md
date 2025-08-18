@@ -187,11 +187,6 @@ Only applies when `stage` is `discovery`.
 - Default: `1`
 - Applies when `stage` is `averaging`.
 
-### `evaluationDataPath`
-- Type: `string`
-- Path to the evaluation data file to be used only during evaluation (relative or absolute).
-- Applies when `stage` is `structureEvaluation`.
-
 ### `dataPath`
 - Type: `string`
 - Path to the data file (relative or absolute).  
