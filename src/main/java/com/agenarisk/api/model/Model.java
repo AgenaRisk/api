@@ -934,6 +934,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			if (calcException instanceof OutOfMemoryError
 					|| calcException instanceof OutOfMemoryException
 					|| outputCaptured.contains("Java heap space")
+					|| outputCaptured.contains("Memory required exceeds that available")
 					|| outputCaptured.contains("Insufficient memory")) {
 				message = "Insufficient memory";
 				throw new OutOfMemoryException(message, calcException);
