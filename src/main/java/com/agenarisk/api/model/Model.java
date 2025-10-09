@@ -172,6 +172,11 @@ public class Model implements IdContainer<ModelException>, Storable {
 	private JSONObject jsonGraphics, jsonMeta, jsonAudit;
 	
 	/**
+	 * May be used to temporarily hold calculation debug messages
+	 */
+	private String calculationDebugMessages = "";
+	
+	/**
 	 * Constructor for Model class.
 	 * <br>
 	 * Any default logic Network and DataSet are removed
@@ -900,6 +905,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			}
 		}
 		
+		this.calculationDebugMessages = "";
 		StreamInterceptor.output_capture();
 		String outputCaptured = "";
 		Throwable calcException = null;
@@ -919,6 +925,7 @@ public class Model implements IdContainer<ModelException>, Storable {
 			uk.co.agena.minerva.model.Model.checkMonitorsOpen = checkMonitorsOpen;
 			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
 			if (!outputCaptured.trim().isEmpty()){
+				this.calculationDebugMessages = outputCaptured;
 				Logger.logIfDebug(outputCaptured);
 			}
 		}
@@ -1758,6 +1765,10 @@ public class Model implements IdContainer<ModelException>, Storable {
 		if (!outputCaptured.trim().isEmpty()){
 			Logger.logIfDebug("Output captured during NPT regeneration: " + outputCaptured.trim(), 101);
 		}
+	}
+
+	public String getCalculationDebugMessages() {
+		return calculationDebugMessages;
 	}
 	
 }
