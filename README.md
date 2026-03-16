@@ -17,6 +17,12 @@ This is a wrapper API for the AgenaRisk Core engine and puts the focus on:
 See [Example App](https://github.com/AgenaRisk/api-example-app) for usage example
 
 # Licensing
+## Source Code License
+The code in this repository is licensed under the Apache License (see [LICENSE](LICENSE)).
+## API Usage Terms
+Use of the agena.ai Java API requires a valid license key and is governed by the API License Agreement (see [Agena.ai Modeller Software License Agreement](legal/Agena.ai%20Modeller%20Software%20License%20Agreement.pdf))
+
+## Building
 Once cloned, you will need to perform mvn clean to trigger automatic download of non-Java dependencies into your project/lib directory.
 Most command examples are not platform-specific, please make sure you use correct escaping for your console of choice.
 ~~~~
