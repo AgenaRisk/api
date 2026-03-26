@@ -458,7 +458,7 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 				Double.valueOf(String.valueOf(value));
 			}
 			catch (NumberFormatException ex){
-				throw new DataSetException("Invalid observation value - not a number", ex);
+				throw new DataSetException("Invalid observation value `" + value + "` is not a number", ex);
 			}
 			
 			uk.co.agena.minerva.model.scenario.Observation obs = new uk.co.agena.minerva.model.scenario.Observation(ebn.getId(), en.getId(), -1, new uk.co.agena.minerva.util.model.DataSet(new NameDescription("", ""), en.getId()), uk.co.agena.minerva.model.scenario.Observation.OBSERVATION_TYPE_NUMERIC, String.valueOf(value));
