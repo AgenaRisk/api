@@ -8,13 +8,13 @@ import org.json.JSONObject;
  *
  * @author Eugene Dementiev
  */
-public class HcConfigurer extends PrunableLearningConfigurer<HcConfigurer> implements ConfigurableFromJson<HcConfigurer> {
+public class HcStableConfigurer extends PrunableLearningConfigurer<HcStableConfigurer> implements ConfigurableFromJson<HcStableConfigurer> {
 	
-	public HcConfigurer(Config config) {
+	public HcStableConfigurer(Config config) {
 		super(config);
 	}
 	
-	public HcConfigurer() {
+	public HcStableConfigurer() {
 		super();
 	}
 	
@@ -24,7 +24,7 @@ public class HcConfigurer extends PrunableLearningConfigurer<HcConfigurer> imple
 	 */
 	@Override
 	public StructureLearnerExecutor apply() {
-		config.setLearningAlgorithm(Config.LearningAlgorithm.HC);
+		config.setLearningAlgorithm(Config.LearningAlgorithm.HCStable);
 		return new StructureLearnerExecutor(config);
 	}
 	
@@ -34,12 +34,12 @@ public class HcConfigurer extends PrunableLearningConfigurer<HcConfigurer> imple
 	 * @return 
 	 */
 	@Override
-	public KnowledgeConfigurer<HcConfigurer> getKnowledgeConfiguration() {
-		return (KnowledgeConfigurer<HcConfigurer>) super.getKnowledgeConfiguration(this);
+	public KnowledgeConfigurer<HcStableConfigurer> getKnowledgeConfiguration() {
+		return (KnowledgeConfigurer<HcStableConfigurer>) super.getKnowledgeConfiguration(this);
 	}
 
 	@Override
-	public HcConfigurer configureFromJson(JSONObject jConfig) {
+	public HcStableConfigurer configureFromJson(JSONObject jConfig) {
 		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
 		configureBicLogFromJson(jParameters);
 		configurePruningFromJson(jParameters);

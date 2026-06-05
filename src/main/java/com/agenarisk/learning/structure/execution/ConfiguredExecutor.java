@@ -14,6 +14,7 @@ import com.agenarisk.learning.structure.config.GenerationConfigurer;
 import com.agenarisk.learning.structure.config.GenerationExecutor;
 import com.agenarisk.learning.structure.config.GesConfigurer;
 import com.agenarisk.learning.structure.config.HcConfigurer;
+import com.agenarisk.learning.structure.config.HcStableConfigurer;
 import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.MergerConfigurer;
 import com.agenarisk.learning.structure.config.MergerExecutor;
@@ -209,6 +210,8 @@ public class ConfiguredExecutor {
 						case HC:
 							configurablePipeline = new HcConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
 							break;
+						case HCStable:
+							configurablePipeline = new HcStableConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
 							break;
 						case GES:
 							configurablePipeline = new GesConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
