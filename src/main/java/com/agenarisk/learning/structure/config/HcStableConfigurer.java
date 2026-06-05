@@ -8,13 +8,13 @@ import org.json.JSONObject;
  *
  * @author Eugene Dementiev
  */
-public class TabuConfigurer extends PrunableLearningConfigurer<TabuConfigurer> implements Configurable<TabuConfigurer>, ConfigurableFromJson<TabuConfigurer> {
+public class HcConfigurer extends PrunableLearningConfigurer<HcConfigurer> implements ConfigurableFromJson<HcConfigurer> {
 	
-	public TabuConfigurer(Config config) {
+	public HcConfigurer(Config config) {
 		super(config);
 	}
 	
-	public TabuConfigurer() {
+	public HcConfigurer() {
 		super();
 	}
 	
@@ -24,7 +24,7 @@ public class TabuConfigurer extends PrunableLearningConfigurer<TabuConfigurer> i
 	 */
 	@Override
 	public StructureLearnerExecutor apply() {
-		config.setLearningAlgorithm(Config.LearningAlgorithm.TABU);
+		config.setLearningAlgorithm(Config.LearningAlgorithm.HC);
 		return new StructureLearnerExecutor(config);
 	}
 	
@@ -34,12 +34,12 @@ public class TabuConfigurer extends PrunableLearningConfigurer<TabuConfigurer> i
 	 * @return 
 	 */
 	@Override
-	public KnowledgeConfigurer<TabuConfigurer> getKnowledgeConfiguration() {
-		return (KnowledgeConfigurer<TabuConfigurer>) super.getKnowledgeConfiguration(this);
+	public KnowledgeConfigurer<HcConfigurer> getKnowledgeConfiguration() {
+		return (KnowledgeConfigurer<HcConfigurer>) super.getKnowledgeConfiguration(this);
 	}
-	
+
 	@Override
-	public TabuConfigurer configureFromJson(JSONObject jConfig) {
+	public HcConfigurer configureFromJson(JSONObject jConfig) {
 		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
 		configureBicLogFromJson(jParameters);
 		configurePruningFromJson(jParameters);
@@ -51,4 +51,5 @@ public class TabuConfigurer extends PrunableLearningConfigurer<TabuConfigurer> i
 		}
 		return this;
 	}
+	
 }

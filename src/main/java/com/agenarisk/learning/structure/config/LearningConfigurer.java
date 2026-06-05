@@ -5,7 +5,7 @@ package com.agenarisk.learning.structure.config;
  * @author Eugene Dementiev
  * @param <T> Actual implementation type of LearningConfigurer
  */
-public abstract class LearningConfigurer<T extends LearningConfigurer> extends BicLogConfigurer<T> {
+public abstract class LearningConfigurer<T extends LearningConfigurer<T>> extends BicLogConfigurer<T> {
 	
 	public LearningConfigurer(Config config) {
 		super(config);
@@ -16,7 +16,9 @@ public abstract class LearningConfigurer<T extends LearningConfigurer> extends B
 	}
 	
 	protected KnowledgeConfigurer<T> getKnowledgeConfiguration(T parent) {
-		return new KnowledgeConfigurer<>(config, parent);
+		KnowledgeConfigurer<T> knowledgeConfigurer = new KnowledgeConfigurer<>(config, parent);
+		knowledgeConfigurer.useData(parent.getData());
+		return knowledgeConfigurer;
 	}
 	
 	public abstract KnowledgeConfigurer<T> getKnowledgeConfiguration();

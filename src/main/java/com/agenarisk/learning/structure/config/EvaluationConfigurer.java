@@ -9,7 +9,7 @@ import org.json.JSONObject;
  *
  * @author Eugene Dementiev
  */
-public class EvaluationConfigurer extends BicLogConfigurer<EvaluationConfigurer> implements Configurable, ConfigurableFromJson<EvaluationConfigurer> {
+public class EvaluationConfigurer extends BicLogConfigurer<EvaluationConfigurer> implements Configurable<EvaluationConfigurer>, ConfigurableFromJson<EvaluationConfigurer> {
 	public EvaluationConfigurer(Config config) {
 		super(config);
 	}

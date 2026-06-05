@@ -199,21 +199,25 @@ public class ConfiguredExecutor {
 					catch(Exception ex){
 						throw new StructureLearningException("Invalid algorithm " + algorithmName, ex);
 					}
+					HashMap<String, String> data = new HashMap<>();
+					data.put("prefix", "model_" + jStage.optString("algorithm","") + "_" + iStage);
+					data.put("outPath", executor.getOutputDirPath().toString());
 					switch (algorithm) {
 						case SaiyanH:
-							configurablePipeline = new SaiyanHConfigurer(executor.getConfig()).configureFromJson(jStage);
+							configurablePipeline = new SaiyanHConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
 							break;
 						case HC:
-							configurablePipeline = new HcConfigurer(executor.getConfig()).configureFromJson(jStage);
+							configurablePipeline = new HcConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
+							break;
 							break;
 						case GES:
-							configurablePipeline = new GesConfigurer(executor.getConfig()).configureFromJson(jStage);
+							configurablePipeline = new GesConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
 							break;
 						case MAHC:
-							configurablePipeline = new MahcConfigurer(executor.getConfig()).configureFromJson(jStage);
+							configurablePipeline = new MahcConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
 							break;
 						case TABU:
-							configurablePipeline = new TabuConfigurer(executor.getConfig()).configureFromJson(jStage);
+							configurablePipeline = new TabuConfigurer(executor.getConfig()).useData(data).configureFromJson(jStage);
 							break;
 						default:
 							throw new StructureLearningException("Invalid algorithm " + algorithmName);
@@ -408,11 +412,10 @@ public class ConfiguredExecutor {
 					discovery.setModelPath(modelFilePathString);
 					discovery.setModel(model.toJson().optJSONObject("model"));
 					discovery.setSuccess(true);
-					if (Boolean.parseBoolean(MinervaProperties.getProperty("com.agenarisk.learning.structure.deleteTransientFiles", "true"))){
-						TempFileCleanup.registerTempFile(cmpModelPath.toFile(), executor.getConfig());
-						TempFileCleanup.registerTempFile(configurablePipeline.getConfig().getPathOutput().resolve("CPDAGlearned.csv").toFile(), executor.getConfig());
-						TempFileCleanup.registerTempFile(configurablePipeline.getConfig().getPathOutput().resolve("DAGlearned.csv").toFile(), executor.getConfig());
-					}
+					
+					TempFileCleanup.registerTempFile(cmpModelPath.toFile(), executor.getConfig());
+					TempFileCleanup.registerTempFile(configurablePipeline.getConfig().getPathOutput().resolve("CPDAGlearned.csv").toFile(), executor.getConfig());
+					TempFileCleanup.registerTempFile(configurablePipeline.getConfig().getPathOutput().resolve("DAGlearned.csv").toFile(), executor.getConfig());
 				}
 				catch(Exception ex){
 					String message = "Failed to load discovered structure from file: " + ex.getMessage();

@@ -6,11 +6,14 @@ import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.logger.BLogger;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import uk.co.agena.minerva.util.io.MinervaProperties;
@@ -20,7 +23,7 @@ import uk.co.agena.minerva.util.io.MinervaProperties;
  * @author Eugene Dementiev
  * @param <T> The type of parent LearningConfigurer
  */
-public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configurer implements ConfigurableFromJson<KnowledgeConfigurer> {
+public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configurer<KnowledgeConfigurer<T>> implements ConfigurableFromJson<KnowledgeConfigurer> {
 	
 	private final T parent;
 
@@ -297,13 +300,18 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 	}
 	
 	private void registerTempFileConditional(File file){
-		if (Boolean.parseBoolean(MinervaProperties.getProperty("com.agenarisk.learning.structure.deleteTransientFiles", "true"))){
-			TempFileCleanup.registerTempFile(file, config);
-		}
-		else {
-			if (BLogger.isPrintConditional()){
-				String path = file.getAbsolutePath();
-				BLogger.logConditional("Persisting temp files to: " + path);
+		TempFileCleanup.registerTempFile(file, config);
+		if (!Boolean.parseBoolean(MinervaProperties.getProperty("com.agenarisk.learning.structure.deleteTransientFiles", "true"))){
+			Path outPath = Paths.get(Optional.ofNullable(data.get("outPath")).orElse("."));
+			String prefix = Optional.ofNullable(data.get("prefix")).map(p -> p + "_").orElse("");
+			Path copyToPath = outPath.resolve(prefix + file.getName());
+			BLogger.logConditional("Persisting temp file: " + copyToPath);
+			try {
+				Files.copy(file.toPath(), copyToPath, StandardCopyOption.REPLACE_EXISTING);
+			}
+			catch (IOException ex){
+				BLogger.logConditional("Failed to copy transient files");
+				BLogger.logThrowableIfDebug(ex);
 			}
 		}
 	}

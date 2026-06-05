@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * @author Eugene Dementiev
  * @param <T> Actual implementation type of LearningConfigurer
  */
-public abstract class PrunableLearningConfigurer<T extends LearningConfigurer> extends LearningConfigurer<T> {
+public abstract class PrunableLearningConfigurer<T extends LearningConfigurer<T>> extends LearningConfigurer<T> {
 	
 	public PrunableLearningConfigurer(Config config) {
 		super(config);

@@ -8,7 +8,7 @@ import org.json.JSONObject;
  *
  * @author Eugene Dementiev
  */
-public class SaiyanHConfigurer extends LearningConfigurer implements ConfigurableFromJson<SaiyanHConfigurer> {
+public class SaiyanHConfigurer extends LearningConfigurer<SaiyanHConfigurer> implements ConfigurableFromJson<SaiyanHConfigurer> {
 
 	/**
 	 * Score and distance derived from single type
