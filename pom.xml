@@ -12,7 +12,7 @@
 	</properties>
 	
 	<groupId>com.agenarisk</groupId>
-	<artifactId>com.agenarisk.api</artifactId>
+	<artifactId>com.agenarisk.api-parallel</artifactId>
 	<version>1.040-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
@@ -46,7 +46,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.agenarisk</groupId>
-			<artifactId>com.agenarisk.core</artifactId>
+			<artifactId>com.agenarisk.core-parallel</artifactId>
 			<version>${version.com.agenarisk.core}</version>
 		</dependency>
 		
