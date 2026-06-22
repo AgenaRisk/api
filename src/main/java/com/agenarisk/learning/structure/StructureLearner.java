@@ -9,9 +9,17 @@ import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
+import com.agenarisk.learning.structure.execution.graph.GraphExecutor;
+import com.agenarisk.learning.structure.execution.graph.GraphResult;
+import com.agenarisk.learning.structure.execution.graph.WorkflowGraph;
+import com.agenarisk.learning.structure.execution.graph.node.DataSourceNode;
+import com.agenarisk.learning.structure.execution.graph.node.GraphNode;
 import com.agenarisk.learning.structure.result.Result;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,8 +79,23 @@ public class StructureLearner {
 	}
 	
 	public void executeJson(JSONObject json){
+		boolean hasGraph = json.has("graph");
+		boolean hasPipeline = json.has("pipeline");
+
+		if (hasGraph && hasPipeline) {
+			throw new StructureLearningException("Config must not contain both 'graph' and 'pipeline' keys");
+		}
+
+		if (hasGraph) {
+			executeGraph(json);
+		} else {
+			executePipeline(json);
+		}
+	}
+
+	private void executePipeline(JSONObject json) {
 		ConfiguredExecutor executor = ConfiguredExecutor.executeFromJson(json);
-		
+
 		boolean printSummary = json.optBoolean("printSummary", false);
 		boolean saveSummary = json.optBoolean("saveSummary", false);
 		boolean saveResult = json.optBoolean("saveResult", false);
@@ -101,11 +124,11 @@ public class StructureLearner {
 			Result result = executor.getResult();
 			ArrayList<List<Object>> lines = result.getSummary();
 			lines.add(0, headers);
-			
+
 			if (printSummary){
 				lines.stream().map(line -> line.stream().map(el -> el+"").collect(Collectors.joining("\t"))).forEach(System.out::println);
 			}
-			
+
 			if (saveSummary){
 				try {
 					CsvWriter.writeCsv(lines, Paths.get(executor.getOutputDirPath().resolve("summary.csv").toString()));
@@ -114,7 +137,7 @@ public class StructureLearner {
 					throw new StructureLearningException("Failed to write summary to file", ex);
 				}
 			}
-			
+
 			if (saveResult){
 				try {
 					Files.write(executor.getOutputDirPath().resolve("result.json"), result.toJson().toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -122,6 +145,84 @@ public class StructureLearner {
 				catch(Exception ex){
 					throw new StructureLearningException("Failed to write result to file", ex);
 				}
+			}
+		}
+	}
+
+	private void executeGraph(JSONObject json) {
+		Path outputDirPath;
+		try {
+			outputDirPath = Paths.get(json.getString("outputDirPath"));
+			Files.createDirectories(outputDirPath);
+		} catch (Exception ex) {
+			throw new StructureLearningException("Failed to resolve or create outputDirPath", ex);
+		}
+
+		WorkflowGraph graph;
+		try {
+			graph = WorkflowGraph.fromJson(json.getJSONObject("graph"));
+		} catch (StructureLearningException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			throw new StructureLearningException("Failed to parse graph", ex);
+		}
+
+		if (json.optBoolean("bundle", false)) {
+			try {
+				Files.write(outputDirPath.resolve("input.json"), json.toString(2).getBytes(),
+						StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+				for (GraphNode node : graph.topologicalOrder()) {
+					if (node instanceof DataSourceNode) {
+						DataSourceNode dsNode = (DataSourceNode) node;
+						Path src = dsNode.resolvedPath();
+						Path dest = outputDirPath.resolve(dsNode.getLabel() + ".csv");
+						if (!dest.equals(src)) {
+							Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+						}
+					}
+				}
+			} catch (Exception ex) {
+				throw new StructureLearningException("Failed to create bundle", ex);
+			}
+		}
+
+		GraphExecutionContext ctx = new GraphExecutionContext(outputDirPath, graph.getNodesByLabel());
+		GraphExecutor.execute(graph, ctx);
+
+		boolean printSummary = json.optBoolean("printSummary", false);
+		boolean saveSummary = json.optBoolean("saveSummary", false);
+		boolean saveResult = json.optBoolean("saveResult", false);
+
+		String graphLabel = json.optString("label", "");
+		String graphDescription = json.optString("description", "");
+		String graphVersion = json.optString("version", "");
+		GraphResult result = new GraphResult(graphLabel, graphDescription, graphVersion,
+				new ArrayList<>(graph.topologicalOrder()));
+
+		if (printSummary || saveSummary) {
+			List<Object> headers = Arrays.asList("Label", "Type", "SubType", "Status", "Status message");
+			ArrayList<List<Object>> lines = new ArrayList<>(result.getSummary());
+			lines.add(0, headers);
+
+			if (printSummary) {
+				lines.stream().map(line -> line.stream().map(el -> el + "").collect(Collectors.joining("\t"))).forEach(System.out::println);
+			}
+
+			if (saveSummary) {
+				try {
+					CsvWriter.writeCsv(lines, outputDirPath.resolve("summary.csv"));
+				} catch (Exception ex) {
+					throw new StructureLearningException("Failed to write summary to file", ex);
+				}
+			}
+		}
+
+		if (saveResult) {
+			try {
+				Files.write(outputDirPath.resolve("result.json"), result.toJson().toString().getBytes(),
+						StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			} catch (Exception ex) {
+				throw new StructureLearningException("Failed to write result to file", ex);
 			}
 		}
 	}
