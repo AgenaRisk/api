@@ -43,7 +43,7 @@ public class ModelGenerationNode extends ModelNode {
 	public void execute(GraphExecutionContext ctx) {
 		try {
 			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
-			Path dataPath = dsNode.resolvedPath();
+			Path dataPath = dsNode.resolvedPath(ctx);
 			Path modelPath = getModelPath(ctx);
 
 			Config config = Config.reset((c) -> {

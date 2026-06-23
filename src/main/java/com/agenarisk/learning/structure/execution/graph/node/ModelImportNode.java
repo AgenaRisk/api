@@ -4,7 +4,6 @@ import com.agenarisk.api.model.Model;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.Set;
@@ -35,7 +34,7 @@ public class ModelImportNode extends ModelNode {
 			if (path == null || path.isEmpty()) {
 				throw new IllegalArgumentException("Model import path is required");
 			}
-			Model model = Model.loadModel(path);
+			Model model = Model.loadModel(ctx.resolveConfigPath(path).toString());
 			JSONObject exported = model.export(
 							Model.ExportFlag.KEEP_META,
 							Model.ExportFlag.KEEP_OBSERVATIONS,

@@ -32,6 +32,20 @@ import org.json.JSONObject;
  * @author Eugene Dementiev
  */
 public class StructureLearner {
+
+	private Path configDir = Paths.get("").toAbsolutePath();
+
+	public void setConfigDir(Path dir) {
+		this.configDir = (dir != null) ? dir.toAbsolutePath() : Paths.get("").toAbsolutePath();
+	}
+
+	private Path resolveConfigPath(String pathStr) {
+		if (pathStr == null || pathStr.isEmpty()) {
+			return configDir;
+		}
+		Path p = Paths.get(pathStr);
+		return p.isAbsolute() ? p : configDir.resolve(p);
+	}
 	public SaiyanHConfigurer learnWithSaiyanH(){
 		Config.reset();
 		return new SaiyanHConfigurer(Config.getInstance());
@@ -94,7 +108,14 @@ public class StructureLearner {
 	}
 
 	private void executePipeline(JSONObject json) {
-		ConfiguredExecutor executor = ConfiguredExecutor.executeFromJson(json);
+		JSONObject jExec = new JSONObject(json.toString());
+		if (jExec.has("dataFilePath")) {
+			jExec.put("dataFilePath", resolveConfigPath(jExec.getString("dataFilePath")).toString());
+		}
+		if (jExec.has("outputDirPath") && !jExec.optString("outputDirPath", "").isEmpty()) {
+			jExec.put("outputDirPath", resolveConfigPath(jExec.getString("outputDirPath")).toString());
+		}
+		ConfiguredExecutor executor = ConfiguredExecutor.executeFromJson(jExec);
 
 		boolean printSummary = json.optBoolean("printSummary", false);
 		boolean saveSummary = json.optBoolean("saveSummary", false);
@@ -152,7 +173,7 @@ public class StructureLearner {
 	private void executeGraph(JSONObject json) {
 		Path outputDirPath;
 		try {
-			outputDirPath = Paths.get(json.getString("outputDirPath"));
+			outputDirPath = resolveConfigPath(json.getString("outputDirPath"));
 			Files.createDirectories(outputDirPath);
 		} catch (Exception ex) {
 			throw new StructureLearningException("Failed to resolve or create outputDirPath", ex);
@@ -167,6 +188,8 @@ public class StructureLearner {
 			throw new StructureLearningException("Failed to parse graph", ex);
 		}
 
+		GraphExecutionContext ctx = new GraphExecutionContext(outputDirPath, configDir, graph.getNodesByLabel());
+
 		if (json.optBoolean("bundle", false)) {
 			try {
 				Files.write(outputDirPath.resolve("input.json"), json.toString(2).getBytes(),
@@ -174,7 +197,7 @@ public class StructureLearner {
 				for (GraphNode node : graph.topologicalOrder()) {
 					if (node instanceof DataSourceNode) {
 						DataSourceNode dsNode = (DataSourceNode) node;
-						Path src = dsNode.resolvedPath();
+						Path src = dsNode.resolvedPath(ctx);
 						Path dest = outputDirPath.resolve(dsNode.getLabel() + ".csv");
 						if (!dest.equals(src)) {
 							Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
@@ -186,7 +209,6 @@ public class StructureLearner {
 			}
 		}
 
-		GraphExecutionContext ctx = new GraphExecutionContext(outputDirPath, graph.getNodesByLabel());
 		GraphExecutor.execute(graph, ctx);
 
 		boolean printSummary = json.optBoolean("printSummary", false);

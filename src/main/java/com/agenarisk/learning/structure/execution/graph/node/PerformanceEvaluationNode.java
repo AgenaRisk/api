@@ -64,7 +64,7 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 	public void execute(GraphExecutionContext ctx) {
 		try {
 			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
-			Path dataPath = dsNode.resolvedPath();
+			Path dataPath = dsNode.resolvedPath(ctx);
 			Path outputDirPath = ctx.getOutputDirPath();
 
 			Config config = Config.reset((c) -> {
