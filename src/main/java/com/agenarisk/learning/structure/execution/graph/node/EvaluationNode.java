@@ -6,6 +6,7 @@ import com.agenarisk.learning.structure.logger.BLogger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,6 +26,18 @@ public abstract class EvaluationNode extends GraphNode {
 	}
 
 	protected abstract List<List<Object>> toCsvRows(JSONArray results);
+
+	@Override
+	public List<Path> getOutputFiles(GraphExecutionContext ctx) {
+		List<Path> files = new ArrayList<>();
+		files.add(getEvalPath(ctx));
+		if (outputToFile) {
+			String fileName = (outputFileName != null && !outputFileName.isEmpty())
+					? outputFileName : (getLabel() + ".csv");
+			files.add(ctx.getOutputDirPath().resolve(fileName));
+		}
+		return files;
+	}
 
 	protected void writeOutputFileIfRequested(GraphExecutionContext ctx, JSONArray results) {
 		if (!outputToFile) return;

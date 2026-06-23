@@ -4,6 +4,9 @@ import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.json.JSONObject;
 import uk.co.agena.minerva.util.io.MinervaProperties;
@@ -140,5 +143,9 @@ public abstract class GraphNode {
 			json.put("result", resultData);
 		}
 		return json;
+	}
+
+	public List<Path> getOutputFiles(GraphExecutionContext ctx) {
+		return Collections.emptyList();
 	}
 }

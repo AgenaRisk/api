@@ -156,4 +156,13 @@ public class StructureEvaluationNode extends EvaluationNode {
 	public String getDataSource() {
 		return dataSource;
 	}
+
+	@Override
+	public List<Path> getOutputFiles(GraphExecutionContext ctx) {
+		List<Path> files = new ArrayList<>(super.getOutputFiles(ctx));
+		for (String modelLabel : models) {
+			files.add(ctx.getOutputDirPath().resolve(modelLabel + ".csv"));
+		}
+		return files;
+	}
 }
