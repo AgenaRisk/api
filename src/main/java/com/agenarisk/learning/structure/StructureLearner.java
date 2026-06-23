@@ -15,16 +15,20 @@ import com.agenarisk.learning.structure.execution.graph.GraphResult;
 import com.agenarisk.learning.structure.execution.graph.WorkflowGraph;
 import com.agenarisk.learning.structure.execution.graph.node.DataSourceNode;
 import com.agenarisk.learning.structure.execution.graph.node.GraphNode;
+import com.agenarisk.learning.structure.execution.graph.node.ModelImportNode;
 import com.agenarisk.learning.structure.result.Result;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -171,6 +175,30 @@ public class StructureLearner {
 	}
 
 	private void executeGraph(JSONObject json) {
+		// Resolve and verify bundle zip path before any computation starts
+		Path bundleZipPath = null;
+		String bundleStr = json.optString("bundle", "");
+		if (!bundleStr.isEmpty()) {
+			bundleZipPath = resolveConfigPath(bundleStr);
+			try {
+				Path parent = bundleZipPath.getParent();
+				if (parent != null) {
+					Files.createDirectories(parent);
+				}
+				if (Files.exists(bundleZipPath)) {
+					if (!Files.isWritable(bundleZipPath)) {
+						throw new StructureLearningException("Bundle zip is not writable: " + bundleZipPath);
+					}
+				} else if (parent != null && !Files.isWritable(parent)) {
+					throw new StructureLearningException("Cannot write bundle zip to directory: " + parent);
+				}
+			} catch (StructureLearningException ex) {
+				throw ex;
+			} catch (Exception ex) {
+				throw new StructureLearningException("Failed to verify bundle zip path: " + bundleZipPath, ex);
+			}
+		}
+
 		Path outputDirPath;
 		try {
 			outputDirPath = resolveConfigPath(json.getString("outputDirPath"));
@@ -189,26 +217,6 @@ public class StructureLearner {
 		}
 
 		GraphExecutionContext ctx = new GraphExecutionContext(outputDirPath, configDir, graph.getNodesByLabel());
-
-		if (json.optBoolean("bundle", false)) {
-			try {
-				Files.write(outputDirPath.resolve("input.json"), json.toString(2).getBytes(),
-						StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-				for (GraphNode node : graph.topologicalOrder()) {
-					if (node instanceof DataSourceNode) {
-						DataSourceNode dsNode = (DataSourceNode) node;
-						Path src = dsNode.resolvedPath(ctx);
-						Path dest = outputDirPath.resolve(dsNode.getLabel() + ".csv");
-						if (!dest.equals(src)) {
-							Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
-						}
-					}
-				}
-			} catch (Exception ex) {
-				throw new StructureLearningException("Failed to create bundle", ex);
-			}
-		}
-
 		GraphExecutor.execute(graph, ctx);
 
 		boolean printSummary = json.optBoolean("printSummary", false);
@@ -247,5 +255,97 @@ public class StructureLearner {
 				throw new StructureLearningException("Failed to write result to file", ex);
 			}
 		}
+
+		if (bundleZipPath != null) {
+			try {
+				createBundle(bundleZipPath, json, graph, ctx);
+			} catch (Exception ex) {
+				throw new StructureLearningException("Failed to create bundle: " + ex.getMessage(), ex);
+			}
+		}
+	}
+
+	private void createBundle(Path bundleZipPath, JSONObject json, WorkflowGraph graph, GraphExecutionContext ctx) throws Exception {
+		Path outputDirPath = ctx.getOutputDirPath();
+
+		try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(bundleZipPath,
+				StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
+
+			// inputs/ — DataSource CSV files and ModelImport CMPX files
+			for (GraphNode node : graph.topologicalOrder()) {
+				if (node instanceof DataSourceNode) {
+					DataSourceNode dsNode = (DataSourceNode) node;
+					addZipEntry(zos, dsNode.resolvedPath(ctx), "inputs/" + dsNode.getLabel() + ".csv");
+				} else if (node instanceof ModelImportNode) {
+					ModelImportNode miNode = (ModelImportNode) node;
+					addZipEntry(zos, ctx.resolveConfigPath(miNode.getPath()), "inputs/" + miNode.getLabel() + ".cmpx");
+				}
+			}
+
+			// outputs/ — only files written by this run's nodes
+			for (GraphNode node : graph.topologicalOrder()) {
+				for (Path file : node.getOutputFiles(ctx)) {
+					addZipEntry(zos, file, "outputs/" + file.getFileName().toString());
+				}
+			}
+			if (json.optBoolean("saveSummary", false)) {
+				addZipEntry(zos, outputDirPath.resolve("summary.csv"), "outputs/summary.csv");
+			}
+			if (json.optBoolean("saveResult", false)) {
+				addZipEntry(zos, outputDirPath.resolve("result.json"), "outputs/result.json");
+			}
+
+			// config.json — paths relativized to zip layout
+			JSONObject bundleConfig = relativizeConfig(json, graph);
+			byte[] configBytes = bundleConfig.toString(2).getBytes(StandardCharsets.UTF_8);
+			zos.putNextEntry(new ZipEntry("config.json"));
+			zos.write(configBytes);
+			zos.closeEntry();
+		}
+	}
+
+	private void addZipEntry(ZipOutputStream zos, Path filePath, String entryName) throws Exception {
+		if (filePath == null || !Files.exists(filePath)) {
+			return;
+		}
+		zos.putNextEntry(new ZipEntry(entryName));
+		Files.copy(filePath, zos);
+		zos.closeEntry();
+	}
+
+	private JSONObject relativizeConfig(JSONObject json, WorkflowGraph graph) {
+		JSONObject config = new JSONObject(json.toString());
+		config.remove("bundle");
+		config.put("outputDirPath", "outputs");
+
+		JSONObject jGraph = config.optJSONObject("graph");
+		if (jGraph == null) {
+			return config;
+		}
+		JSONArray jNodes = jGraph.optJSONArray("nodes");
+		if (jNodes == null) {
+			return config;
+		}
+		for (int i = 0; i < jNodes.length(); i++) {
+			JSONObject jNode = jNodes.optJSONObject(i);
+			if (jNode == null) {
+				continue;
+			}
+			String type = jNode.optString("type", "");
+			String label = jNode.optString("label", "");
+			if (label.isEmpty()) {
+				continue;
+			}
+			JSONObject jOptions = jNode.optJSONObject("options");
+			if (jOptions == null) {
+				continue;
+			}
+			if ("dataSource".equals(type)) {
+				jOptions.put("path", "inputs/" + label + ".csv");
+			} else if ("modelImport".equals(type)) {
+				jOptions.put("path", "inputs/" + label + ".cmpx");
+			}
+		}
+		return config;
 	}
 }

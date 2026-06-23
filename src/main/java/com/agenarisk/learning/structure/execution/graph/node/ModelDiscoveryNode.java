@@ -17,8 +17,10 @@ import com.agenarisk.learning.structure.logger.BLogger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.json.JSONObject;
 
@@ -137,5 +139,12 @@ public class ModelDiscoveryNode extends ModelNode {
 
 	public String getAlgorithm() {
 		return algorithm;
+	}
+
+	@Override
+	public List<Path> getOutputFiles(GraphExecutionContext ctx) {
+		List<Path> files = new ArrayList<>(super.getOutputFiles(ctx));
+		files.add(ctx.getOutputDirPath().resolve(getLabel() + ".csv"));
+		return files;
 	}
 }

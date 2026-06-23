@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -88,5 +89,14 @@ public class ModelMergeNode extends GraphNode {
 
 	public List<String> getModels() {
 		return models;
+	}
+
+	@Override
+	public List<Path> getOutputFiles(GraphExecutionContext ctx) {
+		String fileName = (outputFileName != null && !outputFileName.isEmpty()) ? outputFileName : getLabel() + ".cmpx";
+		if (!fileName.endsWith(".cmpx")) {
+			fileName = fileName + ".cmpx";
+		}
+		return Collections.singletonList(ctx.getOutputDirPath().resolve(fileName));
 	}
 }

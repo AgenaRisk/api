@@ -137,4 +137,11 @@ public class ModelAveragingNode extends ModelNode {
 	public String getDataSource() {
 		return dataSource;
 	}
+
+	@Override
+	public List<Path> getOutputFiles(GraphExecutionContext ctx) {
+		List<Path> files = new ArrayList<>(super.getOutputFiles(ctx));
+		files.add(ctx.getOutputDirPath().resolve(getLabel() + ".csv"));
+		return files;
+	}
 }
