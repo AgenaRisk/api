@@ -19,6 +19,8 @@ public class ProbabilityLearningNode extends ModelNode {
 	private int maxIterations = 50;
 	private double convergenceThreshold = 0.01;
 	private String missingValue = "";
+	private String valueSeparator = ",";
+	private double dataWeight = 1;
 	private JSONObject jOptions;
 
 	@Override
@@ -34,6 +36,8 @@ public class ProbabilityLearningNode extends ModelNode {
 		this.maxIterations = jOptions.optInt("maxIterations", 50);
 		this.convergenceThreshold = jOptions.optDouble("convergenceThreshold", 0.01);
 		this.missingValue = jOptions.optString("missingValue", "");
+		this.valueSeparator = jOptions.optString("valueSeparator", ",");
+		this.dataWeight = jOptions.optDouble("dataWeight", 1);
 	}
 
 	@Override
@@ -53,7 +57,7 @@ public class ProbabilityLearningNode extends ModelNode {
 	public void execute(GraphExecutionContext ctx) {
 		try {
 			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
-			Path dataPath = dsNode.resolvedPath();
+			Path dataPath = dsNode.resolvedPath(ctx);
 
 			Path inputModelPath = ctx.modelPath(model);
 			Path outputModelPath = getModelPath(ctx);
@@ -74,9 +78,9 @@ public class ProbabilityLearningNode extends ModelNode {
 			jParams.put("maxIterations", maxIterations);
 			jParams.put("convergenceThreshold", convergenceThreshold);
 			jParams.put("missingValue", missingValue);
-			// Forward dataPath so configurer resolves it correctly
+			jParams.put("valueSeparator", valueSeparator);
+			jParams.put("dataWeight", dataWeight);
 			jParams.put("dataPath", dataPath.toString());
-			// modelStageLabel is needed by apply() validation; provide a placeholder
 			jParams.put("modelStageLabel", model);
 			jConfig.put("parameters", jParams);
 			// Forward knowledge if present in original options

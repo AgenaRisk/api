@@ -4,7 +4,6 @@ import com.agenarisk.api.util.CsvReader;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Set;
@@ -43,7 +42,7 @@ public class DataSourceNode extends GraphNode {
 			if (path == null || path.isEmpty()) {
 				throw new IllegalArgumentException("Data source path is required");
 			}
-			Path filePath = Paths.get(path);
+			Path filePath = ctx.resolveConfigPath(path);
 			if (!Files.exists(filePath)) {
 				throw new IllegalArgumentException("Data file not found: " + filePath);
 			}
@@ -80,7 +79,7 @@ public class DataSourceNode extends GraphNode {
 		return version;
 	}
 
-	public Path resolvedPath() {
-		return Paths.get(path);
+	public Path resolvedPath(GraphExecutionContext ctx) {
+		return ctx.resolveConfigPath(path);
 	}
 }

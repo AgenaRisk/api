@@ -112,7 +112,7 @@ public class ModelAveragingNode extends ModelNode {
 				if (dsNode instanceof DataSourceNode && dsNode.getStatus() == Status.success) {
 					NodeStatesFromDataPopulator.populate(
 									model.getNetworkList().get(0),
-									((DataSourceNode) dsNode).resolvedPath()
+									((DataSourceNode) dsNode).resolvedPath(ctx)
 					);
 				}
 			}
