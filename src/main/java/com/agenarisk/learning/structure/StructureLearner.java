@@ -177,7 +177,7 @@ public class StructureLearner {
 	private void executeGraph(JSONObject json) {
 		// Resolve and verify bundle zip path before any computation starts
 		Path bundleZipPath = null;
-		String bundleStr = json.optString("bundle", "");
+		String bundleStr = json.optString("bundleFileName", "");
 		if (!bundleStr.isEmpty()) {
 			bundleZipPath = resolveConfigPath(bundleStr);
 			try {
@@ -315,7 +315,7 @@ public class StructureLearner {
 
 	private JSONObject relativizeConfig(JSONObject json, WorkflowGraph graph) {
 		JSONObject config = new JSONObject(json.toString());
-		config.remove("bundle");
+		config.remove("bundleFileName");
 		config.put("outputDirPath", "outputs");
 
 		JSONObject jGraph = config.optJSONObject("graph");
