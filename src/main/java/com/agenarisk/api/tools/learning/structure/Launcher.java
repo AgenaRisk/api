@@ -88,8 +88,11 @@ public class Launcher {
 		}
 		
 		try {
-			String config = Files.lines(Paths.get(cmd.getOptionValue("config"))).collect(Collectors.joining("\n"));
-			new StructureLearner().executeJson(config);
+			java.nio.file.Path configPath = Paths.get(cmd.getOptionValue("config")).toAbsolutePath();
+			String config = Files.lines(configPath).collect(Collectors.joining("\n"));
+			StructureLearner learner = new StructureLearner();
+			learner.setConfigDir(configPath.getParent());
+			learner.executeJson(config);
 		}
 		catch(Exception ex){
 			Logger.err().println("Failed: " + ex.getMessage());
