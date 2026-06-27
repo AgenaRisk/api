@@ -51,7 +51,7 @@ public class ModelAveragingNode extends ModelNode {
 	@Override
 	public Set<String> getInputLabels() {
 		Set<String> labels = new LinkedHashSet<>(models);
-		if (dataSource != null && !dataSource.isEmpty()) {
+		if (statesFromData && dataSource != null && !dataSource.isEmpty()) {
 			labels.add(dataSource);
 		}
 		return labels;
@@ -74,10 +74,12 @@ public class ModelAveragingNode extends ModelNode {
 
 			List<List<Object>> lines = new ArrayList<>();
 			lines.add(Arrays.asList("ID", "Variable 1", "Dependency", "Variable 2"));
+			int avgCount = 0;
+			int avgFailedCount = 0;
 
 			for (String modelLabel : models) {
 				GraphNode parent = ctx.getNode(modelLabel);
-				if (parent == null || !(parent instanceof ModelNode) || parent.getStatus() != Status.success) {
+				if (parent == null || !(parent instanceof ModelNode) || (parent.getStatus() != Status.success && parent.getStatus() != Status.warning)) {
 					BLogger.logConditional("Skipping model '" + modelLabel + "' for averaging (not available or failed)");
 					continue;
 				}
@@ -88,11 +90,18 @@ public class ModelAveragingNode extends ModelNode {
 						CsvWriter.writeCsv(CmpxStructureExtractor.extract(Model.loadModel(modelPath.toString())), csvPath);
 					}
 					lines.addAll(CmpxStructureExtractor.extract(Model.loadModel(modelPath.toString()), null));
+					avgCount++;
 				}
 				catch (Exception ex) {
+					avgFailedCount++;
 					BLogger.logConditional("Failed to include model '" + modelLabel + "' in averaging: " + ex.getMessage());
 					BLogger.logThrowableIfDebug(ex);
 				}
+			}
+
+			if (avgCount == 0) {
+				failWith("All models failed to process for averaging", null);
+				return;
 			}
 
 			Path csvInput = outputDirPath.resolve(Config.FILE_AVERAGING_INPUT);
@@ -123,7 +132,13 @@ public class ModelAveragingNode extends ModelNode {
 			Files.copy(csvOutput, outputDirPath.resolve(getLabel() + ".csv"), StandardCopyOption.REPLACE_EXISTING);
 
 			setResult(model.toJson().optJSONObject("model"));
-			setStatus(Status.success);
+			if (avgFailedCount > 0) {
+				setStatus(Status.warning);
+				setStatusMessage(avgFailedCount + " of " + (avgCount + avgFailedCount) + " models failed during averaging");
+			}
+			else {
+				setStatus(Status.success);
+			}
 		}
 		catch (Exception ex) {
 			failWith("Averaging failed: " + ex.getMessage(), ex);

@@ -16,7 +16,7 @@ public abstract class GraphNode {
 	public static final String PROP_DEBUG = "com.agenarisk.learning.structure.debug";
 
 	public enum Status {
-		pending, success, failure, skipped
+		pending, success, warning, failure
 	}
 
 	private String label;

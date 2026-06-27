@@ -79,10 +79,11 @@ public class StructureEvaluationNode extends EvaluationNode {
 
 			JSONArray results = new JSONArray();
 			boolean anySuccess = false;
+			boolean anyFailure = false;
 
 			for (String modelLabel : models) {
 				GraphNode parent = ctx.getNode(modelLabel);
-				if (parent == null || !(parent instanceof ModelNode) || parent.getStatus() != Status.success) {
+				if (parent == null || !(parent instanceof ModelNode) || (parent.getStatus() != Status.success && parent.getStatus() != Status.warning)) {
 					BLogger.logConditional("Skipping model '" + modelLabel + "' for structure evaluation (not available or failed)");
 					continue;
 				}
@@ -107,6 +108,7 @@ public class StructureEvaluationNode extends EvaluationNode {
 					anySuccess = true;
 				}
 				catch (Exception ex) {
+					anyFailure = true;
 					entry.put("success", false);
 					entry.put("message", ex.getMessage());
 					BLogger.logConditional("Structure evaluation failed for '" + modelLabel + "': " + ex.getMessage());
@@ -120,9 +122,15 @@ public class StructureEvaluationNode extends EvaluationNode {
 
 			writeOutputFileIfRequested(ctx, results);
 			setResult(results);
-			setStatus(anySuccess ? Status.success : Status.failure);
-			if (!anySuccess) {
-				setStatusMessage("All model evaluations failed");
+			if (anySuccess && !anyFailure) {
+				setStatus(Status.success);
+			}
+			else if (anySuccess) {
+				setStatus(Status.warning);
+				setStatusMessage("Some model evaluations failed");
+			}
+			else {
+				failWith("All model evaluations failed", null);
 			}
 		}
 		catch (Exception ex) {

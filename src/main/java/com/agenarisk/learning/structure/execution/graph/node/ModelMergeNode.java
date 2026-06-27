@@ -50,10 +50,12 @@ public class ModelMergeNode extends GraphNode {
 
 		try {
 			Model merged = Model.createModel();
+			int mergedCount = 0;
+			int mergeFailedCount = 0;
 
 			for (String modelLabel : models) {
 				GraphNode parent = ctx.getNode(modelLabel);
-				if (parent == null || !(parent instanceof ModelNode) || parent.getStatus() != Status.success) {
+				if (parent == null || !(parent instanceof ModelNode) || (parent.getStatus() != Status.success && parent.getStatus() != Status.warning)) {
 					BLogger.logConditional("Skipping model '" + modelLabel + "' for merge (not available or failed)");
 					continue;
 				}
@@ -63,11 +65,18 @@ public class ModelMergeNode extends GraphNode {
 					modelToImport.getNetworkList().get(0).setId(modelLabel);
 					modelToImport.getNetworkList().get(0).setName(modelLabel);
 					merged.absorb(modelToImport.toJson());
+					mergedCount++;
 				}
 				catch (Exception ex) {
+					mergeFailedCount++;
 					BLogger.logConditional("Failed to merge model '" + modelLabel + "': " + ex.getMessage());
 					BLogger.logThrowableIfDebug(ex);
 				}
+			}
+
+			if (mergedCount == 0) {
+				failWith("All models failed to merge", null);
+				return;
 			}
 
 			byte[] bytes = merged.export(
@@ -80,7 +89,14 @@ public class ModelMergeNode extends GraphNode {
 			JSONObject result = new JSONObject();
 			result.put("path", outputPath.toAbsolutePath().toString());
 			setResult(result);
-			setStatus(Status.success);
+
+			if (mergeFailedCount > 0) {
+				setStatus(Status.warning);
+				setStatusMessage(mergeFailedCount + " of " + (mergedCount + mergeFailedCount) + " models failed to merge");
+			}
+			else {
+				setStatus(Status.success);
+			}
 		}
 		catch (Exception ex) {
 			failWith("Failed to merge models: " + ex.getMessage(), ex);

@@ -72,11 +72,11 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 				Database.reset();
 			});
 
-			// Build a modelPrefixes map of only successful model nodes (label → label)
+			// Build a modelPrefixes map of successful or warning model nodes (label → label)
 			Map<String, String> modelPrefixes = new LinkedHashMap<>();
 			for (String modelLabel : models) {
 				GraphNode parent = ctx.getNode(modelLabel);
-				if (parent instanceof ModelNode && parent.getStatus() == Status.success) {
+				if (parent instanceof ModelNode && (parent.getStatus() == Status.success || parent.getStatus() == Status.warning)) {
 					modelPrefixes.put(modelLabel, modelLabel);
 				}
 				else {
@@ -103,10 +103,14 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 
 			JSONArray results = new JSONArray();
 			boolean anySuccess = false;
+			boolean anyFailure = false;
 			for (PerformanceEvaluation pe : tmpResult.getPerformanceEvaluations()) {
 				results.put(pe.toJson());
 				if (pe.isSuccess()) {
 					anySuccess = true;
+				}
+				else {
+					anyFailure = true;
 				}
 			}
 
@@ -115,9 +119,15 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 
 			writeOutputFileIfRequested(ctx, results);
 			setResult(results);
-			setStatus(anySuccess ? Status.success : Status.failure);
-			if (!anySuccess) {
-				setStatusMessage("All model performance evaluations failed");
+			if (anySuccess && !anyFailure) {
+				setStatus(Status.success);
+			}
+			else if (anySuccess) {
+				setStatus(Status.warning);
+				setStatusMessage("Some model performance evaluations failed");
+			}
+			else {
+				failWith("All model performance evaluations failed", null);
 			}
 		}
 		catch (Exception ex) {

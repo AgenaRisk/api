@@ -14,9 +14,9 @@ public class GraphExecutor {
 
 	public static void execute(WorkflowGraph graph, GraphExecutionContext ctx) {
 		for (GraphNode node : graph.topologicalOrder()) {
-			if (shouldSkip(node, ctx)) {
-				node.setStatus(GraphNode.Status.skipped);
-				node.setStatusMessage("Skipped due to failed or skipped dependencies");
+			String inputError = checkInputs(node, ctx);
+			if (inputError != null) {
+				node.failWith(inputError, null);
 				continue;
 			}
 
@@ -28,38 +28,39 @@ public class GraphExecutor {
 		}
 	}
 
-	private static boolean shouldSkip(GraphNode node, GraphExecutionContext ctx) {
-		boolean hasModelInputs = false;
-		boolean allModelInputsFailed = true;
+	private static String checkInputs(GraphNode node, GraphExecutionContext ctx) {
+		boolean hasHardInputs = false;
+		boolean hasUsableHard = false;
+		boolean hasSoftInputs = false;
+		boolean hasUsableSoft = false;
 
 		for (String inputLabel : node.getInputLabels()) {
 			GraphNode input = ctx.getNode(inputLabel);
 			if (input == null) {
 				continue;
 			}
-
-			GraphNode.Status s = input.getStatus();
-
-			if (input instanceof DataSourceNode) {
-				if (s != GraphNode.Status.success) {
-					return true;
-				}
-			}
-			else if (input instanceof EvaluationNode) {
-				if (s != GraphNode.Status.success) {
-					return true;
+			boolean usable = input.getStatus() == GraphNode.Status.success || input.getStatus() == GraphNode.Status.warning;
+			if (input instanceof DataSourceNode || input instanceof EvaluationNode) {
+				hasHardInputs = true;
+				if (usable) {
+					hasUsableHard = true;
 				}
 			}
 			else {
-				// ModelNode or ModelMergeNode — at least one must succeed
-				hasModelInputs = true;
-				if (s == GraphNode.Status.success) {
-					allModelInputsFailed = false;
+				hasSoftInputs = true;
+				if (usable) {
+					hasUsableSoft = true;
 				}
 			}
 		}
 
-		return hasModelInputs && allModelInputsFailed;
+		if (hasHardInputs && !hasUsableHard) {
+			return "Required inputs (data/evaluation) are not available";
+		}
+		if (hasSoftInputs && !hasUsableSoft) {
+			return "All model inputs failed";
+		}
+		return null;
 	}
 
 	private static boolean tryLoadFromCache(GraphNode node, GraphExecutionContext ctx) {
