@@ -370,7 +370,7 @@ public class SensitivityAnalyser implements Progressable {
                 } catch (Exception ex) {
                     throw new PropagationException("Failed to snapshot model for parallel sensitivity analysis", ex);
                 }
-                int nSAThreads = uk.co.agena.minerva.model.corebn.CoreBNJunctionTree.resolveThreadCount();
+                int nSAThreads = uk.co.agena.minerva.util.Concurrency.resolveThreadCount();
                 java.util.concurrent.ExecutorService stateExec = java.util.concurrent.Executors.newFixedThreadPool(nSAThreads);
                 List<java.util.concurrent.Future<?>> stateFutures = new ArrayList<>();
 

@@ -220,7 +220,7 @@ public class MultivariateAnalyser implements Progressable {
                 throw new PropagationException("Failed to snapshot model for parallel multivariate analysis", ex);
             }
 
-            int nMAThreads = uk.co.agena.minerva.model.corebn.CoreBNJunctionTree.resolveThreadCount();
+            int nMAThreads = uk.co.agena.minerva.util.Concurrency.resolveThreadCount();
             java.util.concurrent.ExecutorService roundExec = java.util.concurrent.Executors.newFixedThreadPool(nMAThreads);
             List<java.util.concurrent.Future<RoundResult>> roundFutures = new ArrayList<>();
 
