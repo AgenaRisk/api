@@ -71,7 +71,7 @@ public class ModelGenerationNode extends ModelNode {
 			setStatus(Status.success);
 		}
 		catch (Exception ex) {
-			failWith("Failed to generate model: " + ex.getMessage(), ex);
+			failWith("Failed to generate model: " + friendlyMessage(ex), ex);
 		}
 	}
 

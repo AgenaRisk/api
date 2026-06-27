@@ -8,6 +8,7 @@ import com.agenarisk.api.model.Node;
 import com.agenarisk.api.model.ResultValue;
 import com.agenarisk.api.util.CsvReader;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import com.agenarisk.learning.structure.execution.graph.node.GraphNode;
 import com.agenarisk.learning.structure.result.PerformanceEvaluation;
 import com.agenarisk.learning.structure.logger.BLogger;
 import java.nio.file.Path;
@@ -75,10 +76,10 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 					DataSet dataCase = model.getDataSetList().get(0);
 					Network network = model.getNetworkList().get(0);
 					Node targetNode = network.getNode(originalConfigurer.getTarget());
-					List<String> targetNodeStates = targetNode.getStates().stream().map(s -> s.getLabel()).collect(Collectors.toList());
 					if (targetNode == null){
-						throw new StructureLearningException("No node with ID " + originalConfigurer.getTarget() + " in " + evaluation.getModelLabel());
+						throw new StructureLearningException("Target node '" + originalConfigurer.getTarget() + "' not found");
 					}
+					List<String> targetNodeStates = targetNode.getStates().stream().map(s -> s.getLabel()).collect(Collectors.toList());
 					
 					for (int rowIndex = 0; rowIndex < data.size(); rowIndex += 1){
 //						BLogger.logConditional("Loading data for case " + rowIndex);
@@ -194,10 +195,10 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 				}
 				catch (Exception ex){
 					evaluation.setSuccess(false);
-					String message = "Failed performance evaluation for " + evaluation.getLabel() + " ("+evaluation.getModelLabel()+"): " + ex.getMessage();
+					String message = "Model '" + evaluation.getModelLabel() + "': " + GraphNode.friendlyMessage(ex);
 					BLogger.logConditional(message);
 					if (!evaluation.getMessage().isEmpty()){
-						evaluation.setMessage(message + " e.g. " + evaluation.getMessage());
+						evaluation.setMessage(message + "; also: " + evaluation.getMessage());
 					}
 					else {
 						evaluation.setMessage(message);

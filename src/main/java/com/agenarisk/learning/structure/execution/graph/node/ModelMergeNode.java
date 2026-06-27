@@ -99,7 +99,7 @@ public class ModelMergeNode extends GraphNode {
 			}
 		}
 		catch (Exception ex) {
-			failWith("Failed to merge models: " + ex.getMessage(), ex);
+			failWith("Failed to merge models: " + friendlyMessage(ex), ex);
 		}
 	}
 

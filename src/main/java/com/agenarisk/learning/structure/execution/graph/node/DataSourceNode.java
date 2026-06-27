@@ -63,7 +63,7 @@ public class DataSourceNode extends GraphNode {
 			setStatus(Status.success);
 		}
 		catch (Exception ex) {
-			failWith("Failed to load data source: " + ex.getMessage(), ex);
+			failWith("Failed to load data source: " + friendlyMessage(ex), ex);
 		}
 	}
 

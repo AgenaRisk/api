@@ -129,7 +129,7 @@ public class ModelDiscoveryNode extends ModelNode {
 			setStatus(Status.success);
 		}
 		catch (Exception ex) {
-			failWith("Discovery failed: " + ex.getMessage(), ex);
+			failWith("Discovery failed: " + friendlyMessage(ex), ex);
 		}
 	}
 

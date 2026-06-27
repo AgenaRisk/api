@@ -106,7 +106,7 @@ public class ProbabilityLearningNode extends ModelNode {
 			setStatus(Status.success);
 		}
 		catch (Exception ex) {
-			failWith("Probability learning failed: " + ex.getMessage(), ex);
+			failWith("Probability learning failed: " + friendlyMessage(ex), ex);
 		}
 	}
 

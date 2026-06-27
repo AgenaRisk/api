@@ -131,7 +131,7 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 			}
 		}
 		catch (Exception ex) {
-			failWith("Performance evaluation failed: " + ex.getMessage(), ex);
+			failWith("Performance evaluation failed: " + friendlyMessage(ex), ex);
 		}
 	}
 

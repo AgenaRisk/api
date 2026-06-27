@@ -127,6 +127,17 @@ public abstract class GraphNode {
 		}
 	}
 
+	public static String friendlyMessage(Exception ex) {
+		if (ex instanceof StructureLearningException || ex instanceof IllegalArgumentException) {
+			return ex.getMessage();
+		}
+		String msg = ex.getMessage();
+		if (msg == null || msg.startsWith("Cannot invoke") || msg.startsWith("Cannot read field") || msg.startsWith("Cannot store")) {
+			return isDebugEnabled() ? msg : "Unexpected error (enable debug mode for details)";
+		}
+		return msg;
+	}
+
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
 		json.put("label", label);

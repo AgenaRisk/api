@@ -53,7 +53,7 @@ public class ModelImportNode extends ModelNode {
 			setStatus(Status.success);
 		}
 		catch (Exception ex) {
-			failWith("Failed to import model: " + ex.getMessage(), ex);
+			failWith("Failed to import model: " + friendlyMessage(ex), ex);
 		}
 	}
 

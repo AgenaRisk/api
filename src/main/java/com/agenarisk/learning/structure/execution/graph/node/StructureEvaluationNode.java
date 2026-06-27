@@ -110,7 +110,7 @@ public class StructureEvaluationNode extends EvaluationNode {
 				catch (Exception ex) {
 					anyFailure = true;
 					entry.put("success", false);
-					entry.put("message", ex.getMessage());
+					entry.put("message", friendlyMessage(ex));
 					BLogger.logConditional("Structure evaluation failed for '" + modelLabel + "': " + ex.getMessage());
 					BLogger.logThrowableIfDebug(ex);
 				}
@@ -134,7 +134,7 @@ public class StructureEvaluationNode extends EvaluationNode {
 			}
 		}
 		catch (Exception ex) {
-			failWith("Structure evaluation failed: " + ex.getMessage(), ex);
+			failWith("Structure evaluation failed: " + friendlyMessage(ex), ex);
 		}
 	}
 

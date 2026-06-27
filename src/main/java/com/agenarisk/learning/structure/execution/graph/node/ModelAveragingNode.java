@@ -141,7 +141,7 @@ public class ModelAveragingNode extends ModelNode {
 			}
 		}
 		catch (Exception ex) {
-			failWith("Averaging failed: " + ex.getMessage(), ex);
+			failWith("Averaging failed: " + friendlyMessage(ex), ex);
 		}
 	}
 
