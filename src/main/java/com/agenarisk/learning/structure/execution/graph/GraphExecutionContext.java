@@ -10,11 +10,20 @@ public class GraphExecutionContext {
 	private final Path outputDirPath;
 	private final Path configDir;
 	private final Map<String, GraphNode> nodesByLabel;
+	private boolean progressOutput = false;
 
 	public GraphExecutionContext(Path outputDirPath, Path configDir, Map<String, GraphNode> nodesByLabel) {
 		this.outputDirPath = outputDirPath;
 		this.configDir = configDir;
 		this.nodesByLabel = nodesByLabel;
+	}
+
+	public boolean isProgressOutput() {
+		return progressOutput;
+	}
+
+	public void setProgressOutput(boolean progressOutput) {
+		this.progressOutput = progressOutput;
 	}
 
 	public Path getOutputDirPath() {

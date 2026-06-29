@@ -127,6 +127,11 @@ public abstract class GraphNode {
 		}
 	}
 
+	public static void emitProgress(JSONObject event) {
+		System.out.println(new JSONObject().put("_progress", event));
+		System.out.flush();
+	}
+
 	public static String friendlyMessage(Exception ex) {
 		if (ex instanceof StructureLearningException || ex instanceof IllegalArgumentException) {
 			return ex.getMessage();

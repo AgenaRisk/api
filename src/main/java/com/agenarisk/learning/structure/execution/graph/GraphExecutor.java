@@ -9,6 +9,7 @@ import com.agenarisk.learning.structure.execution.graph.node.ModelNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GraphExecutor {
 
@@ -17,15 +18,43 @@ public class GraphExecutor {
 			String inputError = checkInputs(node, ctx);
 			if (inputError != null) {
 				node.failWith(inputError, null);
+				if (ctx.isProgressOutput()) {
+					emitNodeComplete(node, false);
+				}
 				continue;
 			}
 
+			if (ctx.isProgressOutput()) {
+				GraphNode.emitProgress(new JSONObject()
+					.put("type", "nodeStart")
+					.put("nodeLabel", node.getLabel()));
+			}
+
 			if (node.isUseCache() && tryLoadFromCache(node, ctx)) {
+				if (ctx.isProgressOutput()) {
+					emitNodeComplete(node, true);
+				}
 				continue;
 			}
 
 			node.execute(ctx);
+
+			if (ctx.isProgressOutput()) {
+				emitNodeComplete(node, false);
+			}
 		}
+	}
+
+	private static void emitNodeComplete(GraphNode node, boolean useCache) {
+		JSONObject event = new JSONObject()
+			.put("type", "nodeComplete")
+			.put("nodeLabel", node.getLabel())
+			.put("status", node.getStatus().name())
+			.put("useCache", useCache);
+		if (!node.getStatusMessage().isEmpty()) {
+			event.put("statusMessage", node.getStatusMessage());
+		}
+		GraphNode.emitProgress(event);
 	}
 
 	private static String checkInputs(GraphNode node, GraphExecutionContext ctx) {

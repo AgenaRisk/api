@@ -217,6 +217,7 @@ public class StructureLearner {
 		}
 
 		GraphExecutionContext ctx = new GraphExecutionContext(outputDirPath, configDir, graph.getNodesByLabel());
+		ctx.setProgressOutput(json.optBoolean("progressOutput", false));
 		GraphExecutor.execute(graph, ctx);
 
 		boolean printSummary = json.optBoolean("printSummary", false);
