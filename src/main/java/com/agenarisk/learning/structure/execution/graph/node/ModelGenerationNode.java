@@ -42,7 +42,7 @@ public class ModelGenerationNode extends ModelNode {
 	@Override
 	public void execute(GraphExecutionContext ctx) {
 		try {
-			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
+			DataSourceNode dsNode = requireDataSource(ctx, dataSource);
 			Path dataPath = dsNode.resolvedPath(ctx);
 			Path modelPath = getModelPath(ctx);
 

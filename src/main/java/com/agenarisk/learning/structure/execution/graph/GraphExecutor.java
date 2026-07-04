@@ -62,6 +62,8 @@ public class GraphExecutor {
 		boolean hasUsableHard = false;
 		boolean hasSoftInputs = false;
 		boolean hasUsableSoft = false;
+		java.util.List<String> failedHard = new java.util.ArrayList<>();
+		java.util.List<String> failedSoft = new java.util.ArrayList<>();
 
 		for (String inputLabel : node.getInputLabels()) {
 			GraphNode input = ctx.getNode(inputLabel);
@@ -74,20 +76,29 @@ public class GraphExecutor {
 				if (usable) {
 					hasUsableHard = true;
 				}
+				else {
+					failedHard.add(inputLabel);
+				}
 			}
 			else {
 				hasSoftInputs = true;
 				if (usable) {
 					hasUsableSoft = true;
 				}
+				else {
+					failedSoft.add(inputLabel);
+				}
 			}
 		}
 
 		if (hasHardInputs && !hasUsableHard) {
-			return "Required inputs (data/evaluation) are not available";
+			return "Cannot run '" + node.getLabel() + "': required input"
+					+ (failedHard.size() > 1 ? "s" : "") + " did not produce a result ("
+					+ String.join(", ", failedHard) + "). Fix the upstream node(s) and re-run.";
 		}
 		if (hasSoftInputs && !hasUsableSoft) {
-			return "All model inputs failed";
+			return "Cannot run '" + node.getLabel() + "': all connected model inputs failed ("
+					+ String.join(", ", failedSoft) + "). Fix the upstream node(s) and re-run.";
 		}
 		return null;
 	}

@@ -5,6 +5,7 @@ import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.config.Config;
 import com.agenarisk.learning.structure.config.PerformanceEvaluationConfigurer;
 import com.agenarisk.learning.structure.config.PerformanceEvaluationExecutor;
+import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
 import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.result.PerformanceEvaluation;
@@ -63,8 +64,12 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 	@SuppressWarnings("unchecked")
 	public void execute(GraphExecutionContext ctx) {
 		try {
-			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
+			DataSourceNode dsNode = requireDataSource(ctx, dataSource);
 			Path dataPath = dsNode.resolvedPath(ctx);
+			if (target == null || target.isEmpty()) {
+				throw new StructureLearningException(
+						"'" + getLabel() + "' has no target variable set. Choose the variable to evaluate predictions against in the node properties.");
+			}
 			Path outputDirPath = ctx.getOutputDirPath();
 
 			Config config = Config.reset((c) -> {

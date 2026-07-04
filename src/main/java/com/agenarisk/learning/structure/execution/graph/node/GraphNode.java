@@ -127,6 +127,69 @@ public abstract class GraphNode {
 		}
 	}
 
+	/**
+	 * Resolve a linked data source, failing with a clear, actionable message
+	 * rather than a NullPointerException when the input is missing, unknown, or
+	 * of the wrong type. Intended to be called at the top of {@link #execute}.
+	 */
+	protected DataSourceNode requireDataSource(GraphExecutionContext ctx, String label) {
+		if (label == null || label.isEmpty()) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' has no data source connected. Link a data source (CSV) node to its input.");
+		}
+		GraphNode input = ctx.getNode(label);
+		if (input == null) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' references data source '" + label + "', which does not exist in the workflow.");
+		}
+		if (!(input instanceof DataSourceNode)) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' expects a data source input, but '" + label + "' is a " + input.getSubType() + " node.");
+		}
+		return (DataSourceNode) input;
+	}
+
+	/**
+	 * Validate that a linked model input is present, known and of model type.
+	 * The model artefact itself is loaded by the caller from the output dir.
+	 */
+	protected void requireModelInput(GraphExecutionContext ctx, String label) {
+		if (label == null || label.isEmpty()) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' has no model connected. Link a model-producing node to its input.");
+		}
+		GraphNode input = ctx.getNode(label);
+		if (input == null) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' references model '" + label + "', which does not exist in the workflow.");
+		}
+		if (!(input instanceof ModelNode)) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' expects a model input, but '" + label + "' is a " + input.getSubType() + " node.");
+		}
+	}
+
+	/**
+	 * Resolve a linked evaluation input, failing with a clear message rather
+	 * than a NullPointerException when it is missing or of the wrong type.
+	 */
+	protected EvaluationNode requireEvaluation(GraphExecutionContext ctx, String label) {
+		if (label == null || label.isEmpty()) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' has no evaluation connected. Link an evaluation node to its input.");
+		}
+		GraphNode input = ctx.getNode(label);
+		if (input == null) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' references evaluation '" + label + "', which does not exist in the workflow.");
+		}
+		if (!(input instanceof EvaluationNode)) {
+			throw new StructureLearningException(
+					"'" + getLabel() + "' expects an evaluation input, but '" + label + "' is a " + input.getSubType() + " node.");
+		}
+		return (EvaluationNode) input;
+	}
+
 	public static void emitProgress(JSONObject event) {
 		System.out.println(new JSONObject().put("_progress", event));
 		System.out.flush();

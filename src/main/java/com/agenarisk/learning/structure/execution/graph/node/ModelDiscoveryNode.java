@@ -56,7 +56,7 @@ public class ModelDiscoveryNode extends ModelNode {
 	@SuppressWarnings("unchecked")
 	public void execute(GraphExecutionContext ctx) {
 		try {
-			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
+			DataSourceNode dsNode = requireDataSource(ctx, dataSource);
 			Path dataPath = dsNode.resolvedPath(ctx);
 			Path dataDir = dataPath.getParent();
 			Path outputDirPath = ctx.getOutputDirPath();

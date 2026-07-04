@@ -7,6 +7,7 @@ import com.agenarisk.api.util.CsvWriter;
 import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.config.AveragingConfigurer;
 import com.agenarisk.learning.structure.config.Config;
+import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
 import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.utility.CmpxStructureExtractor;
@@ -116,14 +117,16 @@ public class ModelAveragingNode extends ModelNode {
 
 			Model model = ModelFromCsvCreator.create(CsvReader.readCsv(csvOutput), getLabel(), getLabel());
 
-			if (statesFromData && dataSource != null && !dataSource.isEmpty()) {
-				GraphNode dsNode = ctx.getNode(dataSource);
-				if (dsNode instanceof DataSourceNode && dsNode.getStatus() == Status.success) {
-					NodeStatesFromDataPopulator.populate(
-									model.getNetworkList().get(0),
-									((DataSourceNode) dsNode).resolvedPath(ctx)
-					);
+			if (statesFromData) {
+				DataSourceNode dsNode = requireDataSource(ctx, dataSource);
+				if (dsNode.getStatus() != Status.success && dsNode.getStatus() != Status.warning) {
+					throw new StructureLearningException(
+							"'" + getLabel() + "' has “states from data” enabled, but its data source '" + dataSource + "' did not run successfully.");
 				}
+				NodeStatesFromDataPopulator.populate(
+								model.getNetworkList().get(0),
+								dsNode.resolvedPath(ctx)
+				);
 			}
 
 			Path modelPath = getModelPath(ctx);

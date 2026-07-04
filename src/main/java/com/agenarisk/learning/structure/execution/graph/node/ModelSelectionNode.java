@@ -54,7 +54,7 @@ public class ModelSelectionNode extends ModelNode {
 				throw new StructureLearningException("metric is required for model selection");
 			}
 
-			EvaluationNode evalNode = (EvaluationNode) ctx.getNode(evaluation);
+			EvaluationNode evalNode = requireEvaluation(ctx, evaluation);
 			Path evalJsonPath = evalNode.getEvalPath(ctx);
 
 			if (!Files.exists(evalJsonPath)) {

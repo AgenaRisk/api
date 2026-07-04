@@ -56,9 +56,10 @@ public class ProbabilityLearningNode extends ModelNode {
 	@SuppressWarnings("unchecked")
 	public void execute(GraphExecutionContext ctx) {
 		try {
-			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
+			DataSourceNode dsNode = requireDataSource(ctx, dataSource);
 			Path dataPath = dsNode.resolvedPath(ctx);
 
+			requireModelInput(ctx, model);
 			Path inputModelPath = ctx.modelPath(model);
 			Path outputModelPath = getModelPath(ctx);
 

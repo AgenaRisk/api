@@ -57,7 +57,7 @@ public class StructureEvaluationNode extends EvaluationNode {
 	@SuppressWarnings("unchecked")
 	public void execute(GraphExecutionContext ctx) {
 		try {
-			DataSourceNode dsNode = (DataSourceNode) ctx.getNode(dataSource);
+			DataSourceNode dsNode = requireDataSource(ctx, dataSource);
 			Path dataPath = dsNode.resolvedPath(ctx);
 			Path outputDirPath = ctx.getOutputDirPath();
 
