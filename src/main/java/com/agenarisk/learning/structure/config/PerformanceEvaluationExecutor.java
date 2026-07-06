@@ -59,7 +59,8 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 				throw new StructureLearningException("Validation data file does not contain case data");
 			}
 			List<String> dataHeaders = data.get(0);
-			data = data.subList(1, data.size()-1);
+			// Drop only the header row; subList's end index is exclusive, so use
+			data = data.subList(1, data.size());
 			
 			for (String modelFilePrefix: originalConfigurer.getModelPrefixes().keySet()){
 				PerformanceEvaluation evaluation = new PerformanceEvaluation();
@@ -85,6 +86,9 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 //						BLogger.logConditional("Loading data for case " + rowIndex);
 						List<String> row = data.get(rowIndex);
 						try {
+							// Reset evidence from the previous case so a cell that fails
+							// to enter cannot leave a stale observation on this row.
+							dataCase.clearObservations();
 							String actualValue = "";
 							for (int observationIndex = 0; observationIndex < row.size(); observationIndex += 1){
 								String nodeId = dataHeaders.get(observationIndex);
