@@ -5,8 +5,11 @@ import com.agenarisk.learning.structure.result.Result;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -17,6 +20,8 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 	
 	private Path dataPath;
 	private String target = "";
+	private final List<String> targets = new ArrayList<>();
+	private int maxRows = 0; // 0 = use all rows; otherwise subsample to this many
 	private boolean calculateRoc = false;
 	private String valueSeparator = ",";
 	
@@ -49,6 +54,17 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 		
 		valueSeparator = jParameters.optString("valueSeparator", valueSeparator);
 		target = jParameters.optString("target", "").trim();
+		targets.clear();
+		JSONArray jTargets = jParameters.optJSONArray("targets");
+		if (jTargets != null) {
+			for (int i = 0; i < jTargets.length(); i++) {
+				String t = jTargets.optString(i, "").trim();
+				if (!t.isEmpty() && !targets.contains(t)) {
+					targets.add(t);
+				}
+			}
+		}
+		maxRows = Math.max(0, jParameters.optInt("maxRows", 0));
 		calculateRoc = jParameters.optBoolean("calculateRoc", false);
 		return this;
 	}
@@ -59,10 +75,10 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 			throw new StructureLearningException("PerformanceEvaluationConfigurer is not fully configured before applying");
 		}
 		
-		if (target == null || target.trim().isEmpty()){
-			throw new StructureLearningException("Target node not specified");
+		if (getTargets().isEmpty()){
+			throw new StructureLearningException("No target node specified for performance evaluation");
 		}
-		
+
 		PerformanceEvaluationExecutor executor = new PerformanceEvaluationExecutor(config);
 		executor.setOriginalConfigurer(this);
 		return executor;
@@ -114,6 +130,25 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 
 	public String getTarget() {
 		return target;
+	}
+
+	/**
+	 * Resolved list of target nodes: the explicit {@code targets} list if
+	 * provided, otherwise the single {@code target} (back-compat), otherwise empty.
+	 */
+	public List<String> getTargets() {
+		if (!targets.isEmpty()) {
+			return targets;
+		}
+		List<String> single = new ArrayList<>();
+		if (target != null && !target.trim().isEmpty()) {
+			single.add(target.trim());
+		}
+		return single;
+	}
+
+	public int getMaxRows() {
+		return maxRows;
 	}
 
 	public boolean isCalculateRoc() {

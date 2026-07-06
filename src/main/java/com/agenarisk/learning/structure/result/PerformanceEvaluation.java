@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure.result;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,9 @@ public class PerformanceEvaluation {
     private boolean success = false;
     private String message = "";
     private String modelLabel = "";
+    private String target = ""; // the target node this result is for (per-target results)
+    // Per-target breakdown (populated on the model-level aggregate result only).
+    private final List<PerformanceEvaluation> targetResults = new ArrayList<>();
     
 	private double brierScore = 1;
 	private double absoluteError = 1;
@@ -57,6 +61,18 @@ public class PerformanceEvaluation {
 
     public void setModelLabel(String modelLabel) {
         this.modelLabel = modelLabel;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target != null ? target : "";
+    }
+
+    public List<PerformanceEvaluation> getTargetResults() {
+        return targetResults;
     }
 
     public double getBrierScore() {
@@ -135,6 +151,9 @@ public class PerformanceEvaluation {
         json.put("success", success);
         json.put("message", message);
         json.put("modelLabel", modelLabel);
+        if (!target.isEmpty()) {
+            json.put("target", target);
+        }
         json.put("absoluteError", absoluteError);
 		json.put("brierScore", brierScore);
         json.put("sphericalScore", sphericalScore);
@@ -166,6 +185,14 @@ public class PerformanceEvaluation {
 				rocPointsJson.put(entry.getKey(), pointsArray);
 			}
 			json.put("rocPoints", rocPointsJson);
+		}
+
+		if (!targetResults.isEmpty()){
+			JSONArray targetsArray = new JSONArray();
+			for (PerformanceEvaluation te : targetResults) {
+				targetsArray.put(te.toJson());
+			}
+			json.put("targets", targetsArray);
 		}
 
 		return json;

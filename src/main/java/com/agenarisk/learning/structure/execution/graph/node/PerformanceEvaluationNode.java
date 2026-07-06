@@ -28,6 +28,8 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 	private List<String> models = new ArrayList<>();
 	private String dataSource;
 	private String target = "";
+	private final List<String> targets = new ArrayList<>();
+	private int maxRows = 0;
 	private boolean calculateRoc = false;
 	private String valueSeparator = ",";
 
@@ -46,6 +48,17 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 		}
 		dataSource = jOptions.optString("dataSource", "");
 		target = jOptions.optString("target", "");
+		targets.clear();
+		JSONArray jTargets = jOptions.optJSONArray("targets");
+		if (jTargets != null) {
+			for (int i = 0; i < jTargets.length(); i++) {
+				String t = jTargets.optString(i, "").trim();
+				if (!t.isEmpty() && !targets.contains(t)) {
+					targets.add(t);
+				}
+			}
+		}
+		maxRows = Math.max(0, jOptions.optInt("maxRows", 0));
 		calculateRoc = jOptions.optBoolean("calculateRoc", false);
 		valueSeparator = jOptions.optString("valueSeparator", ",");
 		parseOutputFileOptions(jOptions);
@@ -66,9 +79,9 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 		try {
 			DataSourceNode dsNode = requireDataSource(ctx, dataSource);
 			Path dataPath = dsNode.resolvedPath(ctx);
-			if (target == null || target.isEmpty()) {
+			if (targets.isEmpty() && (target == null || target.isEmpty())) {
 				throw new StructureLearningException(
-						"'" + getLabel() + "' has no target variable set. Choose the variable to evaluate predictions against in the node properties.");
+						"'" + getLabel() + "' has no target variable set. Choose one or more variables to evaluate predictions against in the node properties.");
 			}
 			Path outputDirPath = ctx.getOutputDirPath();
 
@@ -95,6 +108,8 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 			JSONObject jParams = new JSONObject();
 			jParams.put("dataPath", dataPath.toString());
 			jParams.put("target", target);
+			jParams.put("targets", new JSONArray(targets));
+			jParams.put("maxRows", maxRows);
 			jParams.put("calculateRoc", calculateRoc);
 			jParams.put("valueSeparator", valueSeparator);
 			configurer.configureFromJson(new JSONObject().put("parameters", jParams));
