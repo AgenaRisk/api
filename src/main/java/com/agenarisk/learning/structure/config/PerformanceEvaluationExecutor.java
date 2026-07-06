@@ -91,18 +91,18 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 					DataSet dataCase = model.getDataSetList().get(0);
 					Network network = model.getNetworkList().get(0);
 
-					List<PerformanceEvaluation> ok = new ArrayList<>();
+					List<PerformanceEvaluation> successfulPerfEvaluations = new ArrayList<>();
 					for (String targetId : targets){
 						PerformanceEvaluation te = evaluateOneTarget(model, network, dataCase, data, dataHeaders, targetId);
 						te.setLabel(originalConfigurer.getStageLabel());
 						te.setModelLabel(evaluation.getModelLabel());
 						evaluation.getTargetResults().add(te);
 						if (te.isSuccess()){
-							ok.add(te);
+							successfulPerfEvaluations.add(te);
 						}
 					}
 
-					if (ok.isEmpty()){
+					if (successfulPerfEvaluations.isEmpty()){
 						evaluation.setSuccess(false);
 						String firstMsg = evaluation.getTargetResults().stream()
 								.map(PerformanceEvaluation::getMessage)
@@ -114,25 +114,33 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 						// Macro aggregate: mean of per-target means, per metric (each
 						// metric only ever averages with itself, so directions are kept).
 						evaluation.setSuccess(true);
-						evaluation.setAbsoluteError(mean(ok, PerformanceEvaluation::getAbsoluteError));
-						evaluation.setBrierScore(mean(ok, PerformanceEvaluation::getBrierScore));
-						evaluation.setSphericalScore(mean(ok, PerformanceEvaluation::getSphericalScore));
+						evaluation.setAbsoluteError(mean(successfulPerfEvaluations, PerformanceEvaluation::getAbsoluteError));
+						evaluation.setBrierScore(mean(successfulPerfEvaluations, PerformanceEvaluation::getBrierScore));
+						evaluation.setSphericalScore(mean(successfulPerfEvaluations, PerformanceEvaluation::getSphericalScore));
 
-						OptionalDouble macro = ok.stream()
+						OptionalDouble macro = successfulPerfEvaluations.stream()
 								.map(PerformanceEvaluation::getMacroAuc).filter(Objects::nonNull)
 								.mapToDouble(Double::doubleValue).average();
 						if (macro.isPresent()){
 							evaluation.setMacroAuc(macro.getAsDouble());
 						}
-						OptionalDouble micro = ok.stream()
+						OptionalDouble micro = successfulPerfEvaluations.stream()
 								.map(PerformanceEvaluation::getMicroAuc).filter(Objects::nonNull)
 								.mapToDouble(Double::doubleValue).average();
 						if (micro.isPresent()){
 							evaluation.setMicroAuc(micro.getAsDouble());
 						}
 
-						if (ok.size() < targets.size()){
-							evaluation.setMessage((targets.size() - ok.size()) + " of " + targets.size()
+						// For a single target, surface its ROC curves/AUCs on the
+						// model-level result too, so the existing ROC viewer still works.
+						// (For multiple targets they remain under each per-target result.)
+						if (successfulPerfEvaluations.size() == 1){
+							successfulPerfEvaluations.get(0).getRocAucs().forEach(evaluation::addRocAuc);
+							successfulPerfEvaluations.get(0).getRocPoints().forEach(evaluation::addRocCurve);
+						}
+
+						if (successfulPerfEvaluations.size() < targets.size()){
+							evaluation.setMessage((targets.size() - successfulPerfEvaluations.size()) + " of " + targets.size()
 									+ " targets failed to evaluate");
 						}
 					}
