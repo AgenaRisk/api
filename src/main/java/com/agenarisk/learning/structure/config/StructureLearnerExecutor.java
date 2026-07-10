@@ -90,7 +90,18 @@ public class StructureLearnerExecutor extends Configurer<StructureLearnerExecuto
 			structureLearning.initialiseProcess(true, false, config.getGenerateModelAgenarisk() || config.getGenerateModelGenie(), false);
 		}
 		catch (Exception ex){
-			throw new StructureLearningException("Structure learning failed", ex);
+			// Keep the underlying cause's message (e.g. "Trying to link node to
+			// itself") instead of always showing the generic wrapper text below -
+			// otherwise every discovery failure looks identical regardless of its
+			// actual reason. Still hide raw JVM-internal messages (NPE dereference
+			// text etc.), which aren't actionable for a user.
+			String detail = ex.getMessage();
+			boolean detailIsUseful = detail != null && !detail.isEmpty()
+					&& !detail.startsWith("Cannot invoke")
+					&& !detail.startsWith("Cannot read field")
+					&& !detail.startsWith("Cannot store");
+			String message = detailIsUseful ? "Structure learning failed: " + detail : "Structure learning failed";
+			throw new StructureLearningException(message, ex);
 		}
 	}
 
