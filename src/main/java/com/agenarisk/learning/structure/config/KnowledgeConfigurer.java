@@ -12,8 +12,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import uk.co.agena.minerva.util.io.MinervaProperties;
@@ -179,6 +183,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 		}
 		
 		JSONObject jKnowledge = jConfig.getJSONObject("knowledge");
+		logConstraintContradictions(jKnowledge);
 		setCustomKnowledgeEnabled(true);
 		setAllVariablesRelevant(jKnowledge.optBoolean("variablesAreRelevant", false));
 		setConstraintsTargetPenaltyReductionRate(jKnowledge.optInt("dimensionalityReductionRate", 2));
@@ -298,7 +303,131 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 		
 		return this;
 	}
-	
+
+	/**
+	 * Logs a warning for every pair of knowledge constraints that contradict
+	 * each other. None of these are rejected/blocked here - each one just
+	 * behaves per the actual precedence in the search algorithms (directed and
+	 * undirected connections are force-seeded into the initial graph and
+	 * always win; forbidden and temporal-tier ordering only ever restrict
+	 * which NEW edges the search may propose, so they have no effect on an
+	 * edge that's already been force-seeded). Surfacing that precedence here
+	 * means a contradiction is at least visible in the log, rather than
+	 * silently doing something different from what was asked for both
+	 * constraints.
+	 */
+	private void logConstraintContradictions(JSONObject jKnowledge) {
+		List<String[]> directedPairs = readPairs(jKnowledge, "connectionsDirected");
+		List<String[]> undirectedPairs = readPairs(jKnowledge, "connectionsUndirected");
+		List<String[]> forbiddenPairs = readPairs(jKnowledge, "connectionsForbidden");
+
+		Set<String> directedKeys = new HashSet<>();
+		for (String[] pair : directedPairs) {
+			directedKeys.add(pairKey(pair[0], pair[1]));
+		}
+		Set<String> forbiddenKeys = new HashSet<>();
+		for (String[] pair : forbiddenPairs) {
+			forbiddenKeys.add(pairKey(pair[0], pair[1]));
+		}
+
+		Map<String, Integer> tierOf = new HashMap<>();
+		if (jKnowledge.has("connectionsTemporal")) {
+			JSONArray jTiers = jKnowledge.getJSONArray("connectionsTemporal");
+			for (int t = 0; t < jTiers.length(); t++) {
+				JSONArray jTier = jTiers.getJSONArray(t);
+				for (int v = 0; v < jTier.length(); v++) {
+					tierOf.put(jTier.getString(v), t);
+				}
+			}
+		}
+		boolean prohibitSameTier = jKnowledge.optBoolean("prohibitConnectionsSameTemporalTier", false);
+
+		// Directed vs undirected on the same pair.
+		for (String[] pair : undirectedPairs) {
+			if (directedKeys.contains(pairKey(pair[0], pair[1]))) {
+				BLogger.out.println("WARNING: Directed and undirected constraints both specify a connection between \""
+						+ pair[0] + "\" and \"" + pair[1] + "\" - the directed constraint takes precedence "
+						+ "(force-seeded first), the undirected constraint has no additional effect for this pair.");
+			}
+		}
+
+		// Directed/undirected vs forbidden on the same pair.
+		for (String[] pair : directedPairs) {
+			if (forbiddenKeys.contains(pairKey(pair[0], pair[1]))) {
+				BLogger.out.println("WARNING: \"" + pair[0] + "\" -> \"" + pair[1] + "\" is both a directed connection "
+						+ "and a forbidden connection - the directed constraint takes precedence and this edge will be "
+						+ "created despite being marked forbidden.");
+			}
+		}
+		for (String[] pair : undirectedPairs) {
+			if (forbiddenKeys.contains(pairKey(pair[0], pair[1]))) {
+				BLogger.out.println("WARNING: \"" + pair[0] + "\" - \"" + pair[1] + "\" is both an undirected connection "
+						+ "and a forbidden connection - the undirected constraint takes precedence and an edge will be "
+						+ "created despite being marked forbidden.");
+			}
+		}
+
+		// Directed vs temporal tier ordering.
+		for (String[] pair : directedPairs) {
+			Integer parentTier = tierOf.get(pair[0]);
+			Integer childTier = tierOf.get(pair[1]);
+			if (parentTier == null || childTier == null) {
+				continue;
+			}
+			if (childTier < parentTier) {
+				BLogger.out.println("WARNING: Directed constraint \"" + pair[0] + "\" -> \"" + pair[1] + "\" contradicts "
+						+ "temporal tier ordering (the parent is in a later tier than the child) - the directed edge "
+						+ "will be created anyway, ignoring temporal order for this pair.");
+			}
+			else if (childTier.equals(parentTier) && prohibitSameTier) {
+				BLogger.out.println("WARNING: Directed constraint \"" + pair[0] + "\" -> \"" + pair[1] + "\" connects two "
+						+ "variables in the same temporal tier, which \"prohibitConnectionsSameTemporalTier\" prohibits "
+						+ "- the directed edge will be created anyway.");
+			}
+		}
+
+		// Undirected vs temporal tier ordering. Direction is chosen by a coin
+		// flip with no temporal awareness at all (see HC*/TABU/MAHC/GES
+		// initialiseVariablesANDconstraints), so any pair spanning two tiers
+		// risks ending up oriented the wrong way regardless of which pair is
+		// "parent"/"child" here.
+		for (String[] pair : undirectedPairs) {
+			Integer tierA = tierOf.get(pair[0]);
+			Integer tierB = tierOf.get(pair[1]);
+			if (tierA == null || tierB == null) {
+				continue;
+			}
+			if (!tierA.equals(tierB)) {
+				BLogger.out.println("WARNING: Undirected constraint \"" + pair[0] + "\" - \"" + pair[1] + "\" spans two "
+						+ "different temporal tiers - its direction is chosen at random with no regard to temporal "
+						+ "order, so it may end up violating the tier ordering.");
+			}
+			else if (prohibitSameTier) {
+				BLogger.out.println("WARNING: Undirected constraint \"" + pair[0] + "\" - \"" + pair[1] + "\" connects "
+						+ "two variables in the same temporal tier, which \"prohibitConnectionsSameTemporalTier\" "
+						+ "prohibits - an edge will be created anyway.");
+			}
+		}
+	}
+
+	private List<String[]> readPairs(JSONObject jKnowledge, String key) {
+		List<String[]> pairs = new ArrayList<>();
+		if (!jKnowledge.has(key)) {
+			return pairs;
+		}
+		JSONArray jArray = jKnowledge.getJSONArray(key);
+		for (int i = 0; i < jArray.length(); i++) {
+			JSONArray jRow = jArray.getJSONArray(i);
+			pairs.add(new String[]{jRow.getString(0), jRow.getString(1)});
+		}
+		return pairs;
+	}
+
+	/** Order-independent key for "is this the same pair, regardless of direction". */
+	private static String pairKey(String a, String b) {
+		return a.compareTo(b) <= 0 ? a + " " + b : b + " " + a;
+	}
+
 	private void registerTempFileConditional(File file){
 		TempFileCleanup.registerTempFile(file, config);
 		if (!Boolean.parseBoolean(MinervaProperties.getProperty("com.agenarisk.learning.structure.deleteTransientFiles", "true"))){
