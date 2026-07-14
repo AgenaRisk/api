@@ -422,6 +422,19 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 			}
 		}
 
+		// Undirected-forbidden vs directed-forbidden on the same pair - redundant,
+		// not contradictory: the undirected-forbidden constraint already blocks
+		// both directions, so the directed-forbidden one adds nothing regardless
+		// of which way it points.
+		for (String[] pair : forbiddenPairs) {
+			if (forbiddenDirectedOrderedKeys.contains(orderedPairKey(pair[0], pair[1]))
+					|| forbiddenDirectedOrderedKeys.contains(orderedPairKey(pair[1], pair[0]))) {
+				BLogger.out.println("WARNING: \"" + pair[0] + "\" - \"" + pair[1] + "\" is both an undirected-forbidden "
+						+ "connection and a directed-forbidden connection - the undirected-forbidden constraint already "
+						+ "blocks both directions, so the directed-forbidden one has no additional effect.");
+			}
+		}
+
 		// Directed vs temporal tier ordering.
 		for (String[] pair : directedPairs) {
 			Integer parentTier = tierOf.get(pair[0]);
