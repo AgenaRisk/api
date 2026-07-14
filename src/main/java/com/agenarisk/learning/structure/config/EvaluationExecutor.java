@@ -46,6 +46,7 @@ public class EvaluationExecutor extends Configurer<EvaluationExecutor> implement
 		Database.directedDataFilepath = config.getPathInput().resolve("constraintsDirected.csv");
 		Database.undirectedDataFilepath = config.getPathInput().resolve("constraintsUndirected.csv");
 		Database.independenceDataFilepath = config.getPathInput().resolve("constraintsForbidden.csv");
+		Database.forbiddenDirectedDataFilepath = config.getPathInput().resolve("constraintsForbiddenDirected.csv");
 		Database.graphDataFilepath = config.getPathInput().resolve("constraintsGraph.csv");
 		Database.targetDataFilepath = config.getPathInput().resolve("constraintsTarget.csv");
 		Database.bdnDataFilepath = config.getPathInput().resolve("constraintsBDN.csv");

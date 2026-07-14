@@ -84,6 +84,16 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
         return this;
     }
 
+    // Getter and Setter for Directed Forbidden Constraints (forbids Parent -> Child only, unlike the plain/undirected Forbidden Constraints above)
+    public Boolean isConstraintsForbiddenDirectedEnabled() {
+        return config.getConstraintsForbiddenDirectedEnabled();
+    }
+
+    public KnowledgeConfigurer<T> setConstraintsForbiddenDirectedEnabled(Boolean constraintsForbiddenDirectedEnabled) {
+        config.setConstraintsForbiddenDirectedEnabled(constraintsForbiddenDirectedEnabled);
+        return this;
+    }
+
     // Getter and Setter for Temporal Constraints
     public Boolean isConstraintsTemporalEnabled() {
         return config.getConstraintsTemporalEnabled();
@@ -258,7 +268,21 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				registerTempFileConditional(filePath.toFile());
 				config.setConstraintsForbiddenEnabled(true);
 			}
-			
+
+			if (jKnowledge.has("connectionsForbiddenDirected")){
+				ArrayList<List<Object>> lines = new ArrayList<>();
+				lines.add(Arrays.asList("ID", "Parent", "Child"));
+				JSONArray jArray = jKnowledge.getJSONArray("connectionsForbiddenDirected");
+				for(int i = 0; i < jArray.length(); i+=1){
+					JSONArray jRow = jArray.getJSONArray(i);
+					lines.add(Arrays.asList(String.valueOf(i+1), jRow.getString(0), jRow.getString(1)));
+				}
+				Path filePath = config.getPathInput().resolve(Config.FILE_CONSTRAINTS_FORBIDDEN_DIRECTED);
+				CsvWriter.writeCsv(lines, filePath);
+				registerTempFileConditional(filePath.toFile());
+				config.setConstraintsForbiddenDirectedEnabled(true);
+			}
+
 			if (jKnowledge.has("connectionsTemporal")){
 				ArrayList<List<String>> lines = new ArrayList<>();
 				JSONArray jTiers = jKnowledge.getJSONArray("connectionsTemporal");
@@ -320,6 +344,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 		List<String[]> directedPairs = readPairs(jKnowledge, "connectionsDirected");
 		List<String[]> undirectedPairs = readPairs(jKnowledge, "connectionsUndirected");
 		List<String[]> forbiddenPairs = readPairs(jKnowledge, "connectionsForbidden");
+		List<String[]> forbiddenDirectedPairs = readPairs(jKnowledge, "connectionsForbiddenDirected");
 
 		Set<String> directedKeys = new HashSet<>();
 		for (String[] pair : directedPairs) {
@@ -328,6 +353,13 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 		Set<String> forbiddenKeys = new HashSet<>();
 		for (String[] pair : forbiddenPairs) {
 			forbiddenKeys.add(pairKey(pair[0], pair[1]));
+		}
+		// Ordered (direction-sensitive) key, unlike pairKey above - a directed-
+		// forbidden constraint only blocks one specific direction, so whether it
+		// contradicts another constraint depends on which way that one points too.
+		Set<String> forbiddenDirectedOrderedKeys = new HashSet<>();
+		for (String[] pair : forbiddenDirectedPairs) {
+			forbiddenDirectedOrderedKeys.add(orderedPairKey(pair[0], pair[1]));
 		}
 
 		Map<String, Integer> tierOf = new HashMap<>();
@@ -364,6 +396,29 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				BLogger.out.println("WARNING: \"" + pair[0] + "\" - \"" + pair[1] + "\" is both an undirected connection "
 						+ "and a forbidden connection - the undirected constraint takes precedence and an edge will be "
 						+ "created despite being marked forbidden.");
+			}
+		}
+
+		// Directed vs directed-forbidden on the exact same direction (a reversed
+		// directed constraint does NOT contradict, since directed-forbidden only
+		// blocks the one direction it names).
+		for (String[] pair : directedPairs) {
+			if (forbiddenDirectedOrderedKeys.contains(orderedPairKey(pair[0], pair[1]))) {
+				BLogger.out.println("WARNING: \"" + pair[0] + "\" -> \"" + pair[1] + "\" is both a directed connection "
+						+ "and a directed-forbidden connection in the same direction - the directed constraint takes "
+						+ "precedence and this edge will be created despite being marked forbidden.");
+			}
+		}
+
+		// Undirected vs directed-forbidden - contradicts regardless of which way
+		// the directed-forbidden pair points, since undirected can seed either
+		// orientation.
+		for (String[] pair : undirectedPairs) {
+			if (forbiddenDirectedOrderedKeys.contains(orderedPairKey(pair[0], pair[1]))
+					|| forbiddenDirectedOrderedKeys.contains(orderedPairKey(pair[1], pair[0]))) {
+				BLogger.out.println("WARNING: \"" + pair[0] + "\" - \"" + pair[1] + "\" is both an undirected connection "
+						+ "and a directed-forbidden connection - the undirected constraint takes precedence and an edge "
+						+ "may be created in the forbidden direction.");
 			}
 		}
 
@@ -425,7 +480,12 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 
 	/** Order-independent key for "is this the same pair, regardless of direction". */
 	private static String pairKey(String a, String b) {
-		return a.compareTo(b) <= 0 ? a + " " + b : b + " " + a;
+		return a.compareTo(b) <= 0 ? a + " " + b : b + " " + a;
+	}
+
+	/** Order-sensitive key for "is this the same directed edge, in this specific direction". */
+	private static String orderedPairKey(String from, String to) {
+		return from + " -> " + to;
 	}
 
 	private void registerTempFileConditional(File file){
