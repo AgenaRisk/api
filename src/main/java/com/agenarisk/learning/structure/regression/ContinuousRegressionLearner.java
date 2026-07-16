@@ -382,13 +382,21 @@ public class ContinuousRegressionLearner {
 		return new double[]{lower, upper};
 	}
 
+	/**
+	 * Floors the residual variance so a formatted expression can never end up with a literal zero (or
+	 * effectively-zero, after formatNumber's 10-decimal rounding) variance, which the engine's Normal/TNormal
+	 * reject outright. A perfectly-fit or perfectly-constant target doesn't actually yield exactly 0.0 here -
+	 * floating-point summation over many rows of "identical" values leaves tiny noise (e.g. 1e-25), which is
+	 * technically {@code > 0} but rounds away to nothing once formatted, so the floor must be applied by
+	 * magnitude (via {@code Math.max}), not gated behind a raw positivity check.
+	 */
 	private double effectiveVariance(double residualVariance, double[] yForVarianceFloor) {
-		if (!Double.isNaN(residualVariance) && residualVariance > 0){
-			return residualVariance;
-		}
 		double dataVariance = (yForVarianceFloor != null) ? variance(yForVarianceFloor) : 0;
 		double floor = Math.max(dataVariance * 1e-6, 1e-9);
-		return floor;
+		if (Double.isNaN(residualVariance)){
+			return floor;
+		}
+		return Math.max(residualVariance, floor);
 	}
 
 	private double variance(double[] values) {

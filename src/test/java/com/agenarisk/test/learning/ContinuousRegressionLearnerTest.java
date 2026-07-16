@@ -289,6 +289,55 @@ public class ContinuousRegressionLearnerTest {
 		Assertions.assertEquals(32.0, mean, 0.5);
 	}
 
+	private static final String MODEL_ROOT_ONLY = "{"
+			+ "\"model\": {"
+			+ "  \"networks\": [{"
+			+ "    \"id\": \"net\","
+			+ "    \"nodes\": [{"
+			+ "        \"id\": \"y\","
+			+ "        \"configuration\": {\"simulated\": true, \"type\": \"ContinuousInterval\", \"table\": {\"type\": \"Expression\", \"expressions\": [\"Arithmetic(0)\"]}}"
+			+ "      }"
+			+ "    ]"
+			+ "  }]"
+			+ "}"
+			+ "}";
+
+	@Test
+	public void testConstantParentlessTargetProducesNonZeroVariance() throws Exception {
+		// Reproduces a reported production bug: a parentless node whose value never varies across the whole
+		// dataset (e.g. a "Fuel_price" column that happened to be constant). The real residual variance there is
+		// mathematically 0, but floating-point summation over many rows leaves tiny noise (e.g. 1e-25) rather
+		// than an exact 0.0. That noise is still "> 0", so a floor guarded only by positivity let it straight
+		// through - and formatNumber's 10-decimal rounding then collapsed it back to a literal "0", producing an
+		// illegal Normal(mean, 0) that the calculation engine rejected at calculate() time ("Normal cannot have
+		// zero variance"), surfacing as a confusing "node probability table has sum zero probability" error.
+		// Confirms the fix: effectiveVariance floors by magnitude (Math.max), not by a raw positivity check.
+		StringBuilder csv = new StringBuilder("y\n");
+		for (int i = 0; i < 16908; i++){
+			csv.append("3\n");
+		}
+
+		Model model = Model.createModel(new JSONObject(MODEL_ROOT_ONLY));
+		Network network = model.getNetworkList().get(0);
+		Node y = network.getNode("y");
+
+		RegressionDataset dataset = new RegressionDataset(writeAndLoadData(csv.toString()));
+		ContinuousRegressionLearner learner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL, 5);
+		ContinuousRegressionLearner.NodeLearningResult result = learner.learn(y);
+
+		Assertions.assertFalse(result.isSkipped());
+		ContinuousRegressionLearner.PartitionResult pr = result.getPartitionResults().get(0);
+		Assertions.assertTrue(pr.getExpression().startsWith("Normal("), "Expected Normal(...), got: " + pr.getExpression());
+		Assertions.assertFalse(pr.getExpression().endsWith(", 0)"), "Expression must not have a literal zero variance: " + pr.getExpression());
+
+		RegressionTableWriter.apply(result);
+
+		// The real point of this test: a zero-variance Normal fails at calculation time, not at write time.
+		DataSet dataSet = model.createDataSet("ds");
+		model.calculate();
+		Assertions.assertEquals(3.0, dataSet.getCalculationResult(y).getMean(), 1e-2);
+	}
+
 	@Test
 	public void testLearnSkipsCategoricalTargetWithContinuousParent() throws Exception {
 		String modelJson = "{"
