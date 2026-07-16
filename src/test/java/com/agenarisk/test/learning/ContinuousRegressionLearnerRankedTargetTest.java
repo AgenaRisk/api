@@ -131,4 +131,81 @@ public class ContinuousRegressionLearnerRankedTargetTest {
 		// TNormal(mean, variance, lowerBound, upperBound) - default Ranked states span [0, 1]
 		Assertions.assertTrue(expression.endsWith(", 0, 1)"), "Expected bounds 0, 1 at the end of: " + expression);
 	}
+
+	private static final String ROOT_RANKED_MODEL_JSON = "{"
+			+ "\"model\": {"
+			+ "  \"networks\": [{"
+			+ "    \"id\": \"net\","
+			+ "    \"nodes\": [{"
+			+ "        \"id\": \"car_type\","
+			+ "        \"configuration\": {\"type\": \"Ranked\", \"states\": [\"Small\", \"Medium\", \"Large\"]}"
+			+ "      }"
+			+ "    ]"
+			+ "  }]"
+			+ "}"
+			+ "}";
+
+	@Test
+	public void testRootRankedNodeWithStateLabelTrainingDataLearnsRealDistribution() throws Exception {
+		// Reproduces a reported production bug: a parentless (root) Ranked node whose training data is the raw
+		// state labels ("Small"/"Medium"/"Large"), not pre-normalized numbers. RegressionDataset used to only try
+		// plain numeric parsing, which fails for every row of such a column, giving N=0 and a degenerate
+		// mean=0/near-zero-variance fallback - collapsing the whole learned distribution onto the node's FIRST
+		// state regardless of the real data. Confirms the fix: state labels are mapped to normalized positions
+		// (index / (numStates - 1)) so the fit reflects the actual empirical spread across all three states.
+		StringBuilder csv = new StringBuilder("car_type\n");
+		// Balanced-ish spread across all three states, skewed toward Large so the true mean is clearly not 0
+		// (Small=0.0, Medium=0.5, Large=1.0): true mean = (2*0 + 3*0.5 + 5*1.0) / 10 = 0.65
+		for (int i = 0; i < 2; i++) csv.append("Small\n");
+		for (int i = 0; i < 3; i++) csv.append("Medium\n");
+		for (int i = 0; i < 5; i++) csv.append("Large\n");
+
+		Model model = Model.createModel(new JSONObject(ROOT_RANKED_MODEL_JSON));
+		Network network = model.getNetworkList().get(0);
+		Node carType = network.getNode("car_type");
+
+		java.util.Map<String, java.util.List<String>> rankedStates = new java.util.HashMap<>();
+		rankedStates.put("car_type", java.util.Arrays.asList("Small", "Medium", "Large"));
+		RegressionDataset dataset = new RegressionDataset(writeAndLoadData(csv.toString()), rankedStates);
+		ContinuousRegressionLearner learner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL, 3);
+		ContinuousRegressionLearner.NodeLearningResult result = learner.learn(carType);
+
+		Assertions.assertFalse(result.isSkipped());
+		ContinuousRegressionLearner.PartitionResult pr = result.getPartitionResults().get(0);
+		Assertions.assertEquals(10, pr.getN(), "All 10 rows should be usable - the old bug silently dropped every row to N=0");
+
+		RegressionTableWriter.apply(result);
+
+		DataSet dataSet = model.createDataSet("ds");
+		model.calculate();
+		CalculationResult cr = dataSet.getCalculationResult(carType);
+		// The old bug pinned ~100% probability on "Small"; the real distribution should favor "Large" (5/10 rows).
+		Assertions.assertTrue(cr.getResultValue("Large").getValue() > cr.getResultValue("Small").getValue(),
+				"Expected Large to be more probable than Small given the 2/3/5 split, got Small=" + cr.getResultValue("Small").getValue()
+						+ " Large=" + cr.getResultValue("Large").getValue());
+		Assertions.assertTrue(cr.getResultValue("Small").getValue() < 0.5,
+				"Small must not dominate the distribution (that would mean the old N=0/mean=0 bug is still present): "
+						+ cr.getResultValue("Small").getValue());
+	}
+
+	@Test
+	public void testRootRankedNodeStillWorksWithPreNormalizedNumericTrainingData() throws Exception {
+		// Guards the other direction: if a Ranked column's training data is already numeric (e.g. pre-processed
+		// upstream), plain numeric parsing must still be tried first and succeed, rather than the new state-label
+		// fallback ever taking priority or interfering.
+		String csv = "car_type\n0.0\n0.0\n0.5\n0.5\n0.5\n1.0\n1.0\n1.0\n1.0\n1.0\n";
+
+		Model model = Model.createModel(new JSONObject(ROOT_RANKED_MODEL_JSON));
+		Network network = model.getNetworkList().get(0);
+		Node carType = network.getNode("car_type");
+
+		java.util.Map<String, java.util.List<String>> rankedStates = new java.util.HashMap<>();
+		rankedStates.put("car_type", java.util.Arrays.asList("Small", "Medium", "Large"));
+		RegressionDataset dataset = new RegressionDataset(writeAndLoadData(csv), rankedStates);
+		ContinuousRegressionLearner learner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL, 3);
+		ContinuousRegressionLearner.NodeLearningResult result = learner.learn(carType);
+
+		Assertions.assertFalse(result.isSkipped());
+		Assertions.assertEquals(10, result.getPartitionResults().get(0).getN());
+	}
 }

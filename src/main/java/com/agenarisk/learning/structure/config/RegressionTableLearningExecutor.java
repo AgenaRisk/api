@@ -16,7 +16,9 @@ import com.agenarisk.learning.structure.regression.RegressionEligibility;
 import com.agenarisk.learning.structure.regression.RegressionTableWriter;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -74,7 +76,20 @@ public class RegressionTableLearningExecutor extends Configurer<RegressionTableL
 
 			Model model = originalConfigurer.getModel();
 			Data data = new Data(originalConfigurer.getDataPath().toString(), originalConfigurer.getMissingValue(), originalConfigurer.getValueSeparator());
-			RegressionDataset dataset = new RegressionDataset(data);
+
+			Network network = model.getNetworkList().get(0);
+
+			// A Ranked node's raw CSV value is normally its state label ("Low"/"Medium"/"High"), not a number -
+			// without this mapping, RegressionDataset's numeric parsing fails for every row of a Ranked column,
+			// silently producing zero usable rows and a degenerate fit (see the reported "Fuel_price"-style bug,
+			// but for Ranked roots like car_type/Reliability collapsing to ~100% on their first state).
+			Map<String, List<String>> rankedStatesByNodeId = new HashMap<>();
+			for (Node node : network.getNodeList()){
+				if (node.getType() == Node.Type.Ranked){
+					rankedStatesByNodeId.put(node.getId(), node.getStates().stream().map(com.agenarisk.api.model.State::getLabel).collect(Collectors.toList()));
+				}
+			}
+			RegressionDataset dataset = new RegressionDataset(data, rankedStatesByNodeId);
 
 			ContinuousRegressionLearner.ResidualMode residualMode = RegressionTableLearningConfigurer.RESIDUAL_MODE_ARITHMETIC.equalsIgnoreCase(originalConfigurer.getResidualMode())
 					? ContinuousRegressionLearner.ResidualMode.ARITHMETIC
@@ -83,7 +98,6 @@ public class RegressionTableLearningExecutor extends Configurer<RegressionTableL
 			ContinuousRegressionLearner continuousLearner = new ContinuousRegressionLearner(dataset, residualMode, originalConfigurer.getMinRowsPerPartition());
 			CategoricalRegressionLearner categoricalLearner = new CategoricalRegressionLearner(dataset, originalConfigurer.getRidgeLambda());
 
-			Network network = model.getNetworkList().get(0);
 			JSONArray jNodes = new JSONArray();
 
 			for (Node node : network.getNodeList()){

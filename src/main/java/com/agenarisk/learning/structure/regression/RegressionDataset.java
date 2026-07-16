@@ -1,6 +1,7 @@
 package com.agenarisk.learning.structure.regression;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +29,31 @@ public class RegressionDataset {
 
 	private final Data data;
 	private final Map<String, Integer> columnIndex;
+	private final Map<Integer, List<String>> rankedStatesByColumn;
 
 	public RegressionDataset(Data data) {
+		this(data, Collections.emptyMap());
+	}
+
+	/**
+	 * @param rankedStatesByNodeId ordered states (index order) for each {@code Ranked} node's column, keyed by node
+	 * id. A Ranked node's raw CSV value is normally its state label ("Low"/"Medium"/"High"), not a number - without
+	 * this mapping, every such value fails plain numeric parsing, silently producing zero usable rows and a
+	 * degenerate global-mean/global-fallback fit. Numeric parsing is still tried first for every column, so a
+	 * Ranked column that already contains normalized numeric positions (e.g. pre-processed data) is unaffected.
+	 */
+	public RegressionDataset(Data data, Map<String, List<String>> rankedStatesByNodeId) {
 		this.data = data;
 		this.columnIndex = new HashMap<>();
 		for (int i = 0; i < data.dataVariables.size(); i++){
 			columnIndex.put(data.dataVariables.get(i), i);
+		}
+		this.rankedStatesByColumn = new HashMap<>();
+		for (Map.Entry<String, List<String>> entry : rankedStatesByNodeId.entrySet()){
+			Integer col = columnIndex.get(entry.getKey());
+			if (col != null){
+				rankedStatesByColumn.put(col, entry.getValue());
+			}
 		}
 	}
 
@@ -120,7 +140,7 @@ public class RegressionDataset {
 			if (isMissing(targetRaw)){
 				continue;
 			}
-			Double targetValue = parseDoubleOrNull(targetRaw);
+			Double targetValue = parseDoubleOrNull(targetRaw, targetCol);
 			if (targetValue == null){
 				continue;
 			}
@@ -133,7 +153,7 @@ public class RegressionDataset {
 					rowOk = false;
 					break;
 				}
-				Double value = parseDoubleOrNull(raw);
+				Double value = parseDoubleOrNull(raw, parentCols[i]);
 				if (value == null){
 					rowOk = false;
 					break;
@@ -253,7 +273,7 @@ public class RegressionDataset {
 			if (isMissing(targetRaw)){
 				continue;
 			}
-			Double targetValue = parseDoubleOrNull(targetRaw);
+			Double targetValue = parseDoubleOrNull(targetRaw, targetCol);
 			if (targetValue == null){
 				continue;
 			}
@@ -266,7 +286,7 @@ public class RegressionDataset {
 					rowOk = false;
 					break;
 				}
-				Double value = parseDoubleOrNull(raw);
+				Double value = parseDoubleOrNull(raw, parentCols[i]);
 				if (value == null){
 					rowOk = false;
 					break;
@@ -455,12 +475,26 @@ public class RegressionDataset {
 		return raw == null || raw.isEmpty() || raw.equals(data.missingType);
 	}
 
-	private Double parseDoubleOrNull(String raw) {
+	/**
+	 * Parses a raw cell value as a number for use as a regressor/target. Plain numeric parsing is tried first; if
+	 * that fails and {@code col} is a known Ranked column, falls back to mapping the value as a state label to its
+	 * normalized position ({@code index / (numStates - 1)}, spanning [0, 1] to match a Ranked node's TNormal bounds
+	 * elsewhere). Returns null (row excluded) if neither parse succeeds - an unrecognised state label, for instance.
+	 */
+	private Double parseDoubleOrNull(String raw, int col) {
 		try {
 			return Double.parseDouble(raw);
 		}
 		catch (NumberFormatException ex){
-			return null;
+			List<String> states = rankedStatesByColumn.get(col);
+			if (states == null){
+				return null;
+			}
+			int index = states.indexOf(raw);
+			if (index < 0){
+				return null;
+			}
+			return states.size() > 1 ? index / (double) (states.size() - 1) : 0.0;
 		}
 	}
 }
