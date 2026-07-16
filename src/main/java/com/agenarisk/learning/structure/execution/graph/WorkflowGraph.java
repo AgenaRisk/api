@@ -11,6 +11,7 @@ import com.agenarisk.learning.structure.execution.graph.node.ModelMergeNode;
 import com.agenarisk.learning.structure.execution.graph.node.ModelSelectionNode;
 import com.agenarisk.learning.structure.execution.graph.node.PerformanceEvaluationNode;
 import com.agenarisk.learning.structure.execution.graph.node.ProbabilityLearningNode;
+import com.agenarisk.learning.structure.execution.graph.node.RegressionTableLearningNode;
 import com.agenarisk.learning.structure.execution.graph.node.StructureEvaluationNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -139,6 +140,8 @@ public class WorkflowGraph {
 				return new ModelImportNode();
 			case "probabilityLearning":
 				return new ProbabilityLearningNode();
+			case "regressionTableLearning":
+				return new RegressionTableLearningNode();
 			case "performanceEvaluation":
 				return new PerformanceEvaluationNode();
 			case "structureEvaluation":
