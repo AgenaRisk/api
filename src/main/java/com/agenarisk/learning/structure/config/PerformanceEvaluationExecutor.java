@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure.config;
 
+import com.agenarisk.api.exception.InconsistentEvidenceException;
 import com.agenarisk.api.model.CalculationResult;
 import com.agenarisk.api.model.DataSet;
 import com.agenarisk.api.model.Model;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import uk.co.agena.minerva.model.extendedbn.ExtendedStateNotFoundException;
 
@@ -247,6 +249,19 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 				? Collections.emptyList()
 				: targetNode.getStates().stream().map(s -> s.getLabel()).collect(Collectors.toList());
 
+		// Only the target's own direct parents are entered as evidence, not the whole row. Entering every
+		// other column as hard evidence routinely produces mutually-inconsistent evidence once several
+		// continuous nodes each carry their own learned (fitted, not exact) regression relationship - the
+		// row is fine as an observation of the true joint, but the *learned* network's tightly-fitted
+		// conditional distributions frequently give it near-zero (or exactly zero, once several such
+		// constraints compound) joint probability. Evaluating a prediction only needs the target's Markov
+		// blanket boundary anyway - its parents fully determine (or, in the discrete case, condition) the
+		// predictive distribution the model would compute for the target from these inputs, so restricting
+		// evidence entry to just those columns matches standard regression-evaluation practice (predict from
+		// features, not from every other observed variable) while sidestepping the inconsistency almost
+		// entirely.
+		Set<String> parentIds = targetNode.getParents().stream().map(Node::getId).collect(Collectors.toSet());
+
 		// Accumulate from zero (the metric fields default to worst-case values,
 		// which must not be folded into the running sum).
 		double sumAbs = 0, sumBrier = 0, sumSph = 0, sumSq = 0, sumCrps = 0;
@@ -269,6 +284,11 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 						}
 						continue;
 					}
+					if (!parentIds.contains(nodeId)){
+						// Not a direct parent of the target - irrelevant to its prediction, and entering it
+						// as evidence only adds another chance of conflicting with the learned model.
+						continue;
+					}
 					try {
 						dataCase.setObservation(network.getNode(nodeId), value);
 					}
@@ -286,7 +306,13 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 					throw new StructureLearningException("Actual value of target node missing from case data");
 				}
 
-				model.calculate();
+				try {
+					model.calculate();
+				}
+				catch (InconsistentEvidenceException ex){
+					throw new StructureLearningException("Target's parent values in this case are jointly inconsistent with the learned model (row "
+							+ rowIndex + "): " + ex.getMessage());
+				}
 
 				CalculationResult predictedDistribution = dataCase.getCalculationResult(targetNode);
 
