@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import uk.co.agena.minerva.model.extendedbn.ExtendedState;
 
 /**
  * Learns a continuous target node's table from data via OLS, one regression per combination of its categorical
@@ -31,6 +32,11 @@ public class ContinuousRegressionLearner {
 	 * Controls whether learned expressions are emitted as {@code Normal(mean, variance)} (retaining residual
 	 * uncertainty) or a deterministic {@code Arithmetic(mean)}. R2/N/residual variance are computed and reported
 	 * either way, regardless of this setting.
+	 * <br>
+	 * Ignored for {@code Ranked} targets: the core engine only accepts {@code TNormal} expressions on a Ranked
+	 * node ({@code RankedEN.supportedFunctionTypes = {TNormal}} - neither {@code Normal} nor {@code Arithmetic} is
+	 * valid there, even though nothing in the API layer rejects writing one). Ranked targets always get
+	 * {@code TNormal(mean, variance, lowerBound, upperBound)} regardless of this setting.
 	 */
 	public enum ResidualMode {
 		NORMAL,
@@ -212,7 +218,7 @@ public class ContinuousRegressionLearner {
 			if (isSufficient(selection.getN(), continuousParents.size())){
 				OrdinaryLeastSquares.Result fit = OrdinaryLeastSquares.fit(selection.getX(), selection.getY());
 				if (fit.isFullRank()){
-					results.add(toPartitionResult(combination, continuousParents, fit.getIntercept(), sliceSlopes(fit), selection.getY(), fit.getN(), fit.getR2(), fit.getResidualVariance(), FitSource.PARTITION_SPECIFIC));
+					results.add(toPartitionResult(target, combination, continuousParents, fit.getIntercept(), sliceSlopes(fit), selection.getY(), fit.getN(), fit.getR2(), fit.getResidualVariance(), FitSource.PARTITION_SPECIFIC));
 					continue;
 				}
 			}
@@ -224,13 +230,13 @@ public class ContinuousRegressionLearner {
 
 			if (pooledFit != null && pooledFit.fullRank){
 				double intercept = pooledFit.baseIntercept + pooledFit.combinationIntercepts.getOrDefault(combination, 0.0);
-				results.add(toPartitionResult(combination, continuousParents, intercept, pooledFit.continuousSlopes, null, pooledFit.n, pooledFit.r2, pooledFit.residualVariance, FitSource.POOLED_ANCOVA));
+				results.add(toPartitionResult(target, combination, continuousParents, intercept, pooledFit.continuousSlopes, null, pooledFit.n, pooledFit.r2, pooledFit.residualVariance, FitSource.POOLED_ANCOVA));
 				continue;
 			}
 
 			// Even the pooled fit was infeasible: fall back to the global mean of the target over all available rows
 			GlobalMeanFit globalMeanFit = fitGlobalMean(target);
-			results.add(toPartitionResult(combination, continuousParents, globalMeanFit.mean, zeros(continuousParents.size()), null, globalMeanFit.n, Double.NaN, globalMeanFit.variance, FitSource.GLOBAL_MEAN));
+			results.add(toPartitionResult(target, combination, continuousParents, globalMeanFit.mean, zeros(continuousParents.size()), null, globalMeanFit.n, Double.NaN, globalMeanFit.variance, FitSource.GLOBAL_MEAN));
 		}
 
 		return new NodeLearningResult(target, false, null, categoricalParents, results);
@@ -242,12 +248,12 @@ public class ContinuousRegressionLearner {
 		if (isSufficient(selection.getN(), continuousParents.size())){
 			OrdinaryLeastSquares.Result fit = OrdinaryLeastSquares.fit(selection.getX(), selection.getY());
 			if (fit.isFullRank()){
-				return toPartitionResult(null, continuousParents, fit.getIntercept(), sliceSlopes(fit), selection.getY(), fit.getN(), fit.getR2(), fit.getResidualVariance(), FitSource.PARTITION_SPECIFIC);
+				return toPartitionResult(target, null, continuousParents, fit.getIntercept(), sliceSlopes(fit), selection.getY(), fit.getN(), fit.getR2(), fit.getResidualVariance(), FitSource.PARTITION_SPECIFIC);
 			}
 		}
 
 		GlobalMeanFit globalMeanFit = fitGlobalMean(target);
-		return toPartitionResult(null, continuousParents, globalMeanFit.mean, zeros(continuousParents.size()), null, globalMeanFit.n, Double.NaN, globalMeanFit.variance, FitSource.GLOBAL_MEAN);
+		return toPartitionResult(target, null, continuousParents, globalMeanFit.mean, zeros(continuousParents.size()), null, globalMeanFit.n, Double.NaN, globalMeanFit.variance, FitSource.GLOBAL_MEAN);
 	}
 
 	private boolean isSufficient(int n, int k) {
@@ -342,20 +348,38 @@ public class ContinuousRegressionLearner {
 		return result;
 	}
 
-	private PartitionResult toPartitionResult(PartitionEnumerator.Combination combination, List<Node> continuousParents, double intercept, double[] slopes, double[] yForVarianceFloor, int n, double r2, double residualVariance, FitSource fitSource) {
-		String expression = buildExpression(intercept, continuousParents, slopes, residualVariance, yForVarianceFloor);
+	private PartitionResult toPartitionResult(Node target, PartitionEnumerator.Combination combination, List<Node> continuousParents, double intercept, double[] slopes, double[] yForVarianceFloor, int n, double r2, double residualVariance, FitSource fitSource) {
+		String expression = buildExpression(target, intercept, continuousParents, slopes, residualVariance, yForVarianceFloor);
 		return new PartitionResult(combination, expression, n, r2, residualVariance, fitSource);
 	}
 
-	private String buildExpression(double intercept, List<Node> continuousParents, double[] slopes, double residualVariance, double[] yForVarianceFloor) {
+	private String buildExpression(Node target, double intercept, List<Node> continuousParents, double[] slopes, double residualVariance, double[] yForVarianceFloor) {
 		String meanExpression = buildMeanExpression(intercept, continuousParents, slopes);
+		double effectiveVariance = effectiveVariance(residualVariance, yForVarianceFloor);
+
+		if (target.getType() == Node.Type.Ranked){
+			double[] bounds = getBounds(target);
+			return "TNormal(" + meanExpression + ", " + formatNumber(effectiveVariance) + ", "
+					+ formatNumber(bounds[0]) + ", " + formatNumber(bounds[1]) + ")";
+		}
 
 		if (residualMode == ResidualMode.ARITHMETIC){
 			return "Arithmetic(" + meanExpression + ")";
 		}
 
-		double effectiveVariance = effectiveVariance(residualVariance, yForVarianceFloor);
 		return "Normal(" + meanExpression + ", " + formatNumber(effectiveVariance) + ")";
+	}
+
+	/**
+	 * A Ranked node's overall lower/upper bound, spanning all its states (its first state's lower bound to its
+	 * last state's upper bound) - needed because {@code TNormal} takes explicit bounds, unlike {@code Normal}.
+	 */
+	private double[] getBounds(Node target) {
+		@SuppressWarnings("unchecked")
+		List<ExtendedState> states = (List<ExtendedState>) target.getLogicNode().getExtendedStates();
+		double lower = states.get(0).getRange().getLowerBound();
+		double upper = states.get(states.size() - 1).getRange().getUpperBound();
+		return new double[]{lower, upper};
 	}
 
 	private double effectiveVariance(double residualVariance, double[] yForVarianceFloor) {
