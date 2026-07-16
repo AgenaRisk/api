@@ -91,6 +91,23 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 					DataSet dataCase = model.getDataSetList().get(0);
 					Network network = model.getNetworkList().get(0);
 
+					// Targets must be all continuous or all discrete: the two use entirely different metrics
+					// (MAE/RMSE/CRPS vs Brier/spherical/ROC-AUC) that can't be meaningfully averaged together
+					// into one model-level aggregate.
+					List<String> continuousTargets = new ArrayList<>();
+					List<String> discreteTargets = new ArrayList<>();
+					for (String targetId : targets){
+						Node t = network.getNode(targetId);
+						if (t == null){
+							continue; // reported per-target as "not found" below
+						}
+						(isContinuousTargetType(t) ? continuousTargets : discreteTargets).add(targetId);
+					}
+					if (!continuousTargets.isEmpty() && !discreteTargets.isEmpty()){
+						throw new StructureLearningException("Performance evaluation targets must be all continuous "
+								+ "or all discrete, not a mix. Continuous: " + continuousTargets + ". Discrete: " + discreteTargets + ".");
+					}
+
 					List<PerformanceEvaluation> successfulPerfEvaluations = new ArrayList<>();
 					for (String targetId : targets){
 						PerformanceEvaluation te = evaluateOneTarget(model, network, dataCase, data, dataHeaders, targetId);
@@ -114,9 +131,17 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 						// Macro aggregate: mean of per-target means, per metric (each
 						// metric only ever averages with itself, so directions are kept).
 						evaluation.setSuccess(true);
+						evaluation.setTargetKind(successfulPerfEvaluations.get(0).getTargetKind());
 						evaluation.setAbsoluteError(mean(successfulPerfEvaluations, PerformanceEvaluation::getAbsoluteError));
 						evaluation.setBrierScore(mean(successfulPerfEvaluations, PerformanceEvaluation::getBrierScore));
 						evaluation.setSphericalScore(mean(successfulPerfEvaluations, PerformanceEvaluation::getSphericalScore));
+
+						OptionalDouble mae = successfulPerfEvaluations.stream()
+								.map(PerformanceEvaluation::getMae).filter(Objects::nonNull)
+								.mapToDouble(Double::doubleValue).average();
+						if (mae.isPresent()){
+							evaluation.setMae(mae.getAsDouble());
+						}
 
 						OptionalDouble macro = successfulPerfEvaluations.stream()
 								.map(PerformanceEvaluation::getMacroAuc).filter(Objects::nonNull)
@@ -129,6 +154,19 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 								.mapToDouble(Double::doubleValue).average();
 						if (micro.isPresent()){
 							evaluation.setMicroAuc(micro.getAsDouble());
+						}
+
+						OptionalDouble rmse = successfulPerfEvaluations.stream()
+								.map(PerformanceEvaluation::getRmse).filter(Objects::nonNull)
+								.mapToDouble(Double::doubleValue).average();
+						if (rmse.isPresent()){
+							evaluation.setRmse(rmse.getAsDouble());
+						}
+						OptionalDouble crps = successfulPerfEvaluations.stream()
+								.map(PerformanceEvaluation::getCrps).filter(Objects::nonNull)
+								.mapToDouble(Double::doubleValue).average();
+						if (crps.isPresent()){
+							evaluation.setCrps(crps.getAsDouble());
 						}
 
 						// For a single target, surface its ROC curves/AUCs on the
@@ -163,6 +201,15 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 	}
 
 	/**
+	 * ContinuousInterval/IntegerInterval nodes carry range-string state labels (dynamically discretized for
+	 * simulated nodes) rather than the literal values case data contains - see {@code State.computeLabel}.
+	 * Ranked/DiscreteReal/Labelled/Boolean all get literal, CSV-matchable labels and stay on the discrete path.
+	 */
+	private static boolean isContinuousTargetType(Node node) {
+		return node.getType() == Node.Type.ContinuousInterval || node.getType() == Node.Type.IntegerInterval;
+	}
+
+	/**
 	 * Evaluate a single target: for each case, clear evidence, observe every other
 	 * variable, predict the target, and score it. Returns a per-target result
 	 * (metrics are row-means). Never throws for a bad target — marks it failed so
@@ -185,11 +232,24 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 			evaluation.setMessage("Target node '" + targetId + "' not found in model");
 			return evaluation;
 		}
-		List<String> targetNodeStates = targetNode.getStates().stream().map(s -> s.getLabel()).collect(Collectors.toList());
+
+		// ContinuousInterval/IntegerInterval nodes carry range-string state labels
+		// (e.g. "240.0 - 250.0", dynamically discretized for simulated nodes) that a
+		// raw numeric CSV value can never match by exact string equality - unlike
+		// Boolean/Labelled/Ranked/DiscreteReal, whose state labels ARE the literal
+		// values case data is expected to contain (see State.computeLabel). So these
+		// two node types get a separate, numeric evaluation path (MAE/RMSE/CRPS
+		// against the predicted mean/stddev) instead of the classification metrics
+		// (Brier/spherical/ROC-AUC), which have no meaningful continuous analogue.
+		boolean numericTarget = isContinuousTargetType(targetNode);
+		evaluation.setTargetKind(numericTarget ? "continuous" : "discrete");
+		List<String> targetNodeStates = numericTarget
+				? Collections.emptyList()
+				: targetNode.getStates().stream().map(s -> s.getLabel()).collect(Collectors.toList());
 
 		// Accumulate from zero (the metric fields default to worst-case values,
 		// which must not be folded into the running sum).
-		double sumAbs = 0, sumBrier = 0, sumSph = 0;
+		double sumAbs = 0, sumBrier = 0, sumSph = 0, sumSq = 0, sumCrps = 0;
 		int successRows = 0;
 
 		for (int rowIndex = 0; rowIndex < data.size(); rowIndex += 1){
@@ -204,7 +264,7 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 					String value = row.get(observationIndex);
 					if (Objects.equals(nodeId, targetNode.getId())){
 						actualValue = value;
-						if (!targetNodeStates.contains(actualValue)){
+						if (!numericTarget && !targetNodeStates.contains(actualValue)){
 							throw new StructureLearningException("Target node states does not contain actual node state from case data");
 						}
 						continue;
@@ -229,20 +289,38 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 				model.calculate();
 
 				CalculationResult predictedDistribution = dataCase.getCalculationResult(targetNode);
-				Map<String, Double> predictedDistributionMap = predictedDistribution.getResultValues().stream().collect(Collectors.toMap(ResultValue::getLabel, ResultValue::getValue));
-				ResultValue predictedValue = predictedDistribution.getResultValue(actualValue);
-				if (predictedValue == null){
-					throw new StructureLearningException("Actual value of target node missing from case data");
-				}
-				sumAbs += 1 - predictedValue.getValue();
-				sumBrier += calculateBrierScore(actualValue, predictedDistributionMap);
-				sumSph += calculateSphericalScore(actualValue, predictedDistributionMap);
 
-				if (originalConfigurer.isCalculateRoc()){
-					for (String classLabel : targetNodeStates) {
-						double predictedProb = predictedDistributionMap.getOrDefault(classLabel, 0.0);
-						evaluation.getRocScores().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(predictedProb);
-						evaluation.getRocTruths().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(actualValue.equals(classLabel) ? 1 : 0);
+				if (numericTarget){
+					double actualNumeric;
+					try {
+						actualNumeric = Double.parseDouble(actualValue);
+					}
+					catch (NumberFormatException ex){
+						throw new StructureLearningException("Actual value of target node is not numeric: " + actualValue);
+					}
+					double predictedMean = predictedDistribution.getMean();
+					double predictedStdDev = predictedDistribution.getStandardDeviation();
+					double error = actualNumeric - predictedMean;
+					sumAbs += Math.abs(error);
+					sumSq += error * error;
+					sumCrps += calculateCrps(predictedMean, predictedStdDev, actualNumeric);
+				}
+				else {
+					Map<String, Double> predictedDistributionMap = predictedDistribution.getResultValues().stream().collect(Collectors.toMap(ResultValue::getLabel, ResultValue::getValue));
+					ResultValue predictedValue = predictedDistribution.getResultValue(actualValue);
+					if (predictedValue == null){
+						throw new StructureLearningException("Actual value of target node missing from case data");
+					}
+					sumAbs += 1 - predictedValue.getValue();
+					sumBrier += calculateBrierScore(actualValue, predictedDistributionMap);
+					sumSph += calculateSphericalScore(actualValue, predictedDistributionMap);
+
+					if (originalConfigurer.isCalculateRoc()){
+						for (String classLabel : targetNodeStates) {
+							double predictedProb = predictedDistributionMap.getOrDefault(classLabel, 0.0);
+							evaluation.getRocScores().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(predictedProb);
+							evaluation.getRocTruths().computeIfAbsent(classLabel, k -> new ArrayList<>()).add(actualValue.equals(classLabel) ? 1 : 0);
+						}
 					}
 				}
 
@@ -260,6 +338,14 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 			if (evaluation.getMessage().isEmpty()){
 				evaluation.setMessage("All cases failed to calculate for target '" + targetId + "'");
 			}
+			return evaluation;
+		}
+
+		if (numericTarget){
+			evaluation.setMae(sumAbs / successRows);
+			evaluation.setRmse(Math.sqrt(sumSq / successRows));
+			evaluation.setCrps(sumCrps / successRows);
+			evaluation.setSuccess(true);
 			return evaluation;
 		}
 
@@ -340,6 +426,35 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 
         return pTrue / norm;
     }
+
+	/**
+	 * Continuous Ranked Probability Score for a Normal(mean, stdDev) predictive distribution against a single
+	 * observed numeric value - the continuous analogue of the Brier score (it scores the whole predictive
+	 * distribution, rewarding well-calibrated uncertainty as well as accuracy, not just the point estimate).
+	 * <br>
+	 * Closed form: CRPS(N(mean, stdDev^2), x) = stdDev * [ z*(2*Phi(z) - 1) + 2*phi(z) - 1/sqrt(pi) ], z = (x - mean) / stdDev.
+	 * <br>
+	 * Rather than trying to detect ahead of time whether a node's expression is stochastic (Normal) or deterministic
+	 * (Arithmetic) - which wouldn't even be reliable, since a technically-Normal node can still have near-zero
+	 * predictive variance for a given case if its parents are fully observed - this simply falls back to the exact
+	 * mathematical limit of the closed form as stdDev -&gt; 0, which is the absolute error. That limit is what a
+	 * deterministic (or effectively deterministic, for this case) prediction should score anyway.
+	 *
+	 * @param mean predicted mean
+	 * @param stdDev predicted standard deviation; treated as 0 (falls back to absolute error) below a small epsilon
+	 * @param actual observed value
+	 *
+	 * @return the CRPS, lower is better, 0 for a perfect deterministic match
+	 */
+	public static double calculateCrps(double mean, double stdDev, double actual) {
+		if (stdDev < 1e-9){
+			return Math.abs(actual - mean);
+		}
+		double z = (actual - mean) / stdDev;
+		double cdf = cern.jet.stat.Probability.normal(mean, stdDev * stdDev, actual);
+		double pdf = Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
+		return stdDev * (z * (2 * cdf - 1) + 2 * pdf - 1 / Math.sqrt(Math.PI));
+	}
 
 	private double computeAUC(List<Double> scores, List<Integer> truths) {
 		List<int[]> pairs = new ArrayList<>();

@@ -20,10 +20,23 @@ public class PerformanceEvaluation {
     // Per-target breakdown (populated on the model-level aggregate result only).
     private final List<PerformanceEvaluation> targetResults = new ArrayList<>();
     
+	// Discrete-target metrics (classification-style, exact state-label matching).
 	private double brierScore = 1;
 	private double absoluteError = 1;
 	private double sphericalScore = 0;
-	
+
+	// Continuous-target metrics (ContinuousInterval/IntegerInterval targets only - see
+	// PerformanceEvaluationExecutor). Kept as distinct, separately-named fields rather than reusing the
+	// discrete ones above, since a single evaluation is now always one kind or the other (mixed target
+	// lists are rejected), so there's no need to overload a field with two different meanings/units.
+	private Double mae = null;
+	private Double rmse = null;
+	private Double crps = null; // Continuous Ranked Probability Score
+
+	// "continuous" or "discrete", set once a target/evaluation's kind is known; null if not yet determined
+	// (e.g. a failed evaluation with no successful targets).
+	private String targetKind = null;
+
 	private final Map<String, List<Double>> rocScores = new HashMap<>(); // class label -> list of predicted probabilities
 	private final Map<String, List<Integer>> rocTruths = new HashMap<>(); // class label -> list of binary actuals
 	private Map<String, Double> rocAucs = new HashMap<>(); // class label -> AUC value
@@ -99,6 +112,38 @@ public class PerformanceEvaluation {
         this.sphericalScore = sphericalScore;
     }
 
+	public Double getMae() {
+		return mae;
+	}
+
+	public void setMae(Double mae) {
+		this.mae = mae;
+	}
+
+	public Double getRmse() {
+		return rmse;
+	}
+
+	public void setRmse(Double rmse) {
+		this.rmse = rmse;
+	}
+
+	public Double getCrps() {
+		return crps;
+	}
+
+	public void setCrps(Double crps) {
+		this.crps = crps;
+	}
+
+	public String getTargetKind() {
+		return targetKind;
+	}
+
+	public void setTargetKind(String targetKind) {
+		this.targetKind = targetKind;
+	}
+
 	public Double getMacroAuc() {
 		return macroAuc;
 	}
@@ -157,6 +202,18 @@ public class PerformanceEvaluation {
         json.put("absoluteError", absoluteError);
 		json.put("brierScore", brierScore);
         json.put("sphericalScore", sphericalScore);
+		if (targetKind != null){
+			json.put("targetKind", targetKind);
+		}
+		if (mae != null){
+			json.put("mae", mae);
+		}
+		if (rmse != null){
+			json.put("rmse", rmse);
+		}
+		if (crps != null){
+			json.put("crps", crps);
+		}
 		if (macroAuc != null){
 			json.put("macroAuc", macroAuc);
 		}
