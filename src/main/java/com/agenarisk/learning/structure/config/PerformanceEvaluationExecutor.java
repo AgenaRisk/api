@@ -212,6 +212,37 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 	}
 
 	/**
+	 * Walks up the target's ancestry and returns the IDs of every true root (parentless) ancestor - the
+	 * network's exogenous inputs. Excludes the target itself even if it happens to have no parents (nothing to
+	 * clamp there; its own prediction is what's being evaluated). Any intermediate ancestor (one that has
+	 * parents of its own) is deliberately excluded - its value should come from the model's own learned
+	 * equation for it, not be clamped to the row's raw observation.
+	 */
+	private static Set<String> collectRootAncestorIds(Node target) {
+		Set<String> roots = new java.util.LinkedHashSet<>();
+		Set<Node> visited = new java.util.HashSet<>();
+		java.util.Deque<Node> stack = new java.util.ArrayDeque<>();
+		visited.add(target);
+		stack.push(target);
+		while (!stack.isEmpty()){
+			Node current = stack.pop();
+			Set<Node> parents = current.getParents();
+			if (parents.isEmpty()){
+				if (current != target){
+					roots.add(current.getId());
+				}
+				continue;
+			}
+			for (Node parent : parents){
+				if (visited.add(parent)){
+					stack.push(parent);
+				}
+			}
+		}
+		return roots;
+	}
+
+	/**
 	 * Evaluate a single target: for each case, clear evidence, observe every other
 	 * variable, predict the target, and score it. Returns a per-target result
 	 * (metrics are row-means). Never throws for a bad target — marks it failed so
@@ -249,18 +280,16 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 				? Collections.emptyList()
 				: targetNode.getStates().stream().map(s -> s.getLabel()).collect(Collectors.toList());
 
-		// Only the target's own direct parents are entered as evidence, not the whole row. Entering every
-		// other column as hard evidence routinely produces mutually-inconsistent evidence once several
-		// continuous nodes each carry their own learned (fitted, not exact) regression relationship - the
-		// row is fine as an observation of the true joint, but the *learned* network's tightly-fitted
-		// conditional distributions frequently give it near-zero (or exactly zero, once several such
-		// constraints compound) joint probability. Evaluating a prediction only needs the target's Markov
-		// blanket boundary anyway - its parents fully determine (or, in the discrete case, condition) the
-		// predictive distribution the model would compute for the target from these inputs, so restricting
-		// evidence entry to just those columns matches standard regression-evaluation practice (predict from
-		// features, not from every other observed variable) while sidestepping the inconsistency almost
-		// entirely.
-		Set<String> parentIds = targetNode.getParents().stream().map(Node::getId).collect(Collectors.toSet());
+		// Only the target's true root (exogenous, parentless) ancestors are entered as evidence - not the whole
+		// row, and not even the target's direct parents if those parents are themselves downstream/learned
+		// nodes. Clamping an intermediate node (e.g. a regression-learned "total_fuel_cost" that sits between
+		// raw inputs and the target) to its own raw CSV value forces the network to satisfy two things at
+		// once - its own learned equation for that node, AND the row's observed value for it - which conflict
+		// whenever that node's fit isn't exact, and compounds across every such intermediate node entered.
+		// Entering only the roots and letting the model compute every downstream node itself (including the
+		// target's own parents) matches how a learned regression chain is meant to be evaluated: predict from
+		// the exogenous inputs, don't clamp the intermediate computed values to their real-world observations.
+		Set<String> rootAncestorIds = collectRootAncestorIds(targetNode);
 
 		// Accumulate from zero (the metric fields default to worst-case values,
 		// which must not be folded into the running sum).
@@ -284,9 +313,10 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 						}
 						continue;
 					}
-					if (!parentIds.contains(nodeId)){
-						// Not a direct parent of the target - irrelevant to its prediction, and entering it
-						// as evidence only adds another chance of conflicting with the learned model.
+					if (!rootAncestorIds.contains(nodeId)){
+						// Not a root ancestor of the target - either irrelevant to it, or a downstream node
+						// whose value the model should compute itself rather than have clamped to the row's
+						// raw observation.
 						continue;
 					}
 					try {
@@ -310,7 +340,7 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 					model.calculate();
 				}
 				catch (InconsistentEvidenceException ex){
-					throw new StructureLearningException("Target's parent values in this case are jointly inconsistent with the learned model (row "
+					throw new StructureLearningException("This case's root input values are jointly inconsistent with the learned model (row "
 							+ rowIndex + "): " + ex.getMessage());
 				}
 
