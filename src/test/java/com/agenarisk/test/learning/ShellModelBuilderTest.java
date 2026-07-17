@@ -47,7 +47,7 @@ public class ShellModelBuilderTest {
 				.put("type", "ContinuousInterval")
 				.put("simulated", true)));
 
-		Model model = ShellModelBuilder.build(headers, dataPath, declarations);
+		Model model = ShellModelBuilder.build(headers, dataPath, declarations, "");
 		Network network = model.getNetworkList().get(0);
 
 		Node rankNode = network.getNode("rank");
@@ -77,7 +77,7 @@ public class ShellModelBuilderTest {
 		Path dataPath = tempDir.resolve("data.csv");
 		Files.write(dataPath, "x1,x2\n1.5,2.5\n3.5,4.5\n5.5,6.5\n".getBytes(StandardCharsets.UTF_8));
 
-		Model model = ShellModelBuilder.build(headers, dataPath, new HashMap<>());
+		Model model = ShellModelBuilder.build(headers, dataPath, new HashMap<>(), "");
 		Network network = model.getNetworkList().get(0);
 
 		Node x1Node = network.getNode("x1");
@@ -98,7 +98,7 @@ public class ShellModelBuilderTest {
 		Path dataPath = tempDir.resolve("data.csv");
 		Files.write(dataPath, "colour\nRed\nGreen\nBlue\nRed\n".getBytes(StandardCharsets.UTF_8));
 
-		Model model = ShellModelBuilder.build(headers, dataPath, new HashMap<>());
+		Model model = ShellModelBuilder.build(headers, dataPath, new HashMap<>(), "");
 		Network network = model.getNetworkList().get(0);
 
 		Node colourNode = network.getNode("colour");
@@ -125,7 +125,7 @@ public class ShellModelBuilderTest {
 				.put("type", "Ranked")
 				.put("states", new JSONArray(Arrays.asList("Low", "High")))));
 
-		Model model = ShellModelBuilder.build(headers, dataPath, declarations);
+		Model model = ShellModelBuilder.build(headers, dataPath, declarations, "");
 		Network network = model.getNetworkList().get(0);
 
 		Assertions.assertEquals(Node.Type.Ranked, network.getNode("rank").getType());
@@ -136,5 +136,31 @@ public class ShellModelBuilderTest {
 
 		Assertions.assertEquals(Node.Type.Labelled, network.getNode("colour").getType());
 		Assertions.assertEquals(2, network.getNode("colour").getStates().size());
+	}
+
+	@Test
+	public void testUndeclaredColumnsWithMissingValuesAreNotMisclassified() throws Exception {
+		Path tempDir = Files.createTempDirectory("shell-model-builder-test-missing");
+		tempDir.toFile().deleteOnExit();
+
+		// x1 has a blank cell - without missing-value handling, Double.parseDouble("") throws and the column gets
+		// wrongly demoted to Labelled; colour also has a blank cell, which must not become a bogus "" state.
+		List<String> headers = Arrays.asList("x1", "colour");
+		Path dataPath = tempDir.resolve("data.csv");
+		Files.write(dataPath, "x1,colour\n1.0,Red\n,Blue\n3.0,\n".getBytes(StandardCharsets.UTF_8));
+
+		Model model = ShellModelBuilder.build(headers, dataPath, new HashMap<>(), "");
+		Network network = model.getNetworkList().get(0);
+
+		Node x1Node = network.getNode("x1");
+		Assertions.assertEquals(Node.Type.ContinuousInterval, x1Node.getType());
+		Assertions.assertTrue(x1Node.isSimulated());
+
+		Node colourNode = network.getNode("colour");
+		Assertions.assertEquals(Node.Type.Labelled, colourNode.getType());
+		List<String> stateLabels = new java.util.ArrayList<>();
+		colourNode.getStates().forEach(s -> stateLabels.add(s.getLabel()));
+		Assertions.assertEquals(2, stateLabels.size());
+		Assertions.assertTrue(stateLabels.containsAll(Arrays.asList("Red", "Blue")));
 	}
 }

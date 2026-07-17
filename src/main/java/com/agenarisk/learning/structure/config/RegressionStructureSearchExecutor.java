@@ -67,7 +67,8 @@ public class RegressionStructureSearchExecutor extends Configurer<RegressionStru
 			}
 
 			List<String> csvHeaders = CsvReader.readHeaders(originalConfigurer.getDataPath());
-			Model model = ShellModelBuilder.build(csvHeaders, originalConfigurer.getDataPath(), originalConfigurer.getVariableDeclarations());
+			Model model = ShellModelBuilder.build(csvHeaders, originalConfigurer.getDataPath(),
+					originalConfigurer.getVariableDeclarations(), originalConfigurer.getMissingValue());
 			Data data = new Data(originalConfigurer.getDataPath().toString(), originalConfigurer.getMissingValue(), originalConfigurer.getValueSeparator());
 
 			Network network = model.getNetworkList().get(0);

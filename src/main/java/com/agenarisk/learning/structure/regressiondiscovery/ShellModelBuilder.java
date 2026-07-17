@@ -40,10 +40,14 @@ public class ShellModelBuilder {
 	 * @param dataPath path to the CSV data (only read for undeclared columns, to auto-detect numeric-ness/states)
 	 * @param declarations explicit per-column declarations, keyed by column/node id; columns not present here get
 	 * the numeric/non-numeric default described above
+	 * @param missingValue cell value that marks a row as missing for a given column (e.g. {@code ""}); excluded from
+	 * both the numeric-ness check and the auto-detected state list for undeclared columns, so a missing value in an
+	 * otherwise-numeric column doesn't misclassify it as Labelled, and never itself becomes a bogus Labelled state
 	 *
 	 * @return the built shell Model, with exactly one network and no links
 	 */
-	public static Model build(List<String> csvHeaders, Path dataPath, Map<String, VariableDeclaration> declarations) {
+	public static Model build(List<String> csvHeaders, Path dataPath, Map<String, VariableDeclaration> declarations,
+			String missingValue) {
 		try {
 			Model model = Model.createModel();
 			Network network = model.createNetwork("network");
@@ -62,16 +66,18 @@ public class ShellModelBuilder {
 				}
 			}
 
-			applyDefaultsForUndeclaredColumns(network, csvHeaders, dataPath, declarations);
+			applyDefaultsForUndeclaredColumns(network, csvHeaders, dataPath, declarations, missingValue);
 
 			return model;
 		}
 		catch (NetworkException | NodeException ex){
-			throw new StructureLearningException("Failed to build shell model from variable declarations", ex);
+			throw new StructureLearningException(
+					"Failed to build shell model from variable declarations: " + ex.getMessage(), ex);
 		}
 	}
 
-	private static void applyDefaultsForUndeclaredColumns(Network network, List<String> csvHeaders, Path dataPath, Map<String, VariableDeclaration> declarations) throws NetworkException, NodeException {
+	private static void applyDefaultsForUndeclaredColumns(Network network, List<String> csvHeaders, Path dataPath,
+			Map<String, VariableDeclaration> declarations, String missingValue) throws NetworkException, NodeException {
 
 		List<String> undeclaredColumns = new ArrayList<>();
 		for (String columnId : csvHeaders){
@@ -110,6 +116,9 @@ public class ShellModelBuilder {
 					continue;
 				}
 				String cellValue = row.get(c);
+				if (cellValue.equals(missingValue)){
+					continue;
+				}
 				frequency.merge(cellValue, 1, Integer::sum);
 				if (numericByColumn.get(columnId)){
 					try {
@@ -129,8 +138,13 @@ public class ShellModelBuilder {
 				node.convertToSimulated();
 			}
 			else {
+				LinkedHashMap<String, Integer> frequency = frequencyByColumn.get(columnId);
+				if (frequency.isEmpty()){
+					throw new StructureLearningException(
+							"Column \"" + columnId + "\" has no non-missing values to detect states from");
+				}
 				Node node = network.createNode(columnId, Node.Type.Labelled);
-				node.setStates(new ArrayList<>(frequencyByColumn.get(columnId).keySet()));
+				node.setStates(new ArrayList<>(frequency.keySet()));
 			}
 		}
 	}
