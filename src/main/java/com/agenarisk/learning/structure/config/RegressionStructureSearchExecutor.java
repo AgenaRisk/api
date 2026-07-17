@@ -86,6 +86,9 @@ public class RegressionStructureSearchExecutor extends Configurer<RegressionStru
 			RegressionBicScorer scorer = new RegressionBicScorer(dataset, originalConfigurer.getRidgeLambda());
 			RegressionStructureSearch search = new RegressionStructureSearch(scorer, originalConfigurer.getKnowledge(),
 					originalConfigurer.getMaxParentsPerNode(), originalConfigurer.getMaxIterations());
+			if (originalConfigurer.isProgressEnabled()){
+				search.enableProgressReporting(originalConfigurer.getNodeLabel());
+			}
 			RegressionStructureResult result = search.search(nodesById);
 
 			ContinuousRegressionLearner continuousLearner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL);

@@ -1,6 +1,7 @@
 package com.agenarisk.learning.structure.regressiondiscovery;
 
 import com.agenarisk.api.model.Node;
+import com.agenarisk.learning.structure.execution.graph.node.GraphNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,12 +29,23 @@ public class RegressionStructureSearch {
 	private final RegressionKnowledge knowledge;
 	private final int maxParentsPerNodeDefault;
 	private final int maxIterations;
+	private String progressNodeLabel;
+	private boolean progressEnabled = false;
 
 	public RegressionStructureSearch(RegressionBicScorer scorer, RegressionKnowledge knowledge, int maxParentsPerNodeDefault, int maxIterations) {
 		this.scorer = scorer;
 		this.knowledge = knowledge;
 		this.maxParentsPerNodeDefault = maxParentsPerNodeDefault;
 		this.maxIterations = maxIterations;
+	}
+
+	/**
+	 * Enables interim progress reporting (via {@link GraphNode#emitProgress}) from the search loop below - off by
+	 * default, since this class has no inherent notion of "am I running under athena's progress-output protocol".
+	 */
+	public void enableProgressReporting(String nodeLabel) {
+		this.progressNodeLabel = nodeLabel;
+		this.progressEnabled = true;
 	}
 
 	/**
@@ -68,11 +80,23 @@ public class RegressionStructureSearch {
 
 		int iteration = 0;
 		boolean capReached = false;
+		long lastProgressEmitMs = System.currentTimeMillis();
 
 		while (true){
 			if (iteration >= maxIterations){
 				capReached = true;
 				break;
+			}
+
+			if (progressEnabled){
+				long nowMs = System.currentTimeMillis();
+				if (nowMs - lastProgressEmitMs >= 1000){
+					GraphNode.emitProgress(progressNodeLabel,
+							"Searching for structure - iteration " + iteration + " of " + maxIterations
+									+ " (BIC " + String.format("%.1f", totalBic) + ")",
+							iteration, maxIterations);
+					lastProgressEmitMs = nowMs;
+				}
 			}
 
 			Move best = findBestMove(graph, nodesById, scoreByNodeId);

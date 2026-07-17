@@ -5,6 +5,7 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.util.Advisory;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import com.agenarisk.learning.structure.execution.graph.node.GraphNode;
 import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.regression.CategoricalRegressionLearner;
 import com.agenarisk.learning.structure.regression.ContinuousRegressionLearner;
@@ -86,7 +87,22 @@ public class RegressionParameterLearningExecutor extends Configurer<RegressionPa
 
 			JSONArray jNodes = new JSONArray();
 
-			for (Node node : network.getNodeList()){
+			List<Node> nodeList = network.getNodeList();
+			long lastProgressEmitMs = System.currentTimeMillis();
+
+			for (int nodeIndex = 0; nodeIndex < nodeList.size(); nodeIndex++){
+				Node node = nodeList.get(nodeIndex);
+
+				if (originalConfigurer.isProgressEnabled()){
+					long nowMs = System.currentTimeMillis();
+					if (nowMs - lastProgressEmitMs >= 1000 || nodeIndex == 0){
+						GraphNode.emitProgress(originalConfigurer.getNodeLabel(),
+								"Fitting node '" + node.getId() + "' (" + (nodeIndex + 1) + " of " + nodeList.size() + ")",
+								nodeIndex + 1, nodeList.size());
+						lastProgressEmitMs = nowMs;
+					}
+				}
+
 				RegressionNodeFitter.NodeFitOutcome outcome = fitter.fitAndWrite(node);
 
 				JSONObject jNode = new JSONObject();

@@ -111,7 +111,10 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 					}
 
 					List<PerformanceEvaluation> successfulPerfEvaluations = new ArrayList<>();
-					for (String targetId : targets){
+					for (int targetIndex = 0; targetIndex < targets.size(); targetIndex++){
+						String targetId = targets.get(targetIndex);
+						emitProgress("Evaluating '" + evaluation.getModelLabel() + "' - target '" + targetId + "' ("
+								+ (targetIndex + 1) + " of " + targets.size() + "), " + data.size() + " rows");
 						PerformanceEvaluation te = evaluateOneTarget(model, network, dataCase, data, dataHeaders, targetId);
 						te.setLabel(originalConfigurer.getStageLabel());
 						te.setModelLabel(evaluation.getModelLabel());
@@ -195,6 +198,16 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 		}
 		catch (Exception ex){
 			throw new StructureLearningException(ex.getMessage(), ex);
+		}
+	}
+
+	private void emitProgress(String message) {
+		emitProgress(message, null, null);
+	}
+
+	private void emitProgress(String message, Integer current, Integer total) {
+		if (originalConfigurer != null && originalConfigurer.isProgressEnabled()){
+			GraphNode.emitProgress(originalConfigurer.getStageLabel(), message, current, total);
 		}
 	}
 
@@ -296,7 +309,18 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 		double sumAbs = 0, sumBrier = 0, sumSph = 0, sumSq = 0, sumCrps = 0;
 		int successRows = 0;
 
+		// Time-based throttling (not a fixed row interval) so this adapts to however expensive model.calculate()
+		// turns out to be for this particular model/data, rather than being tuned once and then either spamming
+		// the log for a fast model or staying silent for minutes on a slow one.
+		long lastProgressEmitMs = System.currentTimeMillis();
+
 		for (int rowIndex = 0; rowIndex < data.size(); rowIndex += 1){
+			long nowMs = System.currentTimeMillis();
+			if (nowMs - lastProgressEmitMs >= 1000){
+				emitProgress("Evaluating target '" + targetId + "' - row " + (rowIndex + 1) + " of " + data.size(),
+						rowIndex + 1, data.size());
+				lastProgressEmitMs = nowMs;
+			}
 			List<String> row = data.get(rowIndex);
 			try {
 				// Reset evidence from the previous case so a cell that fails to

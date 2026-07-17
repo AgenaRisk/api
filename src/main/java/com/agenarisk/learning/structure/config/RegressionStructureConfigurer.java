@@ -42,6 +42,8 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 	private int maxIterations = 500;
 	private RegressionKnowledge knowledge = new RegressionKnowledge();
 	private Map<String, VariableDeclaration> variableDeclarations = new HashMap<>();
+	private String nodeLabel = "";
+	private boolean progressEnabled = false;
 
 	public RegressionStructureConfigurer(Config config) {
 		super(config);
@@ -176,5 +178,21 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 	public RegressionStructureConfigurer setVariableDeclarations(Map<String, VariableDeclaration> variableDeclarations) {
 		this.variableDeclarations = variableDeclarations;
 		return this;
+	}
+
+	public String getNodeLabel() {
+		return nodeLabel;
+	}
+
+	public void setNodeLabel(String nodeLabel) {
+		this.nodeLabel = nodeLabel;
+	}
+
+	public boolean isProgressEnabled() {
+		return progressEnabled;
+	}
+
+	public void setProgressEnabled(boolean progressEnabled) {
+		this.progressEnabled = progressEnabled;
 	}
 }

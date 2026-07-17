@@ -195,6 +195,35 @@ public abstract class GraphNode {
 		System.out.flush();
 	}
 
+	/**
+	 * Emits an interim (mid-execution) progress update for a node whose own {@code execute()} is still running -
+	 * unlike {@code nodeStart}/{@code nodeComplete} (emitted exactly once each, by {@code GraphExecutor}), this can
+	 * be called any number of times by the executor code a node delegates to, for long-running loops (structure
+	 * search iterations, per-row evaluation, per-node fitting, EM iterations) that would otherwise leave the UI
+	 * showing a static "computing" spinner for minutes with no feedback.
+	 * <br>
+	 * Callers are responsible for their own throttling (e.g. only every Nth row/iteration) - this method itself
+	 * does not rate-limit.
+	 *
+	 * @param nodeLabel the label of the node currently executing
+	 * @param message human-readable status, e.g. "Evaluating row 1,200 of 20,000"
+	 * @param current optional current step, for determinate progress (e.g. current row/iteration); null if unknown
+	 * @param total optional total steps; null if unknown
+	 */
+	public static void emitProgress(String nodeLabel, String message, Integer current, Integer total) {
+		JSONObject event = new JSONObject()
+				.put("type", "nodeProgress")
+				.put("nodeLabel", nodeLabel)
+				.put("message", message);
+		if (current != null){
+			event.put("current", current);
+		}
+		if (total != null){
+			event.put("total", total);
+		}
+		emitProgress(event);
+	}
+
 	public static String friendlyMessage(Exception ex) {
 		if (ex instanceof StructureLearningException || ex instanceof IllegalArgumentException) {
 			return ex.getMessage();

@@ -117,6 +117,7 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 			configurer.setModelPrefixes(modelPrefixes);
 			configurer.setStageLabel(getLabel());
 			configurer.setPipelineResult(tmpResult);
+			configurer.setProgressEnabled(ctx.isProgressOutput());
 
 			PerformanceEvaluationExecutor executor = configurer.apply();
 			executor.execute();

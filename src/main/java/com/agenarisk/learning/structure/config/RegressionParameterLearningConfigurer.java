@@ -33,6 +33,8 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 	private String residualMode = RESIDUAL_MODE_NORMAL;
 	private int minRowsPerPartition = 5;
 	private double ridgeLambda = com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA;
+	private String nodeLabel = "";
+	private boolean progressEnabled = false;
 
 	public RegressionParameterLearningConfigurer(Config config) {
 		super(config);
@@ -137,5 +139,21 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 
 	public double getRidgeLambda() {
 		return ridgeLambda;
+	}
+
+	public String getNodeLabel() {
+		return nodeLabel;
+	}
+
+	public void setNodeLabel(String nodeLabel) {
+		this.nodeLabel = nodeLabel;
+	}
+
+	public boolean isProgressEnabled() {
+		return progressEnabled;
+	}
+
+	public void setProgressEnabled(boolean progressEnabled) {
+		this.progressEnabled = progressEnabled;
 	}
 }

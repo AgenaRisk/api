@@ -98,6 +98,8 @@ public class RegressionParameterLearningNode extends ModelNode {
 			configurer.setModelStageLabel(model);
 			configurer.setModelPrefix(model);
 			configurer.setModelPath(outputModelPath);
+			configurer.setNodeLabel(getLabel());
+			configurer.setProgressEnabled(ctx.isProgressOutput());
 
 			Model loadedModel = Model.loadModel(inputModelPath.toString());
 			configurer.setModel(loadedModel);

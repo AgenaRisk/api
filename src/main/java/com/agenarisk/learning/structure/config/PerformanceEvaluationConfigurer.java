@@ -29,6 +29,7 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 	private Map<String, String> modelPrefixes;
 	private Result pipelineResult;
 	private String stageLabel = "";
+	private boolean progressEnabled = false;
 	
 	public PerformanceEvaluationConfigurer(Config config) {
 		super(config);
@@ -153,5 +154,13 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 
 	public boolean isCalculateRoc() {
 		return calculateRoc;
+	}
+
+	public void setProgressEnabled(boolean progressEnabled) {
+		this.progressEnabled = progressEnabled;
+	}
+
+	public boolean isProgressEnabled() {
+		return progressEnabled;
 	}
 }

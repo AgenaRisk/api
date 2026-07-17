@@ -97,6 +97,8 @@ public class RegressionStructureLearningNode extends ModelNode {
 			}
 			configurer.configureFromJson(jConfig);
 			configurer.setModelPath(outputModelPath);
+			configurer.setNodeLabel(getLabel());
+			configurer.setProgressEnabled(ctx.isProgressOutput());
 
 			RegressionStructureSearchExecutor executor = configurer.apply();
 			executor.execute();

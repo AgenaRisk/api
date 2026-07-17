@@ -30,6 +30,8 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 	
 	private double dataWeight = 1;
 	private final HashMap<String, Double> nodeDataWeightsCustom = new HashMap<>();
+	private String nodeLabel = "";
+	private boolean progressEnabled = false;
 	
 	public TableLearningConfigurer(Config config) {
 		super(config);
@@ -159,6 +161,20 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 	public void resetNodeDataWeightsCustom(){
 		nodeDataWeightsCustom.clear();
 	}
-	
-	
+
+	public String getNodeLabel() {
+		return nodeLabel;
+	}
+
+	public void setNodeLabel(String nodeLabel) {
+		this.nodeLabel = nodeLabel;
+	}
+
+	public boolean isProgressEnabled() {
+		return progressEnabled;
+	}
+
+	public void setProgressEnabled(boolean progressEnabled) {
+		this.progressEnabled = progressEnabled;
+	}
 }
