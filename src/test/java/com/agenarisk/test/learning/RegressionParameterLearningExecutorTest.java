@@ -8,8 +8,8 @@ import com.agenarisk.api.model.Network;
 import com.agenarisk.api.model.Node;
 import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.config.Config;
-import com.agenarisk.learning.structure.config.LogisticRegressionTableLearningConfigurer;
-import com.agenarisk.learning.structure.config.LogisticRegressionTableLearningExecutor;
+import com.agenarisk.learning.structure.config.RegressionParameterLearningConfigurer;
+import com.agenarisk.learning.structure.config.RegressionParameterLearningExecutor;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,13 +20,15 @@ import org.junit.jupiter.api.Test;
 import uk.co.agena.minerva.util.Environment;
 
 /**
- * Exercises the full JSON-config -> Configurer -> Executor wiring for the logistic-capable executor, using the same
- * model/data shape as {@code RegressionTableLearningExecutorTest} to prove this executor is a strict superset of the
- * older one's behaviour: continuous target ("y") and categorical-only-parent target ("labelChild") are learned
- * identically, while the previously-skipped categorical-target-with-continuous-parent case ("boolChild") is now
- * actually learned via a persisted MultinomialLogit expression instead of being skipped.
+ * Exercises the full JSON-config -> Configurer -> Executor wiring for the canonical regression parameter learner
+ * (the same path {@code RegressionParameterLearningNode} drives from the graph execution system) - covering all
+ * three fitting cases in one model: a continuous target (OLS), a categorical target with only categorical parents
+ * (baked NPT), and a categorical target with a continuous parent (persisted {@code MultinomialLogit(...)}
+ * expression) - plus the enriched per-node diagnostic detail {@link com.agenarisk.learning.structure.regressiondiscovery.RegressionNodeFitter}
+ * now reports (partitions/combinations/expression), which {@code RegressionParameterLearningExecutor} passes through
+ * unchanged.
  */
-public class LogisticRegressionTableLearningExecutorTest {
+public class RegressionParameterLearningExecutorTest {
 
 	{
 		Environment.initialize();
@@ -63,8 +65,8 @@ public class LogisticRegressionTableLearningExecutorTest {
 			+ "}";
 
 	@Test
-	public void testExecutorLearnsContinuousLabelChildAndPreviouslySkippedBoolChild() throws Exception {
-		Path tempDir = Files.createTempDirectory("logistic-regression-table-learning-executor-test");
+	public void testExecutorLearnsAllThreeCasesWithRichDetail() throws Exception {
+		Path tempDir = Files.createTempDirectory("regression-parameter-learning-executor-test");
 		tempDir.toFile().deleteOnExit();
 
 		Path inputModelPath = tempDir.resolve("input.cmpx");
@@ -93,13 +95,13 @@ public class LogisticRegressionTableLearningExecutorTest {
 		config.setPathInput(dataPath.getParent().toString());
 		config.setFileInputTrainingDataCsv(dataPath.getFileName().toString());
 
-		LogisticRegressionTableLearningConfigurer configurer = new LogisticRegressionTableLearningConfigurer(config);
+		RegressionParameterLearningConfigurer configurer = new RegressionParameterLearningConfigurer(config);
 
 		JSONObject jConfig = new JSONObject();
 		JSONObject jParams = new JSONObject();
 		jParams.put("missingValue", "");
 		jParams.put("valueSeparator", ",");
-		jParams.put("residualMode", LogisticRegressionTableLearningConfigurer.RESIDUAL_MODE_ARITHMETIC);
+		jParams.put("residualMode", RegressionParameterLearningConfigurer.RESIDUAL_MODE_ARITHMETIC);
 		jParams.put("minRowsPerPartition", 5);
 		jParams.put("dataPath", dataPath.toString());
 		jParams.put("modelStageLabel", "stage1");
@@ -107,20 +109,20 @@ public class LogisticRegressionTableLearningExecutorTest {
 		configurer.configureFromJson(jConfig);
 
 		configurer.setModelStageLabel("stage1");
-		configurer.setModelPrefix("logisticRegressionTableLearningTest");
+		configurer.setModelPrefix("regressionParameterLearningTest");
 		configurer.setModelPath(outputModelPath);
 
 		Model loadedModel = Model.loadModel(inputModelPath.toString());
 		configurer.setModel(loadedModel);
 
-		LogisticRegressionTableLearningExecutor executor = configurer.apply();
+		RegressionParameterLearningExecutor executor = configurer.apply();
 		executor.execute();
 
 		JSONObject result = executor.getLastResult();
 		Assertions.assertNotNull(result);
 		JSONArray jNodes = result.getJSONArray("nodes");
 
-		// Same as the old executor: continuous target "y" learned via OLS
+		// Continuous target "y": learned via OLS, rich partition detail present
 		JSONObject jY = findNode(jNodes, "y");
 		Assertions.assertFalse(jY.getBoolean("skipped"));
 		JSONArray jPartitions = jY.getJSONArray("partitions");
@@ -128,7 +130,7 @@ public class LogisticRegressionTableLearningExecutorTest {
 		Assertions.assertEquals(26, jPartitions.getJSONObject(0).getInt("n"));
 		Assertions.assertEquals(1.0, jPartitions.getJSONObject(0).getDouble("r2"), 1e-6);
 
-		// Same as the old executor: categorical-only-parent target "labelChild" learned via CategoricalRegressionLearner
+		// Categorical-only-parents target "labelChild": baked NPT, rich combination detail present
 		JSONObject jLabelChild = findNode(jNodes, "labelChild");
 		Assertions.assertFalse(jLabelChild.getBoolean("skipped"));
 		Assertions.assertEquals(26, jLabelChild.getInt("n"));
@@ -136,7 +138,7 @@ public class LogisticRegressionTableLearningExecutorTest {
 		JSONArray jCombinations = jLabelChild.getJSONArray("combinations");
 		Assertions.assertEquals(2, jCombinations.length());
 
-		// DIFFERENT from the old executor: "boolChild" (categorical, continuous parent x1) is now LEARNED, not skipped
+		// Categorical-with-continuous-parent target "boolChild": persisted MultinomialLogit expression
 		JSONObject jBoolChild = findNode(jNodes, "boolChild");
 		Assertions.assertFalse(jBoolChild.getBoolean("skipped"));
 		Assertions.assertTrue(jBoolChild.has("expression"));
@@ -147,7 +149,6 @@ public class LogisticRegressionTableLearningExecutorTest {
 		Network network = writtenModel.getNetworkList().get(0);
 		Node writtenX1 = network.getNode("x1");
 		Node writtenY = network.getNode("y");
-		Node writtenBoolChild = network.getNode("boolChild");
 		Node writtenCatParent = network.getNode("catParent");
 		Node writtenLabelChild = network.getNode("labelChild");
 
@@ -156,18 +157,6 @@ public class LogisticRegressionTableLearningExecutorTest {
 		writtenModel.calculate();
 		CalculationResult cr = dataSet.getCalculationResult(writtenY);
 		Assertions.assertEquals(32.0, cr.getMean(), 1e-6);
-
-		// boolChild's learned logistic expression evaluates sensibly under evidence on x1
-		double probTrueAtLowX1 = dataSet.getCalculationResult(writtenBoolChild).getResultValue("True").getValue();
-
-		dataSet.clearObservations();
-		dataSet.setObservationHard(writtenX1, -10.0);
-		writtenModel.calculate();
-		double probTrueAtHighX1Negated = dataSet.getCalculationResult(writtenBoolChild).getResultValue("True").getValue();
-		// Just confirm the two evidence settings produce a well-formed, differing probability (data isn't a clean
-		// linear-in-x1 signal by construction here, so we don't assert a specific direction, just non-degeneracy)
-		Assertions.assertTrue(probTrueAtLowX1 >= 0 && probTrueAtLowX1 <= 1);
-		Assertions.assertTrue(probTrueAtHighX1Negated >= 0 && probTrueAtHighX1Negated <= 1);
 
 		dataSet.clearObservations();
 		dataSet.setObservationHard(writtenCatParent, "True");

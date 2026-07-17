@@ -14,7 +14,7 @@ import java.util.Map;
  * fits and writes each node's table via {@link RegressionNodeFitter} against its now-fixed parents.
  * <br>
  * Mutates and returns the same {@code Model} instance passed in, matching the convention already used by
- * {@code RegressionTableLearningExecutor}/{@code LogisticRegressionTableLearningExecutor}.
+ * {@code RegressionParameterLearningExecutor}.
  *
  * @author Eugene Dementiev
  */

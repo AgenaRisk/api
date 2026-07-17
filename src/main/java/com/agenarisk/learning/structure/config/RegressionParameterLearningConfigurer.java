@@ -9,21 +9,19 @@ import java.util.Optional;
 import org.json.JSONObject;
 
 /**
- * Configures a regression-based table learning run that additionally covers categorical targets with continuous
- * parent(s) via {@link com.agenarisk.learning.structure.regression.LogisticRegressionLearner} - the one case
- * {@link RegressionTableLearningConfigurer}/{@code RegressionTableLearningExecutor} still skip (see
- * {@link com.agenarisk.learning.structure.regression.RegressionEligibility}).
- * <br>
- * This is an additional, selectable option alongside {@code RegressionTableLearningConfigurer}, not a replacement -
- * every case the older configurer already handles (continuous targets, categorical targets with only categorical
- * parents) is learned identically here too, by reusing the same learner classes unchanged.
+ * Configures a regression-based parameter learning run: fits every node's table against its already-fixed parents
+ * (continuous targets via OLS, categorical targets with only categorical parents via ridge-regularized multinomial
+ * logistic regression baked to a manual NPT, categorical targets with any continuous parent via a persisted
+ * {@code MultinomialLogit(...)} expression) - the canonical, sole regression-based parameter learner, alongside
+ * {@link TableLearningConfigurer} (EM-based) and {@link RegressionStructureConfigurer} (structure + parameters
+ * together).
  *
  * @author Eugene Dementiev
  */
-public class LogisticRegressionTableLearningConfigurer extends ApplicableConfigurer implements Configurable, ConfigurableFromJson<LogisticRegressionTableLearningConfigurer> {
+public class RegressionParameterLearningConfigurer extends ApplicableConfigurer implements Configurable, ConfigurableFromJson<RegressionParameterLearningConfigurer> {
 
-	public static final String RESIDUAL_MODE_NORMAL = RegressionTableLearningConfigurer.RESIDUAL_MODE_NORMAL;
-	public static final String RESIDUAL_MODE_ARITHMETIC = RegressionTableLearningConfigurer.RESIDUAL_MODE_ARITHMETIC;
+	public static final String RESIDUAL_MODE_NORMAL = "Normal";
+	public static final String RESIDUAL_MODE_ARITHMETIC = "Arithmetic";
 
 	private Path dataPath;
 	private Path modelPath;
@@ -36,16 +34,16 @@ public class LogisticRegressionTableLearningConfigurer extends ApplicableConfigu
 	private int minRowsPerPartition = 5;
 	private double ridgeLambda = com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA;
 
-	public LogisticRegressionTableLearningConfigurer(Config config) {
+	public RegressionParameterLearningConfigurer(Config config) {
 		super(config);
 	}
 
-	public LogisticRegressionTableLearningConfigurer() {
+	public RegressionParameterLearningConfigurer() {
 		super();
 	}
 
 	@Override
-	public LogisticRegressionTableLearningConfigurer configureFromJson(JSONObject jConfig) {
+	public RegressionParameterLearningConfigurer configureFromJson(JSONObject jConfig) {
 		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
 
 		if (jParameters.has("dataPath")){
@@ -76,11 +74,11 @@ public class LogisticRegressionTableLearningConfigurer extends ApplicableConfigu
 	}
 
 	@Override
-	public LogisticRegressionTableLearningExecutor apply() {
+	public RegressionParameterLearningExecutor apply() {
 		if (dataPath == null || modelStageLabel == null || modelStageLabel.isEmpty() || modelPrefix == null || modelPrefix.isEmpty() || modelPath == null || model == null){
-			throw new StructureLearningException("LogisticRegressionTableLearningConfigurer is not fully configured before applying");
+			throw new StructureLearningException("RegressionParameterLearningConfigurer is not fully configured before applying");
 		}
-		LogisticRegressionTableLearningExecutor executor = new LogisticRegressionTableLearningExecutor(config);
+		RegressionParameterLearningExecutor executor = new RegressionParameterLearningExecutor(config);
 		executor.setOriginalConfigurer(this);
 		return executor;
 	}

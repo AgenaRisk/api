@@ -2,40 +2,24 @@ package com.agenarisk.learning.structure.execution.graph.node;
 
 import BNlearning.Database;
 import com.agenarisk.api.model.Model;
-import com.agenarisk.api.model.Network;
-import com.agenarisk.api.model.Node;
 import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.config.Config;
+import com.agenarisk.learning.structure.config.RegressionParameterLearningConfigurer;
+import com.agenarisk.learning.structure.config.RegressionParameterLearningExecutor;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
-import com.agenarisk.learning.structure.regression.CategoricalRegressionLearner;
-import com.agenarisk.learning.structure.regression.ContinuousRegressionLearner;
-import com.agenarisk.learning.structure.regression.LogisticRegressionLearner;
-import com.agenarisk.learning.structure.regression.RegressionDataset;
-import com.agenarisk.learning.structure.regressiondiscovery.RegressionNodeFitter;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import uk.co.agena.minerva.util.EM.Data;
 
 /**
- * A third parameter-learning path, alongside {@link ProbabilityLearningNode} (EM-based) and
- * {@link RegressionTableLearningNode}/{@link LogisticRegressionTableLearningNode} (bake-to-manual-table OLS/logit):
- * fits and persists native regression expressions (continuous targets get {@code Normal}/{@code TNormal}/
- * {@code Arithmetic} expressions, categorical targets get a manual NPT or a {@code MultinomialLogit} expression
- * depending on whether they have a continuous parent) against a structure that's already fixed - e.g. an imported
- * model whose links were set by hand or by {@link RegressionStructureLearningNode} in an earlier stage.
- * <br>
- * Uses the exact same {@link RegressionNodeFitter} helper {@link RegressionStructureLearningNode}'s materializer
- * uses, so "search discovers structure" and "this node bakes tables for fixed structure" are provably doing the same
- * fit - just over a different parent-set source (search-chosen vs. already-in-model).
+ * Graph node for regression-based parameter learning: fits every node's table against its already-fixed parents
+ * (continuous targets via OLS, categorical targets with only categorical parents via ridge-regularized multinomial
+ * logistic regression baked to a manual NPT, categorical targets with any continuous parent via a persisted
+ * {@code MultinomialLogit(...)} expression) - the canonical, sole regression-based parameter learner, alongside
+ * {@link ProbabilityLearningNode} (EM-based) and {@link RegressionStructureLearningNode} (structure + parameters
+ * together). See {@code RegressionParameterLearningConfigurer}/{@code RegressionParameterLearningExecutor} for the
+ * actual learning logic.
  *
  * @author Eugene Dementiev
  */
@@ -45,6 +29,8 @@ public class RegressionParameterLearningNode extends ModelNode {
 	private String dataSource;
 	private String missingValue = "";
 	private String valueSeparator = ",";
+	private String residualMode = RegressionParameterLearningConfigurer.RESIDUAL_MODE_NORMAL;
+	private int minRowsPerPartition = 5;
 	private double ridgeLambda = com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA;
 	private JSONObject jOptions;
 
@@ -60,6 +46,8 @@ public class RegressionParameterLearningNode extends ModelNode {
 		this.dataSource = jOptions.optString("dataSource", "");
 		this.missingValue = jOptions.optString("missingValue", "");
 		this.valueSeparator = jOptions.optString("valueSeparator", ",");
+		this.residualMode = jOptions.optString("residualMode", RegressionParameterLearningConfigurer.RESIDUAL_MODE_NORMAL);
+		this.minRowsPerPartition = jOptions.optInt("minRowsPerPartition", 5);
 		this.ridgeLambda = jOptions.optDouble("ridgeLambda", com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA);
 	}
 
@@ -85,60 +73,65 @@ public class RegressionParameterLearningNode extends ModelNode {
 			Path inputModelPath = ctx.modelPath(model);
 			Path outputModelPath = getModelPath(ctx);
 
-			Config.reset((c) -> {
+			Config config = Config.reset((c) -> {
 				TempFileCleanup.cleanup(c);
 				Database.reset();
 			});
 
+			config.setPathInput(dataPath.getParent().toString());
+			config.setFileInputTrainingDataCsv(dataPath.getFileName().toString());
+
+			RegressionParameterLearningConfigurer configurer = new RegressionParameterLearningConfigurer(config);
+
+			JSONObject jConfig = new JSONObject();
+			JSONObject jParams = new JSONObject();
+			jParams.put("missingValue", missingValue);
+			jParams.put("valueSeparator", valueSeparator);
+			jParams.put("residualMode", residualMode);
+			jParams.put("minRowsPerPartition", minRowsPerPartition);
+			jParams.put("ridgeLambda", ridgeLambda);
+			jParams.put("dataPath", dataPath.toString());
+			jParams.put("modelStageLabel", model);
+			jConfig.put("parameters", jParams);
+			configurer.configureFromJson(jConfig);
+
+			configurer.setModelStageLabel(model);
+			configurer.setModelPrefix(model);
+			configurer.setModelPath(outputModelPath);
+
 			Model loadedModel = Model.loadModel(inputModelPath.toString());
-			Data data = new Data(dataPath.toString(), missingValue, valueSeparator);
+			configurer.setModel(loadedModel);
 
-			Network network = loadedModel.getNetworkList().get(0);
-			Map<String, List<String>> rankedStatesByNodeId = new HashMap<>();
-			for (Node node : network.getNodeList()){
-				if (node.getType() == Node.Type.Ranked){
-					rankedStatesByNodeId.put(node.getId(), node.getStates().stream().map(com.agenarisk.api.model.State::getLabel).collect(Collectors.toList()));
-				}
-			}
-			RegressionDataset dataset = new RegressionDataset(data, rankedStatesByNodeId);
+			RegressionParameterLearningExecutor executor = configurer.apply();
+			executor.execute();
 
-			ContinuousRegressionLearner continuousLearner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL);
-			CategoricalRegressionLearner categoricalLearner = new CategoricalRegressionLearner(dataset, ridgeLambda);
-			LogisticRegressionLearner logisticLearner = new LogisticRegressionLearner(dataset, ridgeLambda);
-			RegressionNodeFitter fitter = new RegressionNodeFitter(continuousLearner, categoricalLearner, logisticLearner);
-
-			JSONArray jNodes = new JSONArray();
-			int skippedCount = 0;
-			int totalCount = 0;
-			StringBuilder reasons = new StringBuilder();
-
-			for (Node node : network.getNodeList()){
-				RegressionNodeFitter.NodeFitOutcome outcome = fitter.fitAndWrite(node);
-				totalCount++;
-				JSONObject jNode = new JSONObject();
-				jNode.put("nodeId", outcome.getNodeId());
-				jNode.put("skipped", outcome.isSkipped());
-				if (outcome.isSkipped()){
-					skippedCount++;
-					jNode.put("reason", outcome.getSkipReason());
-					if (reasons.length() > 0){
-						reasons.append(" ");
-					}
-					reasons.append(outcome.getNodeId()).append(": ").append(outcome.getSkipReason());
-				}
-				jNodes.put(jNode);
-			}
-
-			JSONObject lastResult = new JSONObject().put("nodes", jNodes);
-
-			byte[] bytes = loadedModel.export(Model.ExportFlag.KEEP_META, Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_RESULTS).toString().getBytes();
-			Files.write(outputModelPath, bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-			JSONObject jResult = loadedModel.toJson().optJSONObject("model");
-			if (jResult != null){
+			Model resultModel = configurer.getModel();
+			JSONObject jResult = resultModel.toJson().optJSONObject("model");
+			JSONObject lastResult = executor.getLastResult();
+			if (jResult != null && lastResult != null){
 				jResult.put("regressionParameterLearning", lastResult);
 			}
 			setResult(jResult);
+
+			int skippedCount = 0;
+			int totalCount = 0;
+			StringBuilder reasons = new StringBuilder();
+			if (lastResult != null){
+				org.json.JSONArray jNodes = lastResult.optJSONArray("nodes");
+				if (jNodes != null){
+					totalCount = jNodes.length();
+					for (int i = 0; i < jNodes.length(); i++){
+						JSONObject jNode = jNodes.getJSONObject(i);
+						if (jNode.optBoolean("skipped", false)){
+							skippedCount++;
+							if (reasons.length() > 0){
+								reasons.append(" ");
+							}
+							reasons.append(jNode.optString("nodeId", "?")).append(": ").append(jNode.optString("reason", ""));
+						}
+					}
+				}
+			}
 
 			if (skippedCount > 0){
 				setStatus(Status.warning);

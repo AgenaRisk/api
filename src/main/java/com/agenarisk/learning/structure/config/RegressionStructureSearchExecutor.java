@@ -147,6 +147,11 @@ public class RegressionStructureSearchExecutor extends Configurer<RegressionStru
 				jNode.put("freeParameters", score.getFreeParameterCount());
 				jNode.put("n", score.getN());
 			}
+			if (outcome.getDetail() != null){
+				for (String key : outcome.getDetail().keySet()){
+					jNode.put(key, outcome.getDetail().get(key));
+				}
+			}
 			jNodes.put(jNode);
 		}
 		jResult.put("nodes", jNodes);
