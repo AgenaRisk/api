@@ -82,6 +82,24 @@ public class OrdinaryLeastSquaresTest {
 	}
 
 	@Test
+	public void testNearConstantRegressorIsTreatedAsIllConditioned() {
+		// x1 is essentially constant (only floating-point-scale variation around 3.0) - a column that still passes
+		// an *exact* rank check (it's not literally identical every row), but fitting a coefficient against it to
+		// explain y's real-scale variance necessarily blows up to an astronomical, meaningless magnitude. This
+		// reproduces a real production case: a root variable that was constant in the training data (e.g. a fixed
+		// "Fuel_price" column) ended up as a regressor for other nodes, producing coefficients like 1.5e11 - which
+		// aren't just meaningless, calculating a model with such an expression can hang the engine's discretization.
+		double[][] x = {
+			{3.0}, {3.0 + 1e-9}, {3.0 - 1e-9}, {3.0 + 2e-9}, {3.0 - 2e-9}, {3.0}
+		};
+		double[] y = {10.0, 12.0, 8.0, 14.0, 6.0, 11.0};
+
+		OrdinaryLeastSquares.Result result = OrdinaryLeastSquares.fit(x, y);
+
+		Assertions.assertFalse(result.isFullRank());
+	}
+
+	@Test
 	public void testInsufficientRowsThrowsOnMismatch() {
 		double[][] x = {{1, 2}, {3, 4}};
 		double[] y = {1, 2, 3};

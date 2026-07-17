@@ -163,4 +163,82 @@ public class RegressionStructureSearchTest {
 
 		Assertions.assertTrue(graph.hasEdge("x2", "y"), "Required edge must be present in the final graph");
 	}
+
+	private static final String RANKED_TARGET_MODEL_JSON = "{"
+			+ "\"model\": {"
+			+ "  \"networks\": [{"
+			+ "    \"id\": \"net\","
+			+ "    \"nodes\": [{"
+			+ "        \"id\": \"x1\","
+			+ "        \"configuration\": {\"simulated\": true, \"type\": \"ContinuousInterval\", \"table\": {\"type\": \"Expression\", \"expressions\": [\"Arithmetic(0)\"]}}"
+			+ "      }, {"
+			+ "        \"id\": \"x2\","
+			+ "        \"configuration\": {\"simulated\": true, \"type\": \"ContinuousInterval\", \"table\": {\"type\": \"Expression\", \"expressions\": [\"Arithmetic(0)\"]}}"
+			+ "      }, {"
+			+ "        \"id\": \"x3\","
+			+ "        \"configuration\": {\"simulated\": true, \"type\": \"ContinuousInterval\", \"table\": {\"type\": \"Expression\", \"expressions\": [\"Arithmetic(0)\"]}}"
+			+ "      }, {"
+			+ "        \"id\": \"x4\","
+			+ "        \"configuration\": {\"simulated\": true, \"type\": \"ContinuousInterval\", \"table\": {\"type\": \"Expression\", \"expressions\": [\"Arithmetic(0)\"]}}"
+			+ "      }, {"
+			+ "        \"id\": \"y\","
+			+ "        \"configuration\": {\"type\": \"Ranked\", \"states\": [\"Low\", \"Medium\", \"High\"]}"
+			+ "      }"
+			+ "    ],"
+			+ "    \"links\": []"
+			+ "  }]"
+			+ "}"
+			+ "}";
+
+	/**
+	 * Reproduces (in miniature) the real hang: a Ranked target - which can never be {@code simulated} and so always
+	 * needs a materialized NPT - individually, genuinely benefits from several simulated-continuous parents (BIC
+	 * would want all four here, since each one is independently informative about y). Confirms the search caps how
+	 * many it actually adds, rather than accumulating all of them into one combinatorially catastrophic clique - the
+	 * exact failure mode that hung real performance evaluation runs before this constraint existed.
+	 */
+	@Test
+	public void testRankedTargetWithManyInformativeContinuousParentsGetsCappedNotAllFour() throws Exception {
+		Random random = new Random(3);
+		StringBuilder csv = new StringBuilder("y,x1,x2,x3,x4\n");
+		String[] states = {"Low", "Medium", "High"};
+		for (int i = 0; i < 600; i++){
+			double x1 = random.nextGaussian();
+			double x2 = random.nextGaussian();
+			double x3 = random.nextGaussian();
+			double x4 = random.nextGaussian();
+			double score = (x1 + x2 + x3 + x4) + random.nextGaussian() * 0.05;
+			// Roughly tertile-split the latent score into three ordered states.
+			String yState = score < -0.6 ? states[0] : (score > 0.6 ? states[2] : states[1]);
+			csv.append(yState).append(",").append(x1).append(",").append(x2).append(",").append(x3).append(",").append(x4).append("\n");
+		}
+
+		Model model = Model.createModel(new JSONObject(RANKED_TARGET_MODEL_JSON));
+		Network network = model.getNetworkList().get(0);
+		Map<String, Node> nodesById = new HashMap<>();
+		for (Node node : network.getNodeList()){
+			nodesById.put(node.getId(), node);
+		}
+
+		Map<String, java.util.List<String>> rankedStatesByNodeId = new HashMap<>();
+		rankedStatesByNodeId.put("y", java.util.Arrays.asList(states));
+		RegressionDataset dataset = new RegressionDataset(writeAndLoadData(csv.toString()), rankedStatesByNodeId);
+		RegressionBicScorer scorer = new RegressionBicScorer(dataset);
+
+		// x1 vs y is a roughly-symmetric linear relationship, so BIC alone can't reliably tell the search which
+		// direction to prefer (same Markov-equivalence ambiguity as testRecoversRelevantVariableAndIgnoresIrrelevantOne
+		// above) - forcing this one edge's direction keeps the test's real point (does the *cap* hold once y already
+		// has a materialized-NPT parent load) deterministic, without that unrelated ambiguity affecting the result.
+		RegressionKnowledge knowledge = new RegressionKnowledge();
+		knowledge.requireEdge("x1", "y");
+
+		RegressionStructureSearch search = new RegressionStructureSearch(scorer, knowledge, 5, 200);
+		RegressionStructureResult result = search.search(nodesById);
+		CandidateGraph graph = result.getGraph();
+
+		long yParentCount = graph.getParents("y").size();
+		Assertions.assertTrue(yParentCount >= 1, "The required edge alone guarantees at least one parent");
+		Assertions.assertTrue(yParentCount < 4,
+				"Search must not accumulate all four simulated-continuous parents into y's clique - got " + yParentCount);
+	}
 }

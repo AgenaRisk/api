@@ -15,6 +15,18 @@ import cern.colt.matrix.linalg.QRDecomposition;
 public class OrdinaryLeastSquares {
 
 	/**
+	 * Above this ratio of the largest to smallest diagonal magnitude in the QR decomposition's R factor, the design
+	 * matrix is treated as too ill-conditioned to trust, even though {@link QRDecomposition#hasFullRank()} (which
+	 * only catches *exact* rank deficiency) still reports true. A near-constant regressor - or any near-collinear
+	 * combination of columns - passes that exact check yet yields coefficients that blow up to explain noise-level
+	 * variance, producing expressions with coefficients in the 1e8-1e13 range; besides being meaningless, calculating
+	 * a network with such an expression can make the engine's dynamic discretization fail to converge, hanging
+	 * calculation. Treating this the same as exact rank-deficiency reuses the existing, already-tested fallback chain
+	 * (pooled ANCOVA, then global mean) that callers already have for that case - no other code needed to change.
+	 */
+	private static final double MAX_CONDITION_RATIO = 1e8;
+
+	/**
 	 * Result of an OLS fit.
 	 */
 	public static class Result {
@@ -133,7 +145,7 @@ public class OrdinaryLeastSquares {
 		}
 
 		QRDecomposition qr = new QRDecomposition(design);
-		boolean fullRank = qr.hasFullRank();
+		boolean fullRank = qr.hasFullRank() && isWellConditioned(qr.getR());
 
 		double[] coefficients = new double[k + 1];
 		double[] fitted = new double[n];
@@ -176,6 +188,31 @@ public class OrdinaryLeastSquares {
 		double residualVariance = (fullRank && residualDf > 0) ? (sse / residualDf) : Double.NaN;
 
 		return new Result(coefficients, n, k, fullRank, r2, residualVariance);
+	}
+
+	/**
+	 * @param r the R factor from a QR decomposition of the design matrix
+	 *
+	 * @return false if the ratio of its largest to smallest diagonal magnitude exceeds {@link #MAX_CONDITION_RATIO}
+	 * (or either is zero) - a cheap, standard proxy for the design matrix's condition number
+	 */
+	private static boolean isWellConditioned(DoubleMatrix2D r) {
+		int size = Math.min(r.rows(), r.columns());
+		double maxAbs = 0;
+		double minAbs = Double.POSITIVE_INFINITY;
+		for (int i = 0; i < size; i++){
+			double d = Math.abs(r.getQuick(i, i));
+			if (d > maxAbs){
+				maxAbs = d;
+			}
+			if (d < minAbs){
+				minAbs = d;
+			}
+		}
+		if (minAbs == 0 || maxAbs == 0){
+			return false;
+		}
+		return (maxAbs / minAbs) <= MAX_CONDITION_RATIO;
 	}
 
 	private static double mean(double[] values) {
