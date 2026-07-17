@@ -7,7 +7,6 @@ import com.agenarisk.learning.structure.config.Config;
 import com.agenarisk.learning.structure.config.RegressionStructureConfigurer;
 import com.agenarisk.learning.structure.config.RegressionStructureSearchExecutor;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
-import com.agenarisk.learning.structure.regressiondiscovery.RegressionKnowledge;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -18,14 +17,19 @@ import org.json.JSONObject;
  * decomposable regression-based BIC over mixed continuous/discrete data, selectable alongside (never replacing) the
  * legacy discrete-BIC discovery algorithms ({@code modelDiscovery} node type / HC/Tabu/GES/SaiyanH/MAHC).
  * <br>
- * Inputs: {@code model} - a "shell" model declaring every candidate variable's type/states/bounds (its links, if
- * any, are irrelevant - discovering them is this node's job); {@code dataSource} - raw, non-discretized CSV data.
+ * This node *produces* a model from data - like {@code modelDiscovery}/{@code modelGeneration}, it takes only a
+ * {@code dataSource}, no model input at all. Each column's node type/states is either declared explicitly via the
+ * {@code variables} option (parsed by {@link RegressionStructureConfigurer#configureFromJson}, one
+ * {@code com.agenarisk.learning.structure.regressiondiscovery.VariableDeclaration} per column) or defaulted
+ * (numeric -> simulated ContinuousInterval, non-numeric -> Labelled with auto-detected states) by
+ * {@link com.agenarisk.learning.structure.regressiondiscovery.ShellModelBuilder}, which
+ * {@link RegressionStructureSearchExecutor} calls internally - there is nowhere in this node that loads an existing
+ * {@code .cmpx} file.
  *
  * @author Eugene Dementiev
  */
 public class RegressionStructureLearningNode extends ModelNode {
 
-	private String model;
 	private String dataSource;
 	private String missingValue = "";
 	private String valueSeparator = ",";
@@ -42,7 +46,6 @@ public class RegressionStructureLearningNode extends ModelNode {
 	@Override
 	public void parseOptions(JSONObject jOptions) {
 		this.jOptions = jOptions;
-		this.model = jOptions.optString("model", "");
 		this.dataSource = jOptions.optString("dataSource", "");
 		this.missingValue = jOptions.optString("missingValue", "");
 		this.valueSeparator = jOptions.optString("valueSeparator", ",");
@@ -54,9 +57,6 @@ public class RegressionStructureLearningNode extends ModelNode {
 	@Override
 	public Set<String> getInputLabels() {
 		Set<String> labels = new LinkedHashSet<>();
-		if (model != null && !model.isEmpty()){
-			labels.add(model);
-		}
 		if (dataSource != null && !dataSource.isEmpty()){
 			labels.add(dataSource);
 		}
@@ -68,9 +68,6 @@ public class RegressionStructureLearningNode extends ModelNode {
 		try {
 			DataSourceNode dsNode = requireDataSource(ctx, dataSource);
 			Path dataPath = dsNode.resolvedPath(ctx);
-
-			requireModelInput(ctx, model);
-			Path inputModelPath = ctx.modelPath(model);
 			Path outputModelPath = getModelPath(ctx);
 
 			Config config = Config.reset((c) -> {
@@ -91,19 +88,15 @@ public class RegressionStructureLearningNode extends ModelNode {
 			jParams.put("maxParentsPerNode", maxParentsPerNode);
 			jParams.put("maxIterations", maxIterations);
 			jParams.put("dataPath", dataPath.toString());
-			jParams.put("modelStageLabel", model);
 			jConfig.put("parameters", jParams);
 			if (jOptions != null && jOptions.has("knowledge")){
 				jConfig.put("knowledge", jOptions.getJSONObject("knowledge"));
 			}
+			if (jOptions != null && jOptions.has("variables")){
+				jConfig.put("variables", jOptions.getJSONObject("variables"));
+			}
 			configurer.configureFromJson(jConfig);
-
-			configurer.setModelStageLabel(model);
-			configurer.setModelPrefix(model);
 			configurer.setModelPath(outputModelPath);
-
-			Model loadedModel = Model.loadModel(inputModelPath.toString());
-			configurer.setModel(loadedModel);
 
 			RegressionStructureSearchExecutor executor = configurer.apply();
 			executor.execute();
@@ -127,10 +120,6 @@ public class RegressionStructureLearningNode extends ModelNode {
 		catch (Exception ex){
 			failWith("Regression structure discovery failed: " + friendlyMessage(ex), ex);
 		}
-	}
-
-	public String getModel() {
-		return model;
 	}
 
 	public String getDataSource() {

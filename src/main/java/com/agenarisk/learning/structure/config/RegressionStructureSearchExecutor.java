@@ -14,6 +14,8 @@ import com.agenarisk.learning.structure.regressiondiscovery.RegressionModelMater
 import com.agenarisk.learning.structure.regressiondiscovery.RegressionNodeFitter;
 import com.agenarisk.learning.structure.regressiondiscovery.RegressionStructureResult;
 import com.agenarisk.learning.structure.regressiondiscovery.RegressionStructureSearch;
+import com.agenarisk.learning.structure.regressiondiscovery.ShellModelBuilder;
+import com.agenarisk.api.util.CsvReader;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
@@ -64,7 +66,8 @@ public class RegressionStructureSearchExecutor extends Configurer<RegressionStru
 				throw new StructureLearningException("Original configurer not set");
 			}
 
-			Model model = originalConfigurer.getModel();
+			List<String> csvHeaders = CsvReader.readHeaders(originalConfigurer.getDataPath());
+			Model model = ShellModelBuilder.build(csvHeaders, originalConfigurer.getDataPath(), originalConfigurer.getVariableDeclarations());
 			Data data = new Data(originalConfigurer.getDataPath().toString(), originalConfigurer.getMissingValue(), originalConfigurer.getValueSeparator());
 
 			Network network = model.getNetworkList().get(0);

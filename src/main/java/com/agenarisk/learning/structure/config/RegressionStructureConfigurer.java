@@ -3,9 +3,12 @@ package com.agenarisk.learning.structure.config;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.regressiondiscovery.RegressionKnowledge;
+import com.agenarisk.learning.structure.regressiondiscovery.VariableDeclaration;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.json.JSONObject;
 
@@ -18,6 +21,11 @@ import org.json.JSONObject;
  * Unlike the legacy engine's configurers, this never touches {@code Config}'s algorithm/constraint fields or writes
  * CSV constraint files - knowledge is supplied directly as a {@link RegressionKnowledge} object, evaluated in-process
  * by the search.
+ * <br>
+ * This node produces a model from data - it never consumes one, same as {@code modelDiscovery}/{@code modelGeneration}.
+ * {@link #getModel()}/{@link #setModel(Model)} are populated by {@link RegressionStructureSearchExecutor} after it
+ * builds the shell model itself (via {@link com.agenarisk.learning.structure.regressiondiscovery.ShellModelBuilder},
+ * from {@link #getVariableDeclarations()} plus the raw CSV) and runs the search - there is no model input.
  *
  * @author Eugene Dementiev
  */
@@ -25,8 +33,6 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 
 	private Path dataPath;
 	private Path modelPath;
-	private String modelStageLabel;
-	private String modelPrefix;
 	private Model model;
 	private String missingValue = "";
 	private String valueSeparator = ",";
@@ -34,6 +40,7 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 	private int maxParentsPerNode = 5;
 	private int maxIterations = 500;
 	private RegressionKnowledge knowledge = new RegressionKnowledge();
+	private Map<String, VariableDeclaration> variableDeclarations = new HashMap<>();
 
 	public RegressionStructureConfigurer(Config config) {
 		super(config);
@@ -60,7 +67,6 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 			throw new StructureLearningException("Can't read data file: " + dataPath);
 		}
 
-		modelStageLabel = jParameters.optString("modelStageLabel", modelStageLabel);
 		missingValue = jParameters.optString("missingValue", missingValue);
 		valueSeparator = jParameters.optString("valueSeparator", valueSeparator);
 		ridgeLambda = jParameters.optDouble("ridgeLambda", ridgeLambda);
@@ -71,25 +77,25 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 			knowledge = RegressionKnowledge.fromJson(jConfig.getJSONObject("knowledge"));
 		}
 
+		if (jConfig.has("variables")){
+			JSONObject jVariables = jConfig.getJSONObject("variables");
+			variableDeclarations = new HashMap<>();
+			for (String columnId : jVariables.keySet()){
+				variableDeclarations.put(columnId, VariableDeclaration.fromJson(jVariables.getJSONObject(columnId)));
+			}
+		}
+
 		return this;
 	}
 
 	@Override
 	public RegressionStructureSearchExecutor apply() {
-		if (dataPath == null || modelStageLabel == null || modelStageLabel.isEmpty() || modelPrefix == null || modelPrefix.isEmpty() || modelPath == null || model == null){
+		if (dataPath == null || modelPath == null){
 			throw new StructureLearningException("RegressionStructureConfigurer is not fully configured before applying");
 		}
 		RegressionStructureSearchExecutor executor = new RegressionStructureSearchExecutor(config);
 		executor.setOriginalConfigurer(this);
 		return executor;
-	}
-
-	public String getModelPrefix() {
-		return modelPrefix;
-	}
-
-	public void setModelPrefix(String modelPrefix) {
-		this.modelPrefix = modelPrefix;
 	}
 
 	public Model getModel() {
@@ -110,14 +116,6 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 
 	public void setModelPath(Path modelPath) {
 		this.modelPath = modelPath;
-	}
-
-	public String getModelStageLabel() {
-		return modelStageLabel;
-	}
-
-	public void setModelStageLabel(String modelStageLabel) {
-		this.modelStageLabel = modelStageLabel;
 	}
 
 	public String getMissingValue() {
@@ -154,6 +152,15 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 
 	public RegressionStructureConfigurer setKnowledge(RegressionKnowledge knowledge) {
 		this.knowledge = knowledge;
+		return this;
+	}
+
+	public Map<String, VariableDeclaration> getVariableDeclarations() {
+		return variableDeclarations;
+	}
+
+	public RegressionStructureConfigurer setVariableDeclarations(Map<String, VariableDeclaration> variableDeclarations) {
+		this.variableDeclarations = variableDeclarations;
 		return this;
 	}
 }
