@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -74,14 +75,27 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 		maxIterations = jParameters.optInt("maxIterations", maxIterations);
 
 		if (jConfig.has("knowledge")){
-			knowledge = RegressionKnowledge.fromJson(jConfig.getJSONObject("knowledge"));
+			try {
+				knowledge = RegressionKnowledge.fromJson(jConfig.getJSONObject("knowledge"));
+			}
+			catch (JSONException ex){
+				throw new StructureLearningException("Invalid \"knowledge\" configuration - connection pairs must be"
+						+ " {\"parent\": ..., \"child\": ...} objects (or {\"a\": ..., \"b\": ...} for"
+						+ " connectionsForbidden), not arrays: " + ex.getMessage(), ex);
+			}
 		}
 
 		if (jConfig.has("variables")){
 			JSONObject jVariables = jConfig.getJSONObject("variables");
 			variableDeclarations = new HashMap<>();
 			for (String columnId : jVariables.keySet()){
-				variableDeclarations.put(columnId, VariableDeclaration.fromJson(jVariables.getJSONObject(columnId)));
+				try {
+					variableDeclarations.put(columnId, VariableDeclaration.fromJson(jVariables.getJSONObject(columnId)));
+				}
+				catch (JSONException | IllegalArgumentException ex){
+					throw new StructureLearningException(
+							"Invalid \"variables\" entry for \"" + columnId + "\": " + ex.getMessage(), ex);
+				}
 			}
 		}
 
