@@ -471,6 +471,166 @@ public class RegressionDataset {
 		return new CategoricalSelection(x, y);
 	}
 
+	/**
+	 * Result of a mixed categorical row selection: continuous-parent columns followed by dummy-encoded
+	 * categorical-parent columns (same layout as {@link #selectPooledRows}'s design matrix), and the target's class
+	 * index per row, ready to hand to {@link MultinomialLogisticRegression#fit(double[][], int[], int)}.
+	 */
+	public static class MixedCategoricalSelection {
+
+		private final double[][] x;
+		private final int[] y;
+
+		private MixedCategoricalSelection(double[][] x, int[] y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		public double[][] getX() {
+			return x;
+		}
+
+		public int[] getY() {
+			return y;
+		}
+
+		public int getN() {
+			return y.length;
+		}
+	}
+
+	/**
+	 * Selects listwise-complete rows for a categorical target regressed on a mix of continuous and categorical
+	 * parents: a row qualifies if the target's value is one of {@code targetStates}, every continuous parent column
+	 * parses as numeric (or via the Ranked-state fallback, see {@link #parseDoubleOrNull}), and every categorical
+	 * parent's value is one of that parent's known states - rows failing any of these are skipped.
+	 * <br>
+	 * Column layout: continuous parent columns first (in {@code continuousParentIds} order), then one dummy column
+	 * per non-reference state of each categorical parent (in {@code categoricalParentIds} order, state index 0 per
+	 * parent is the implicit reference) - the same "continuous first, dummies after" convention used by
+	 * {@link #selectPooledRows}.
+	 *
+	 * @param targetId node id of the categorical regression target
+	 * @param targetStates the target's states in index order; row values are matched against these exactly to
+	 * produce the class index
+	 * @param continuousParentIds ordered node ids of continuous parents to use as regressors; may be empty
+	 * @param categoricalParentIds ordered node ids of categorical parents to dummy-encode; may be empty
+	 * @param categoricalParentStates categorical parent states in index order, aligned with
+	 * {@code categoricalParentIds}
+	 *
+	 * @return the selected rows, or an empty selection (n=0) if the target column is absent or no rows qualify
+	 */
+	public MixedCategoricalSelection selectMixedCategoricalRows(String targetId, List<String> targetStates,
+			List<String> continuousParentIds, List<String> categoricalParentIds, List<List<String>> categoricalParentStates) {
+
+		Integer targetCol = columnIndex.get(targetId);
+		if (targetCol == null){
+			return new MixedCategoricalSelection(new double[0][0], new int[0]);
+		}
+
+		Map<String, Integer> targetStateIndex = new HashMap<>();
+		for (int i = 0; i < targetStates.size(); i++){
+			targetStateIndex.put(targetStates.get(i), i);
+		}
+
+		int[] continuousCols = new int[continuousParentIds.size()];
+		for (int i = 0; i < continuousParentIds.size(); i++){
+			Integer col = columnIndex.get(continuousParentIds.get(i));
+			if (col == null){
+				return new MixedCategoricalSelection(new double[0][0], new int[0]);
+			}
+			continuousCols[i] = col;
+		}
+
+		int[] categoricalCols = new int[categoricalParentIds.size()];
+		List<Map<String, Integer>> parentStateIndexes = new ArrayList<>();
+		int[] dummyOffsets = new int[categoricalParentIds.size()];
+		int totalDummyColumns = 0;
+		for (int i = 0; i < categoricalParentIds.size(); i++){
+			Integer col = columnIndex.get(categoricalParentIds.get(i));
+			if (col == null){
+				return new MixedCategoricalSelection(new double[0][0], new int[0]);
+			}
+			categoricalCols[i] = col;
+
+			List<String> states = categoricalParentStates.get(i);
+			Map<String, Integer> stateIndex = new HashMap<>();
+			for (int s = 0; s < states.size(); s++){
+				stateIndex.put(states.get(s), s);
+			}
+			parentStateIndexes.add(stateIndex);
+
+			dummyOffsets[i] = totalDummyColumns;
+			totalDummyColumns += Math.max(0, states.size() - 1);
+		}
+
+		List<double[]> xRows = new ArrayList<>();
+		List<Integer> yValues = new ArrayList<>();
+
+		for (int row = 1; row < data.obsDataArray.length; row++){
+			String[] rowData = data.obsDataArray[row];
+
+			String targetRaw = rowData[targetCol];
+			if (isMissing(targetRaw)){
+				continue;
+			}
+			Integer targetIndex = targetStateIndex.get(targetRaw);
+			if (targetIndex == null){
+				continue;
+			}
+
+			double[] xRow = new double[continuousCols.length + totalDummyColumns];
+			boolean rowOk = true;
+
+			for (int i = 0; i < continuousCols.length; i++){
+				String raw = rowData[continuousCols[i]];
+				if (isMissing(raw)){
+					rowOk = false;
+					break;
+				}
+				Double value = parseDoubleOrNull(raw, continuousCols[i]);
+				if (value == null){
+					rowOk = false;
+					break;
+				}
+				xRow[i] = value;
+			}
+			if (!rowOk){
+				continue;
+			}
+
+			for (int i = 0; i < categoricalCols.length; i++){
+				String raw = rowData[categoricalCols[i]];
+				if (isMissing(raw)){
+					rowOk = false;
+					break;
+				}
+				Integer stateIndex = parentStateIndexes.get(i).get(raw);
+				if (stateIndex == null){
+					rowOk = false;
+					break;
+				}
+				if (stateIndex > 0){
+					xRow[continuousCols.length + dummyOffsets[i] + stateIndex - 1] = 1;
+				}
+			}
+			if (!rowOk){
+				continue;
+			}
+
+			xRows.add(xRow);
+			yValues.add(targetIndex);
+		}
+
+		double[][] x = xRows.toArray(new double[0][]);
+		int[] y = new int[yValues.size()];
+		for (int i = 0; i < y.length; i++){
+			y[i] = yValues.get(i);
+		}
+
+		return new MixedCategoricalSelection(x, y);
+	}
+
 	private boolean isMissing(String raw) {
 		return raw == null || raw.isEmpty() || raw.equals(data.missingType);
 	}

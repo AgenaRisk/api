@@ -74,7 +74,16 @@ public class StructureLearner {
 		Config.reset();
 		return new TabuConfigurer(Config.getInstance());
 	}
-	
+
+	/**
+	 * Regression Structure Discovery: one new, self-contained greedy-search algorithm scored with a decomposable
+	 * regression-based BIC over mixed continuous/discrete data - selectable alongside (not replacing) the legacy
+	 * discrete-BIC algorithms above. See {@link com.agenarisk.learning.structure.regressiondiscovery.RegressionStructureSearch}.
+	 */
+	public com.agenarisk.learning.structure.config.RegressionStructureConfigurer learnWithRegression(){
+		return new com.agenarisk.learning.structure.config.RegressionStructureConfigurer();
+	}
+
 	public void executeJson(String jsonString){
 		JSONObject json;
 		try {

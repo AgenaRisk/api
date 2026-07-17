@@ -57,16 +57,34 @@ public class RegressionEligibility {
 
 	/**
 	 * Evaluates whether {@code target} is eligible for OLS table learning.
+	 * <br>
+	 * Equivalent to {@code evaluate(target, false)} - a categorical target with a continuous parent remains
+	 * ineligible under this overload, preserving existing behavior/callers exactly.
 	 *
 	 * @param target the candidate regression target
 	 *
 	 * @return the eligibility Decision
 	 */
 	public static Decision evaluate(Node target) {
+		return evaluate(target, false);
+	}
+
+	/**
+	 * Evaluates whether {@code target} is eligible for regression-based table learning.
+	 *
+	 * @param target the candidate regression target
+	 * @param allowContinuousParentsForCategoricalTarget if true, a categorical target with continuous parent(s) is
+	 * treated as eligible - for use by callers that can learn that case via a logistic/multinomial-logit expression
+	 * (see {@link LogisticRegressionLearner}) rather than the plain OLS/manual-NPT learners this eligibility check
+	 * was originally written for
+	 *
+	 * @return the eligibility Decision
+	 */
+	public static Decision evaluate(Node target, boolean allowContinuousParentsForCategoricalTarget) {
 
 		NodeRole targetRole = NodeRole.of(target);
 
-		if (targetRole == NodeRole.CATEGORICAL){
+		if (targetRole == NodeRole.CATEGORICAL && !allowContinuousParentsForCategoricalTarget){
 			List<Node> continuousParents = target.getParents().stream()
 					.filter(parent -> NodeRole.of(parent) == NodeRole.CONTINUOUS)
 					.collect(Collectors.toList());
