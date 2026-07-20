@@ -52,9 +52,19 @@ public abstract class GraphNode {
 		this.label = jNode.getString("label");
 		this.description = jNode.optString("description", "");
 		this.useCache = jNode.optBoolean("useCache", false);
-		parseNodeFields(jNode);
-		JSONObject jOptions = jNode.optJSONObject("options");
-		parseOptions(jOptions != null ? jOptions : new JSONObject());
+		try {
+			parseNodeFields(jNode);
+			JSONObject jOptions = jNode.optJSONObject("options");
+			parseOptions(jOptions != null ? jOptions : new JSONObject());
+		}
+		catch (StructureLearningException ex) {
+			throw ex;
+		}
+		catch (RuntimeException ex) {
+			String detail = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+			throw new StructureLearningException(
+					"Node '" + label + "' (" + getSubType() + ") has invalid options: " + detail, ex);
+		}
 	}
 
 	protected void parseNodeFields(JSONObject jNode) {

@@ -69,18 +69,26 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 			JSONArray jSkipNodes = jKnowledge.optJSONArray("skipNodes");
 			if (jSkipNodes != null){
 				for (int i = 0; i < jSkipNodes.length(); i++) {
-					String nodeId = jSkipNodes.getString(i);
-					nodeDataWeightsCustom.put(nodeId, 0d);
+					Object entry = jSkipNodes.opt(i);
+					if (!(entry instanceof String) || ((String) entry).isEmpty()) {
+						throw new StructureLearningException(
+								"knowledge.skipNodes[" + i + "] must be a non-empty variable name string, got: " + entry);
+					}
+					nodeDataWeightsCustom.put((String) entry, 0d);
 				}
 			}
-		
+
 			JSONArray jNodeDataWeightsCustom = jKnowledge.optJSONArray("nodeDataWeightsCustom");
 			if (jNodeDataWeightsCustom != null){
 				for (int i = 0; i < jNodeDataWeightsCustom.length(); i++) {
-					JSONArray nodeWeight = jNodeDataWeightsCustom.getJSONArray(i);
-					String nodeId = nodeWeight.getString(0);
-					double weight = nodeWeight.getDouble(1);
-					nodeDataWeightsCustom.put(nodeId, weight);
+					JSONArray nodeWeight = jNodeDataWeightsCustom.optJSONArray(i);
+					if (nodeWeight == null || nodeWeight.length() != 2
+							|| !(nodeWeight.opt(0) instanceof String) || !(nodeWeight.opt(1) instanceof Number)) {
+						throw new StructureLearningException(
+								"knowledge.nodeDataWeightsCustom[" + i + "] must be a [variableName, weight] pair, got: "
+										+ jNodeDataWeightsCustom.opt(i));
+					}
+					nodeDataWeightsCustom.put(nodeWeight.getString(0), nodeWeight.getDouble(1));
 				}
 			}
 		}

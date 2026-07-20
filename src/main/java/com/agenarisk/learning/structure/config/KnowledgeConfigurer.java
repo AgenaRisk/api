@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import uk.co.agena.minerva.util.io.MinervaProperties;
 
@@ -199,7 +200,9 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 		setConstraintsTargetPenaltyReductionRate(jKnowledge.optInt("dimensionalityReductionRate", 2));
 		setConstraintsProhibitEdgesSameTemporalTier(jKnowledge.optBoolean("prohibitConnectionsSameTemporalTier", false));
 		
+		String currentField = null;
 		try {
+			currentField = "reduceDimensionalityPenaltyForVariables";
 			if (jKnowledge.has("reduceDimensionalityPenaltyForVariables")){
 				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Target node"));
@@ -213,6 +216,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				config.setConstraintsTargetPenaltyReductionRateEnabled(true);
 			}
 			
+			currentField = "connectionsInitialGuess";
 			if (jKnowledge.has("connectionsInitialGuess")){
 				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Parent", "Child"));
@@ -227,6 +231,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				config.setConstraintsInitialGraph(true);
 			}
 			
+			currentField = "connectionsDirected";
 			if (jKnowledge.has("connectionsDirected")){
 				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Parent", "Child"));
@@ -241,6 +246,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				config.setConstraintsDirectedEnabled(true);
 			}
 			
+			currentField = "connectionsUndirected";
 			if (jKnowledge.has("connectionsUndirected")){
 				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Var1", "Var2"));
@@ -255,6 +261,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				config.setConstraintsUndirectedEnabled(true);
 			}
 			
+			currentField = "connectionsForbidden";
 			if (jKnowledge.has("connectionsForbidden")){
 				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Var1", "Var2"));
@@ -269,6 +276,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				config.setConstraintsForbiddenEnabled(true);
 			}
 
+			currentField = "connectionsForbiddenDirected";
 			if (jKnowledge.has("connectionsForbiddenDirected")){
 				ArrayList<List<Object>> lines = new ArrayList<>();
 				lines.add(Arrays.asList("ID", "Parent", "Child"));
@@ -283,6 +291,7 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 				config.setConstraintsForbiddenDirectedEnabled(true);
 			}
 
+			currentField = "connectionsTemporal";
 			if (jKnowledge.has("connectionsTemporal")){
 				ArrayList<List<String>> lines = new ArrayList<>();
 				JSONArray jTiers = jKnowledge.getJSONArray("connectionsTemporal");
@@ -324,7 +333,10 @@ public class KnowledgeConfigurer<T extends LearningConfigurer> extends Configure
 		catch(IOException ex){
 			throw new StructureLearningException(ex.getMessage(), ex);
 		}
-		
+		catch(JSONException | ClassCastException ex){
+			throw new StructureLearningException("Invalid knowledge constraint '" + currentField + "': " + ex.getMessage(), ex);
+		}
+
 		return this;
 	}
 

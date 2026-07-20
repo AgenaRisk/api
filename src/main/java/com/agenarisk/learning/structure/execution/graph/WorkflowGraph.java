@@ -15,6 +15,7 @@ import com.agenarisk.learning.structure.execution.graph.node.RegressionParameter
 import com.agenarisk.learning.structure.execution.graph.node.RegressionStructureLearningNode;
 import com.agenarisk.learning.structure.execution.graph.node.StructureEvaluationNode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -31,6 +32,11 @@ public class WorkflowGraph {
 
 	private static final Pattern FORBIDDEN_LABEL_CHARS = Pattern.compile("[\\\\/:*?\"<>|\\u0000-\\u001F]");
 
+	private static final List<String> VALID_NODE_TYPES = Collections.unmodifiableList(Arrays.asList(
+					"dataSource", "modelGeneration", "modelDiscovery", "modelImport", "probabilityLearning",
+					"regressionStructureDiscovery", "regressionParameterLearning", "performanceEvaluation",
+					"structureEvaluation", "modelSelection", "modelAveraging", "modelMerge"));
+
 	private final Map<String, GraphNode> nodesByLabel;
 	private final List<GraphNode> topoOrder;
 
@@ -46,8 +52,8 @@ public class WorkflowGraph {
 		}
 
 		// Phase 1: Parse all node declarations
-		Map<String, GraphNode> allNodes = new LinkedHashMap<>();
-		Set<String> unknownTypeLabels = new LinkedHashSet<>();
+		Map<String, GraphNode> nodesByLabel = new LinkedHashMap<>();
+		Map<String, String> unknownTypesByLabel = new LinkedHashMap<>();
 		Set<String> allDeclaredLabels = new LinkedHashSet<>();
 
 		for (int i = 0; i < jNodes.length(); i++) {
@@ -69,15 +75,19 @@ public class WorkflowGraph {
 
 			GraphNode node = createNodeForType(type);
 			if (node == null) {
-				unknownTypeLabels.add(lcLabel);
+				unknownTypesByLabel.put(rawLabel, type);
 				continue;
 			}
 			node.parseCommon(jNode);
-			allNodes.put(lcLabel, node);
+			nodesByLabel.put(lcLabel, node);
+		}
+
+		if (!unknownTypesByLabel.isEmpty()) {
+			throw new StructureLearningException(describeUnknownTypes(unknownTypesByLabel));
 		}
 
 		// Phase 2: Validate that all referenced input labels are declared
-		for (GraphNode node : allNodes.values()) {
+		for (GraphNode node : nodesByLabel.values()) {
 			for (String inputLabel : node.getInputLabels()) {
 				if (!allDeclaredLabels.contains(inputLabel.toLowerCase())) {
 					throw new StructureLearningException(
@@ -86,37 +96,32 @@ public class WorkflowGraph {
 			}
 		}
 
-		// Phase 3: Transitively exclude unknown-type nodes and their descendants
-		Set<String> excludedLabels = new LinkedHashSet<>(unknownTypeLabels);
-		boolean changed = true;
-		while (changed) {
-			changed = false;
-			for (Map.Entry<String, GraphNode> entry : allNodes.entrySet()) {
-				if (excludedLabels.contains(entry.getKey())) {
-					continue;
-				}
-				for (String inputLabel : entry.getValue().getInputLabels()) {
-					if (excludedLabels.contains(inputLabel.toLowerCase())) {
-						excludedLabels.add(entry.getKey());
-						changed = true;
-						break;
-					}
-				}
-			}
-		}
-
-		// Phase 4: Build final node map without excluded nodes
-		Map<String, GraphNode> nodesByLabel = new LinkedHashMap<>();
-		for (Map.Entry<String, GraphNode> entry : allNodes.entrySet()) {
-			if (!excludedLabels.contains(entry.getKey())) {
-				nodesByLabel.put(entry.getKey(), entry.getValue());
-			}
-		}
-
-		// Phase 5: Topological sort with cycle detection (Kahn's algorithm)
+		// Phase 3: Topological sort with cycle detection (Kahn's algorithm)
 		List<GraphNode> topoOrder = topologicalSort(nodesByLabel);
 
 		return new WorkflowGraph(nodesByLabel, topoOrder);
+	}
+
+	private static String describeUnknownTypes(Map<String, String> unknownTypesByLabel) {
+		StringBuilder sb = new StringBuilder();
+		if (unknownTypesByLabel.size() == 1) {
+			Map.Entry<String, String> entry = unknownTypesByLabel.entrySet().iterator().next();
+			sb.append("Node '").append(entry.getKey()).append("' has unrecognized type '").append(entry.getValue()).append("'.");
+		}
+		else {
+			sb.append("Unrecognized node type(s): ");
+			boolean first = true;
+			for (Map.Entry<String, String> entry : unknownTypesByLabel.entrySet()) {
+				if (!first) {
+					sb.append("; ");
+				}
+				sb.append("'").append(entry.getKey()).append("' has type '").append(entry.getValue()).append("'");
+				first = false;
+			}
+			sb.append(".");
+		}
+		sb.append(" Valid types are: ").append(String.join(", ", VALID_NODE_TYPES)).append(".");
+		return sb.toString();
 	}
 
 	private static void validateLabel(String label) throws StructureLearningException {

@@ -95,7 +95,8 @@ public class Launcher {
 			learner.executeJson(config);
 		}
 		catch(Exception ex){
-			Logger.err().println("Failed: " + ex.getMessage());
+			String detail = ex.getMessage() != null ? ex.getMessage() : "unexpected " + ex.getClass().getSimpleName();
+			Logger.err().println("Failed: " + detail);
 			Logger.printThrowableIfDebug(ex, Logger.err(), 5);
 			System.exit(2);
 		}
