@@ -1,7 +1,7 @@
 package com.agenarisk.test.learning;
 
 import com.agenarisk.learning.structure.config.Config;
-import com.agenarisk.learning.structure.config.TableLearningConfigurer;
+import com.agenarisk.learning.structure.config.EMParameterLearningConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,10 +18,10 @@ import uk.co.agena.minerva.util.Environment;
  * {@code knowledge.skipNodes}/{@code knowledge.nodeDataWeightsCustom} used to be parsed with raw
  * {@code JSONArray.getString}/{@code getDouble} calls, so a malformed entry (wrong shape, wrong element type)
  * surfaced as an unhelpful raw org.json message with no indication of which field or index was at fault. This
- * confirms {@link TableLearningConfigurer#configureFromJson} now rejects those shapes with a specific,
+ * confirms {@link EMParameterLearningConfigurer#configureFromJson} now rejects those shapes with a specific,
  * actionable message instead.
  */
-public class TableLearningConfigurerTest {
+public class EMParameterLearningConfigurerTest {
 
 	{
 		Environment.initialize();
@@ -31,7 +31,7 @@ public class TableLearningConfigurerTest {
 
 	@BeforeEach
 	public void setUp() throws IOException {
-		dataPath = Files.createTempFile("TableLearningConfigurerTest", ".csv");
+		dataPath = Files.createTempFile("EMParameterLearningConfigurerTest", ".csv");
 		Files.write(dataPath, "a,b\n1,2\n".getBytes());
 	}
 
@@ -50,7 +50,7 @@ public class TableLearningConfigurerTest {
 				.put("knowledge", new JSONObject().put("skipNodes", new JSONArray().put("a").put(42)));
 
 		StructureLearningException ex = Assertions.assertThrows(StructureLearningException.class,
-				() -> new TableLearningConfigurer(Config.reset()).configureFromJson(jConfig));
+				() -> new EMParameterLearningConfigurer(Config.reset()).configureFromJson(jConfig));
 
 		Assertions.assertTrue(ex.getMessage().contains("skipNodes[1]"), ex.getMessage());
 	}
@@ -62,7 +62,7 @@ public class TableLearningConfigurerTest {
 						new JSONArray().put(new JSONArray().put("a").put(1.5).put("extra"))));
 
 		StructureLearningException ex = Assertions.assertThrows(StructureLearningException.class,
-				() -> new TableLearningConfigurer(Config.reset()).configureFromJson(jConfig));
+				() -> new EMParameterLearningConfigurer(Config.reset()).configureFromJson(jConfig));
 
 		Assertions.assertTrue(ex.getMessage().contains("nodeDataWeightsCustom[0]"), ex.getMessage());
 	}
@@ -74,7 +74,7 @@ public class TableLearningConfigurerTest {
 						new JSONArray().put(new JSONArray().put("a").put("not-a-number"))));
 
 		StructureLearningException ex = Assertions.assertThrows(StructureLearningException.class,
-				() -> new TableLearningConfigurer(Config.reset()).configureFromJson(jConfig));
+				() -> new EMParameterLearningConfigurer(Config.reset()).configureFromJson(jConfig));
 
 		Assertions.assertTrue(ex.getMessage().contains("nodeDataWeightsCustom[0]"), ex.getMessage());
 	}
@@ -86,7 +86,7 @@ public class TableLearningConfigurerTest {
 						.put("skipNodes", new JSONArray().put("a"))
 						.put("nodeDataWeightsCustom", new JSONArray().put(new JSONArray().put("b").put(2.5))));
 
-		TableLearningConfigurer configurer = new TableLearningConfigurer(Config.reset()).configureFromJson(jConfig);
+		EMParameterLearningConfigurer configurer = new EMParameterLearningConfigurer(Config.reset()).configureFromJson(jConfig);
 
 		Assertions.assertEquals(0d, configurer.getNodeDataWeightsCustom().get("a"));
 		Assertions.assertEquals(2.5d, configurer.getNodeDataWeightsCustom().get("b"));

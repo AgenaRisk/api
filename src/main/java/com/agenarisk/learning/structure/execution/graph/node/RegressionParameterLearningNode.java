@@ -17,7 +17,7 @@ import org.json.JSONObject;
  * (continuous targets via OLS, categorical targets with only categorical parents via ridge-regularized multinomial
  * logistic regression baked to a manual NPT, categorical targets with any continuous parent via a persisted
  * {@code MultinomialLogit(...)} expression) - the canonical, sole regression-based parameter learner, alongside
- * {@link ProbabilityLearningNode} (EM-based) and {@link RegressionStructureLearningNode} (structure + parameters
+ * {@link EMParameterLearningNode} (EM-based) and {@link RegressionStructureDiscoveryNode} (structure + parameters
  * together). See {@code RegressionParameterLearningConfigurer}/{@code RegressionParameterLearningExecutor} for the
  * actual learning logic.
  *

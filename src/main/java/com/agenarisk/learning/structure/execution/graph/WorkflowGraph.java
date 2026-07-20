@@ -3,16 +3,16 @@ package com.agenarisk.learning.structure.execution.graph;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.execution.graph.node.DataSourceNode;
 import com.agenarisk.learning.structure.execution.graph.node.GraphNode;
+import com.agenarisk.learning.structure.execution.graph.node.DiscreteStructureDiscoveryNode;
+import com.agenarisk.learning.structure.execution.graph.node.EMParameterLearningNode;
 import com.agenarisk.learning.structure.execution.graph.node.ModelAveragingNode;
-import com.agenarisk.learning.structure.execution.graph.node.ModelDiscoveryNode;
 import com.agenarisk.learning.structure.execution.graph.node.ModelGenerationNode;
 import com.agenarisk.learning.structure.execution.graph.node.ModelImportNode;
 import com.agenarisk.learning.structure.execution.graph.node.ModelMergeNode;
 import com.agenarisk.learning.structure.execution.graph.node.ModelSelectionNode;
 import com.agenarisk.learning.structure.execution.graph.node.PerformanceEvaluationNode;
-import com.agenarisk.learning.structure.execution.graph.node.ProbabilityLearningNode;
 import com.agenarisk.learning.structure.execution.graph.node.RegressionParameterLearningNode;
-import com.agenarisk.learning.structure.execution.graph.node.RegressionStructureLearningNode;
+import com.agenarisk.learning.structure.execution.graph.node.RegressionStructureDiscoveryNode;
 import com.agenarisk.learning.structure.execution.graph.node.StructureEvaluationNode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ public class WorkflowGraph {
 	private static final Pattern FORBIDDEN_LABEL_CHARS = Pattern.compile("[\\\\/:*?\"<>|\\u0000-\\u001F]");
 
 	private static final List<String> VALID_NODE_TYPES = Collections.unmodifiableList(Arrays.asList(
-					"dataSource", "modelGeneration", "modelDiscovery", "modelImport", "probabilityLearning",
+					"dataSource", "modelGeneration", "discreteStructureDiscovery", "modelImport", "emParameterLearning",
 					"regressionStructureDiscovery", "regressionParameterLearning", "performanceEvaluation",
 					"structureEvaluation", "modelSelection", "modelAveraging", "modelMerge"));
 
@@ -140,14 +140,14 @@ public class WorkflowGraph {
 				return new DataSourceNode();
 			case "modelGeneration":
 				return new ModelGenerationNode();
-			case "modelDiscovery":
-				return new ModelDiscoveryNode();
+			case "discreteStructureDiscovery":
+				return new DiscreteStructureDiscoveryNode();
 			case "modelImport":
 				return new ModelImportNode();
-			case "probabilityLearning":
-				return new ProbabilityLearningNode();
+			case "emParameterLearning":
+				return new EMParameterLearningNode();
 			case "regressionStructureDiscovery":
-				return new RegressionStructureLearningNode();
+				return new RegressionStructureDiscoveryNode();
 			case "regressionParameterLearning":
 				return new RegressionParameterLearningNode();
 			case "performanceEvaluation":

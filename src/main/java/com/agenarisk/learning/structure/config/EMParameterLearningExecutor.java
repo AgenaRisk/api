@@ -15,19 +15,19 @@ import uk.co.agena.minerva.util.EM.EMCal;
  *
  * @author Eugene Dementiev
  */
-public class TableLearningExecutor extends Configurer<TableLearningExecutor> implements Executable {
+public class EMParameterLearningExecutor extends Configurer<EMParameterLearningExecutor> implements Executable {
 	
-	private TableLearningConfigurer originalConfigurer;
+	private EMParameterLearningConfigurer originalConfigurer;
 	
-	protected TableLearningExecutor(Config config) {
+	protected EMParameterLearningExecutor(Config config) {
 		super(config);
 	}
 	
-	protected TableLearningExecutor() {
+	protected EMParameterLearningExecutor() {
 		super();
 	}
 
-	public void setOriginalConfigurer(TableLearningConfigurer originalConfigurer) {
+	public void setOriginalConfigurer(EMParameterLearningConfigurer originalConfigurer) {
 		this.originalConfigurer = originalConfigurer;
 	}
 	

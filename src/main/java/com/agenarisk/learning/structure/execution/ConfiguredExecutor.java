@@ -21,8 +21,8 @@ import com.agenarisk.learning.structure.config.MergerExecutor;
 import com.agenarisk.learning.structure.config.PerformanceEvaluationConfigurer;
 import com.agenarisk.learning.structure.config.PerformanceEvaluationExecutor;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
-import com.agenarisk.learning.structure.config.TableLearningConfigurer;
-import com.agenarisk.learning.structure.config.TableLearningExecutor;
+import com.agenarisk.learning.structure.config.EMParameterLearningConfigurer;
+import com.agenarisk.learning.structure.config.EMParameterLearningExecutor;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
 import com.agenarisk.learning.structure.result.Discovery;
@@ -242,7 +242,7 @@ public class ConfiguredExecutor {
 					configurablePipeline = new MergerConfigurer(executor.getConfig());
 					break;
 				case "tableLearning":
-					configurablePipeline = new TableLearningConfigurer(executor.getConfig()).configureFromJson(jStage);
+					configurablePipeline = new EMParameterLearningConfigurer(executor.getConfig()).configureFromJson(jStage);
 					break;
 				default:
 					throw new StructureLearningException("Invalid stage type: " + stageType);
@@ -282,7 +282,7 @@ public class ConfiguredExecutor {
 			}
 			
 			if (stageType.equals("tableLearning")){
-				TableLearningConfigurer configurer = (TableLearningConfigurer) configurablePipeline;
+				EMParameterLearningConfigurer configurer = (EMParameterLearningConfigurer) configurablePipeline;
 				Discovery targetDiscovery = executor.getResult().getDiscoveries().stream().filter(discovery -> Objects.equals(configurer.getModelStageLabel(), discovery.getLabel())).findAny().orElse(null);
 				if (targetDiscovery == null){
 					BLogger.logConditional("No model with label found: " + configurer.getModelStageLabel());
@@ -294,7 +294,7 @@ public class ConfiguredExecutor {
 				
 				try {
 					configurer.setModel(Model.createModel(targetDiscovery.getModel()));
-					TableLearningExecutor stageExecutor = (TableLearningExecutor) configurablePipeline.apply();
+					EMParameterLearningExecutor stageExecutor = (EMParameterLearningExecutor) configurablePipeline.apply();
 					
 					if (targetDiscovery.getAlgorithm().startsWith("generation-")){
 						// Model was generated from variable names, which means it has bogus variable states

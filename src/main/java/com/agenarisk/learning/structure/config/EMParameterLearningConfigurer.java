@@ -16,7 +16,7 @@ import org.json.JSONObject;
  *
  * @author Eugene Dementiev
  */
-public class TableLearningConfigurer extends ApplicableConfigurer implements Configurable, ConfigurableFromJson<TableLearningConfigurer> {
+public class EMParameterLearningConfigurer extends ApplicableConfigurer implements Configurable, ConfigurableFromJson<EMParameterLearningConfigurer> {
 	
 	private Path dataPath;
 	private Path modelPath;
@@ -33,16 +33,16 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 	private String nodeLabel = "";
 	private boolean progressEnabled = false;
 	
-	public TableLearningConfigurer(Config config) {
+	public EMParameterLearningConfigurer(Config config) {
 		super(config);
 	}
 	
-	public TableLearningConfigurer() {
+	public EMParameterLearningConfigurer() {
 		super();
 	}
 	
 	@Override
-	public TableLearningConfigurer configureFromJson(JSONObject jConfig) {
+	public EMParameterLearningConfigurer configureFromJson(JSONObject jConfig) {
 		JSONObject jParameters = Optional.ofNullable(jConfig.optJSONObject("parameters")).orElse(new JSONObject());
 		if (jParameters.has("dataPath")){
 			dataPath = Paths.get(jParameters.getString("dataPath"));
@@ -97,11 +97,11 @@ public class TableLearningConfigurer extends ApplicableConfigurer implements Con
 	}
 
 	@Override
-	public TableLearningExecutor apply() {
+	public EMParameterLearningExecutor apply() {
 		if (dataPath == null || modelStageLabel == null || modelStageLabel.isEmpty() || modelPrefix == null || modelPrefix.isEmpty() || modelPath == null || model == null){
 			throw new StructureLearningException("TableLearnerConfigurer is not fully configured before applying");
 		}
-		TableLearningExecutor executor = new TableLearningExecutor(config);
+		EMParameterLearningExecutor executor = new EMParameterLearningExecutor(config);
 		executor.setOriginalConfigurer(this);
 		return executor;
 	}

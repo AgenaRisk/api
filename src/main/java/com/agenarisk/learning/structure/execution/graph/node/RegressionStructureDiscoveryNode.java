@@ -15,9 +15,9 @@ import org.json.JSONObject;
 /**
  * Graph node for Regression Structure Discovery - a single new, self-contained greedy search over DAGs scored with a
  * decomposable regression-based BIC over mixed continuous/discrete data, selectable alongside (never replacing) the
- * legacy discrete-BIC discovery algorithms ({@code modelDiscovery} node type / HC/Tabu/GES/SaiyanH/MAHC).
+ * legacy discrete-BIC discovery algorithms ({@code discreteStructureDiscovery} node type / HC/Tabu/GES/SaiyanH/MAHC).
  * <br>
- * This node *produces* a model from data - like {@code modelDiscovery}/{@code modelGeneration}, it takes only a
+ * This node *produces* a model from data - like {@code discreteStructureDiscovery}/{@code modelGeneration}, it takes only a
  * {@code dataSource}, no model input at all. Each column's node type/states is either declared explicitly via the
  * {@code variables} option (parsed by {@link RegressionStructureConfigurer#configureFromJson}, one
  * {@code com.agenarisk.learning.structure.regressiondiscovery.VariableDeclaration} per column) or defaulted
@@ -28,7 +28,7 @@ import org.json.JSONObject;
  *
  * @author Eugene Dementiev
  */
-public class RegressionStructureLearningNode extends ModelNode {
+public class RegressionStructureDiscoveryNode extends ModelNode {
 
 	private String dataSource;
 	private String missingValue = "";

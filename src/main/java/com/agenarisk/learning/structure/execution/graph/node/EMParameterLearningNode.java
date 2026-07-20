@@ -4,15 +4,15 @@ import BNlearning.Database;
 import com.agenarisk.api.model.Model;
 import com.agenarisk.api.util.TempFileCleanup;
 import com.agenarisk.learning.structure.config.Config;
-import com.agenarisk.learning.structure.config.TableLearningConfigurer;
-import com.agenarisk.learning.structure.config.TableLearningExecutor;
+import com.agenarisk.learning.structure.config.EMParameterLearningConfigurer;
+import com.agenarisk.learning.structure.config.EMParameterLearningExecutor;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.json.JSONObject;
 
-public class ProbabilityLearningNode extends ModelNode {
+public class EMParameterLearningNode extends ModelNode {
 
 	private String model;
 	private String dataSource;
@@ -25,7 +25,7 @@ public class ProbabilityLearningNode extends ModelNode {
 
 	@Override
 	public String getSubType() {
-		return "probabilityLearning";
+		return "emParameterLearning";
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class ProbabilityLearningNode extends ModelNode {
 			config.setPathInput(dataPath.getParent().toString());
 			config.setFileInputTrainingDataCsv(dataPath.getFileName().toString());
 
-			TableLearningConfigurer configurer = new TableLearningConfigurer(config);
+			EMParameterLearningConfigurer configurer = new EMParameterLearningConfigurer(config);
 
 			// Build config JSON to reuse existing configureFromJson logic for knowledge/weights
 			JSONObject jConfig = new JSONObject();
@@ -101,7 +101,7 @@ public class ProbabilityLearningNode extends ModelNode {
 			Model loadedModel = Model.loadModel(inputModelPath.toString());
 			configurer.setModel(loadedModel);
 
-			TableLearningExecutor executor = configurer.apply();
+			EMParameterLearningExecutor executor = configurer.apply();
 			executor.execute();
 
 			Model resultModel = configurer.getModel();

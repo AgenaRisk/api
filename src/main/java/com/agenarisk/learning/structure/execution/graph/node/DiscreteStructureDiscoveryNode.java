@@ -25,7 +25,7 @@ import java.util.Set;
 import org.json.JSONObject;
 
 @SuppressWarnings("rawtypes")
-public class ModelDiscoveryNode extends ModelNode {
+public class DiscreteStructureDiscoveryNode extends ModelNode {
 
 	private String dataSource;
 	private String algorithm;
@@ -33,7 +33,7 @@ public class ModelDiscoveryNode extends ModelNode {
 
 	@Override
 	public String getSubType() {
-		return "modelDiscovery";
+		return "discreteStructureDiscovery";
 	}
 
 	@Override

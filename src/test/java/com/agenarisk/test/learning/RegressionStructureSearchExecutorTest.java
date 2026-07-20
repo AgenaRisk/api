@@ -21,9 +21,9 @@ import uk.co.agena.minerva.util.Environment;
 
 /**
  * Exercises the full JSON-config -> Configurer -> Executor wiring for Regression Structure Discovery (the same path
- * {@code RegressionStructureLearningNode} drives from the graph execution system) - entirely from a bare CSV, no
+ * {@code RegressionStructureDiscoveryNode} drives from the graph execution system) - entirely from a bare CSV, no
  * pre-existing {@code .cmpx} model anywhere: node types are declared via the {@code variables} option (or defaulted
- * by {@code ShellModelBuilder} when omitted), exactly like {@code modelDiscovery}/{@code modelGeneration}.
+ * by {@code ShellModelBuilder} when omitted), exactly like {@code discreteStructureDiscovery}/{@code modelGeneration}.
  */
 public class RegressionStructureSearchExecutorTest {
 
