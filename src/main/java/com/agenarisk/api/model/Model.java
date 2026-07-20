@@ -61,6 +61,7 @@ import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.Model.PropagationFlag;
+import uk.co.agena.minerva.model.jtinspect.JunctionTreeReport;
 import uk.co.agena.minerva.model.ModelEvent;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
 import uk.co.agena.minerva.util.helpers.ThreadDataStore;
@@ -966,7 +967,72 @@ public class Model implements IdContainer<ModelException>, Storable {
 			throw new CalculationException(message);
 		}
 	}
-	
+
+	/**
+	 * Pre-calculation feasibility probe. Builds the junction trees of every network WITHOUT running
+	 * numeric propagation and reports each clique's members and potential-table cell count. The
+	 * binding feasibility signal is the largest clique cell count across all networks.
+	 * <br>
+	 * The trees are built from the binary-factorised working model — the same cliques a real
+	 * calculation would build. Simulation nodes are charged {@code simNodeStates} states (use 20).
+	 * The probe runs on an isolated deep copy and never mutates this model.
+	 *
+	 * @param simNodeStates states to charge each simulation node (e.g. 20)
+	 * @return a JSONObject report: {@code simNodeStates, heapMaxBytes/MB, modelMaxCliqueCells,
+	 *         modelTotalCells, estimatedBytes/MB, infeasible, networks:[{id,name,maxCliqueCells,
+	 *         totalCells,estimatedBytes/MB,infeasible,error,cliques:[{id,cells,members[],memberStates[]}]}]}
+	 */
+	public JSONObject inspectJunctionTrees(int simNodeStates) {
+		// Suppress GUI dialogs from the (headless) engine while inspecting, matching calculate().
+		String suppressMessages = uk.co.agena.minerva.model.Model.suppressMessages;
+		uk.co.agena.minerva.model.Model.suppressMessages = "system";
+		JunctionTreeReport report;
+		try {
+			report = getLogicModel().inspectJunctionTrees(simNodeStates);
+		}
+		finally {
+			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
+		}
+
+		final double MB = 1024.0 * 1024.0;
+		JSONObject out = new JSONObject();
+		out.put("simNodeStates", report.simNodeStates);
+		out.put("heapMaxBytes", report.heapMaxBytes);
+		out.put("heapMaxMB", report.heapMaxBytes / MB);
+		out.put("modelMaxCliqueCells", report.modelMaxCliqueCells);
+		out.put("modelTotalCells", report.modelTotalCells);
+		out.put("estimatedBytes", report.estimatedBytes);
+		out.put("estimatedMB", report.estimatedBytes / MB);
+		out.put("infeasible", report.infeasible);
+
+		JSONArray nets = new JSONArray();
+		for (JunctionTreeReport.NetworkJT njt : report.networks) {
+			JSONObject nj = new JSONObject();
+			nj.put("id", njt.networkId);
+			nj.put("name", njt.networkName);
+			nj.put("maxCliqueCells", njt.maxCliqueCells);
+			nj.put("totalCells", njt.totalCells);
+			nj.put("estimatedBytes", njt.estimatedBytes);
+			nj.put("estimatedMB", njt.estimatedBytes / MB);
+			nj.put("infeasible", njt.infeasible);
+			nj.put("error", njt.error == null ? JSONObject.NULL : njt.error);
+
+			JSONArray cliques = new JSONArray();
+			for (JunctionTreeReport.CliqueDim cd : njt.cliques) {
+				JSONObject cj = new JSONObject();
+				cj.put("id", cd.cliqueId);
+				cj.put("cells", cd.cells);
+				cj.put("members", new JSONArray(cd.memberNodeIds));
+				cj.put("memberStates", new JSONArray(cd.memberStates));
+				cliques.put(cj);
+			}
+			nj.put("cliques", cliques);
+			nets.put(nj);
+		}
+		out.put("networks", nets);
+		return out;
+	}
+
 	/**
 	 * Saves the Model to a file path specified.<br>
 	 * Output format is determined by path extension:<br>
