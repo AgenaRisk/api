@@ -39,19 +39,21 @@ public class LogisticRegressionLearner {
 		private final String skipReason;
 		private final List<Node> continuousParents;
 		private final List<Node> categoricalParents;
-		private final String expression;
+		private final List<String> expressions;
+		private final List<Node> partitionParents;
 		private final int n;
 		private final double pseudoR2;
 		private final boolean converged;
 
 		private NodeLearningResult(Node target, boolean skipped, String skipReason, List<Node> continuousParents, List<Node> categoricalParents,
-				String expression, int n, double pseudoR2, boolean converged) {
+				List<String> expressions, List<Node> partitionParents, int n, double pseudoR2, boolean converged) {
 			this.target = target;
 			this.skipped = skipped;
 			this.skipReason = skipReason;
 			this.continuousParents = continuousParents;
 			this.categoricalParents = categoricalParents;
-			this.expression = expression;
+			this.expressions = expressions;
+			this.partitionParents = partitionParents;
 			this.n = n;
 			this.pseudoR2 = pseudoR2;
 			this.converged = converged;
@@ -78,10 +80,30 @@ public class LogisticRegressionLearner {
 		}
 
 		/**
-		 * @return the single {@code MultinomialLogit(...)} expression to apply via {@link Node#setTableFunction(String)}
+		 * @return the first (or only) learned {@code MultinomialLogit(...)} expression, or null if skipped. When
+		 * {@link #getPartitionParents()} is empty this is the node's single expression (apply via
+		 * {@link Node#setTableFunction(String)}); when it is non-empty this is only the first partition's expression -
+		 * use {@link #getExpressions()} with {@link Node#setTableFunctions(List, List)} instead.
 		 */
 		public String getExpression() {
-			return expression;
+			return (expressions == null || expressions.isEmpty()) ? null : expressions.get(0);
+		}
+
+		/**
+		 * @return one {@code MultinomialLogit(...)} expression per partition combination (a single-element list when the
+		 * node is not partitioned, i.e. {@link #getPartitionParents()} is empty), or null if skipped
+		 */
+		public List<String> getExpressions() {
+			return expressions;
+		}
+
+		/**
+		 * @return the categorical parents this node's table is partitioned on (the {@code forbidIndicatorEncoding}
+		 * parents), enumerated in the same order as {@link #getExpressions()}; empty when the node is a single
+		 * non-partitioned expression
+		 */
+		public List<Node> getPartitionParents() {
+			return partitionParents;
 		}
 
 		public int getN() {
@@ -120,6 +142,30 @@ public class LogisticRegressionLearner {
 	 * @return the learning outcome
 	 */
 	public NodeLearningResult learn(Node target) {
+		return learn(target, java.util.Collections.emptySet(), false);
+	}
+
+	/**
+	 * Learns {@code target}'s table as a {@code MultinomialLogit} expression, honouring two knowledge constraints:
+	 * <ul>
+	 * <li>{@code allowCategoricalOnlyParents} - normally this learner declines a categorical-only-parents target
+	 * (that's {@link CategoricalRegressionLearner}'s job, baking a manual NPT); when true (the
+	 * {@code forceRegressionRole} case) it instead emits a {@code MultinomialLogit} expression over the dummy-encoded
+	 * categorical parents, keeping the node a live expression rather than a materialised table.</li>
+	 * <li>{@code forbidIndicatorParentIds} - categorical parents named here are partitioned on (a separate
+	 * {@code MultinomialLogit} expression per state combination, applied via {@link Node#setTableFunctions(List, List)})
+	 * rather than dummy-encoded as {@code Indicator(...)} terms within a single expression.</li>
+	 * </ul>
+	 *
+	 * @param target the categorical node to learn
+	 * @param forbidIndicatorParentIds ids of categorical parents to partition on instead of dummy-encoding; ids that
+	 * are not actually categorical parents of {@code target} are ignored
+	 * @param allowCategoricalOnlyParents if true, a categorical-only-parents target is learned as an expression here
+	 * rather than declined
+	 *
+	 * @return the learning outcome
+	 */
+	public NodeLearningResult learn(Node target, Set<String> forbidIndicatorParentIds, boolean allowCategoricalOnlyParents) {
 
 		RegressionEligibility.Decision eligibility = RegressionEligibility.evaluate(target, true);
 		if (!eligibility.isEligible()){
@@ -140,11 +186,37 @@ public class LogisticRegressionLearner {
 				.sorted(Comparator.comparing(Node::getId))
 				.collect(Collectors.toList());
 
-		if (continuousParents.isEmpty()){
+		if (continuousParents.isEmpty() && !allowCategoricalOnlyParents){
 			return skip(target, "Node '" + target.getId() + "' has no continuous parents; use CategoricalRegressionLearner instead");
 		}
 
 		List<String> targetStates = statesOf(target);
+
+		// A single-state (or empty) target has no distribution to learn - logistic
+		// regression requires at least two classes. Skip with a warning rather than
+		// throwing and failing the whole run.
+		if (targetStates.size() < 2){
+			return skip(target, "Node '" + target.getId() + "' has fewer than two states in this data, so no distribution can be learned for it; leaving its table unchanged");
+		}
+
+		List<Node> partitionParents = categoricalParents.stream()
+				.filter(parent -> forbidIndicatorParentIds.contains(parent.getId()))
+				.collect(Collectors.toList());
+		List<Node> encodedCategoricalParents = categoricalParents.stream()
+				.filter(parent -> !forbidIndicatorParentIds.contains(parent.getId()))
+				.collect(Collectors.toList());
+
+		if (partitionParents.isEmpty()){
+			return learnSingle(target, targetStates, continuousParents, categoricalParents);
+		}
+		return learnPartitioned(target, targetStates, continuousParents, categoricalParents, partitionParents, encodedCategoricalParents);
+	}
+
+	/**
+	 * The non-partitioned path: one {@code MultinomialLogit} expression over the continuous parents (direct) and all
+	 * categorical parents (dummy-encoded as {@code Indicator(...)} terms).
+	 */
+	private NodeLearningResult learnSingle(Node target, List<String> targetStates, List<Node> continuousParents, List<Node> categoricalParents) {
 		List<String> continuousParentIds = continuousParents.stream().map(Node::getId).collect(Collectors.toList());
 		List<String> categoricalParentIds = categoricalParents.stream().map(Node::getId).collect(Collectors.toList());
 		List<List<String>> categoricalParentStates = categoricalParents.stream().map(this::statesOf).collect(Collectors.toList());
@@ -157,19 +229,89 @@ public class LogisticRegressionLearner {
 		}
 
 		MultinomialLogisticRegression.Result fit = MultinomialLogisticRegression.fit(selection.getX(), selection.getY(), targetStates.size(), ridgeLambda);
+		String expression = buildMultinomialLogitExpression(fit, continuousParents, categoricalParents, categoricalParentStates);
 
+		List<String> expressions = new ArrayList<>();
+		expressions.add(expression);
+		return new NodeLearningResult(target, false, null, continuousParents, categoricalParents, expressions,
+				java.util.Collections.emptyList(), selection.getN(), fit.getPseudoR2(), fit.isConverged());
+	}
+
+	/**
+	 * The {@code forbidIndicatorEncoding} path: one {@code MultinomialLogit} expression per state combination of
+	 * {@code partitionParents}, each fitted over the continuous parents and the remaining (dummy-encoded) categorical
+	 * parents, applied via {@link Node#setTableFunctions(List, List)}. A partition with no rows falls back to the
+	 * target's global marginal (constant linear predictors), so every partition is specified.
+	 */
+	private NodeLearningResult learnPartitioned(Node target, List<String> targetStates, List<Node> continuousParents,
+			List<Node> categoricalParents, List<Node> partitionParents, List<Node> encodedCategoricalParents) {
+
+		List<String> continuousParentIds = continuousParents.stream().map(Node::getId).collect(Collectors.toList());
+		List<String> encodedParentIds = encodedCategoricalParents.stream().map(Node::getId).collect(Collectors.toList());
+		List<List<String>> encodedParentStates = encodedCategoricalParents.stream().map(this::statesOf).collect(Collectors.toList());
+
+		String fallbackExpression = globalMarginalExpression(target, targetStates);
+
+		List<PartitionEnumerator.Combination> partitionCombinations = PartitionEnumerator.enumerate(partitionParents);
+		List<String> expressions = new ArrayList<>();
+		int totalN = 0;
+		boolean allConverged = true;
+		for (PartitionEnumerator.Combination partitionCombination : partitionCombinations){
+			RegressionDataset.MixedCategoricalSelection selection = dataset.selectMixedCategoricalRows(
+					target.getId(), targetStates, continuousParentIds, encodedParentIds, encodedParentStates, partitionCombination);
+			if (selection.getN() == 0){
+				expressions.add(fallbackExpression);
+				allConverged = false;
+				continue;
+			}
+			MultinomialLogisticRegression.Result fit = MultinomialLogisticRegression.fit(selection.getX(), selection.getY(), targetStates.size(), ridgeLambda);
+			expressions.add(buildMultinomialLogitExpression(fit, continuousParents, encodedCategoricalParents, encodedParentStates));
+			totalN += fit.getN();
+			allConverged = allConverged && fit.isConverged();
+		}
+
+		if (totalN == 0){
+			return skip(target, "No usable data found for node '" + target.getId() + "' (and/or its parents); leaving its table unchanged");
+		}
+
+		return new NodeLearningResult(target, false, null, continuousParents, categoricalParents, expressions, partitionParents,
+				totalN, Double.NaN, allConverged);
+	}
+
+	/**
+	 * Assembles a {@code MultinomialLogit(...)} expression from a fit: one linear-predictor (eta) string per
+	 * non-reference class, continuous parents entering directly and categorical parents as {@code Indicator(...)} terms.
+	 */
+	private String buildMultinomialLogitExpression(MultinomialLogisticRegression.Result fit, List<Node> continuousParents,
+			List<Node> categoricalParents, List<List<String>> categoricalParentStates) {
 		List<String> etaExpressions = new ArrayList<>();
 		for (int cls = 0; cls < fit.getCoefficients().length; cls++){
 			etaExpressions.add(buildEtaExpression(fit.getCoefficients()[cls], continuousParents, categoricalParents, categoricalParentStates));
 		}
-		String expression = "MultinomialLogit(" + String.join(", ", etaExpressions) + ")";
+		return "MultinomialLogit(" + String.join(", ", etaExpressions) + ")";
+	}
 
-		return new NodeLearningResult(target, false, null, continuousParents, categoricalParents, expression,
-				selection.getN(), fit.getPseudoR2(), fit.isConverged());
+	/**
+	 * The target's unconditional class distribution as a {@code MultinomialLogit} with constant linear predictors
+	 * (intercept-only fit over all usable rows), used to fill partitions that have no rows of their own. Falls back to
+	 * a uniform distribution (all-zero predictors) if the target has no usable rows at all.
+	 */
+	private String globalMarginalExpression(Node target, List<String> targetStates) {
+		RegressionDataset.MixedCategoricalSelection selection = dataset.selectMixedCategoricalRows(
+				target.getId(), targetStates, java.util.Collections.emptyList(), java.util.Collections.emptyList(), java.util.Collections.emptyList());
+		if (selection.getN() == 0){
+			List<String> zeros = new ArrayList<>();
+			for (int i = 1; i < targetStates.size(); i++){
+				zeros.add("0");
+			}
+			return "MultinomialLogit(" + String.join(", ", zeros) + ")";
+		}
+		MultinomialLogisticRegression.Result fit = MultinomialLogisticRegression.fit(selection.getX(), selection.getY(), targetStates.size(), ridgeLambda);
+		return buildMultinomialLogitExpression(fit, java.util.Collections.emptyList(), java.util.Collections.emptyList(), java.util.Collections.emptyList());
 	}
 
 	private NodeLearningResult skip(Node target, String reason) {
-		return new NodeLearningResult(target, true, reason, null, null, null, 0, Double.NaN, false);
+		return new NodeLearningResult(target, true, reason, null, null, null, java.util.Collections.emptyList(), 0, Double.NaN, false);
 	}
 
 	/**

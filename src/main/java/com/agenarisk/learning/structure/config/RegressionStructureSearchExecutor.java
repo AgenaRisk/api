@@ -94,7 +94,7 @@ public class RegressionStructureSearchExecutor extends Configurer<RegressionStru
 			ContinuousRegressionLearner continuousLearner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL);
 			CategoricalRegressionLearner categoricalLearner = new CategoricalRegressionLearner(dataset, originalConfigurer.getRidgeLambda());
 			LogisticRegressionLearner logisticLearner = new LogisticRegressionLearner(dataset, originalConfigurer.getRidgeLambda());
-			RegressionNodeFitter fitter = new RegressionNodeFitter(continuousLearner, categoricalLearner, logisticLearner);
+			RegressionNodeFitter fitter = new RegressionNodeFitter(continuousLearner, categoricalLearner, logisticLearner, originalConfigurer.getKnowledge());
 
 			List<RegressionNodeFitter.NodeFitOutcome> outcomes = RegressionModelMaterializer.materialize(model, result, fitter);
 

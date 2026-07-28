@@ -33,6 +33,13 @@ public class LogisticExpressionTableWriter {
 			return;
 		}
 
-		result.getTarget().setTableFunction(result.getExpression());
+		if (result.getPartitionParents().isEmpty()){
+			// Single, non-partitioned expression - categorical parent effects are embedded as Indicator(...) terms.
+			result.getTarget().setTableFunction(result.getExpression());
+		}
+		else {
+			// forbidIndicatorEncoding: one MultinomialLogit expression per state combination of the partitioned parents.
+			result.getTarget().setTableFunctions(result.getExpressions(), result.getPartitionParents());
+		}
 	}
 }

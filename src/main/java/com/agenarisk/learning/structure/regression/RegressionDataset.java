@@ -389,10 +389,38 @@ public class RegressionDataset {
 	 * @return the selected rows, or an empty Selection (n=0) if the target column is absent or no rows qualify
 	 */
 	public CategoricalSelection selectCategoricalRows(String targetId, List<String> targetStates, List<String> parentIds, List<List<String>> parentStates) {
+		return selectCategoricalRows(targetId, targetStates, parentIds, parentStates, null);
+	}
+
+	/**
+	 * Partition-filtered variant of {@link #selectCategoricalRows(String, List, List, List)}: in addition to the usual
+	 * listwise-complete row eligibility, only rows whose {@code partitionCombination} parent columns match that
+	 * combination's states exactly are included. Used to implement {@code forbidIndicatorEncoding}, where a categorical
+	 * parent is partitioned on (a separate sub-fit per state combination) rather than dummy-encoded into a single fit.
+	 *
+	 * @param partitionCombination if non-null, only rows matching this combination on its parent columns are included
+	 * (those parents are the ones being partitioned on, and are NOT among {@code parentIds}); if null, no partition
+	 * filtering is applied and this behaves exactly like the four-argument overload
+	 *
+	 * @return the selected rows, or an empty Selection (n=0) if the target column is absent, a partition parent column
+	 * is absent, or no rows qualify
+	 */
+	public CategoricalSelection selectCategoricalRows(String targetId, List<String> targetStates, List<String> parentIds, List<List<String>> parentStates, PartitionEnumerator.Combination partitionCombination) {
 
 		Integer targetCol = columnIndex.get(targetId);
 		if (targetCol == null){
 			return new CategoricalSelection(new double[0][0], new int[0]);
+		}
+
+		Map<Integer, String> partitionColsToStates = new HashMap<>();
+		if (partitionCombination != null){
+			for (Map.Entry<String, String> entry : partitionCombination.getStatesByNodeId().entrySet()){
+				Integer col = columnIndex.get(entry.getKey());
+				if (col == null){
+					return new CategoricalSelection(new double[0][0], new int[0]);
+				}
+				partitionColsToStates.put(col, entry.getValue());
+			}
 		}
 
 		Map<String, Integer> targetStateIndex = new HashMap<>();
@@ -434,6 +462,18 @@ public class RegressionDataset {
 			}
 			Integer targetIndex = targetStateIndex.get(targetRaw);
 			if (targetIndex == null){
+				continue;
+			}
+
+			boolean partitionOk = true;
+			for (Map.Entry<Integer, String> entry : partitionColsToStates.entrySet()){
+				String raw = rowData[entry.getKey()];
+				if (isMissing(raw) || !raw.equals(entry.getValue())){
+					partitionOk = false;
+					break;
+				}
+			}
+			if (!partitionOk){
 				continue;
 			}
 
@@ -522,10 +562,41 @@ public class RegressionDataset {
 	 */
 	public MixedCategoricalSelection selectMixedCategoricalRows(String targetId, List<String> targetStates,
 			List<String> continuousParentIds, List<String> categoricalParentIds, List<List<String>> categoricalParentStates) {
+		return selectMixedCategoricalRows(targetId, targetStates, continuousParentIds, categoricalParentIds, categoricalParentStates, null);
+	}
+
+	/**
+	 * Partition-filtered variant of
+	 * {@link #selectMixedCategoricalRows(String, List, List, List, List)}: only rows matching
+	 * {@code partitionCombination} on its parent columns are included, in addition to the usual eligibility. Used to
+	 * implement {@code forbidIndicatorEncoding} for the mixed (continuous+categorical parent) case, where a categorical
+	 * parent is partitioned on rather than dummy-encoded.
+	 *
+	 * @param partitionCombination if non-null, only rows matching this combination on its parent columns are included
+	 * (those parents are partitioned on and are NOT among {@code categoricalParentIds}); if null, behaves exactly like
+	 * the five-argument overload
+	 *
+	 * @return the selected rows, or an empty selection (n=0) if the target column is absent, a partition parent column
+	 * is absent, or no rows qualify
+	 */
+	public MixedCategoricalSelection selectMixedCategoricalRows(String targetId, List<String> targetStates,
+			List<String> continuousParentIds, List<String> categoricalParentIds, List<List<String>> categoricalParentStates,
+			PartitionEnumerator.Combination partitionCombination) {
 
 		Integer targetCol = columnIndex.get(targetId);
 		if (targetCol == null){
 			return new MixedCategoricalSelection(new double[0][0], new int[0]);
+		}
+
+		Map<Integer, String> partitionColsToStates = new HashMap<>();
+		if (partitionCombination != null){
+			for (Map.Entry<String, String> entry : partitionCombination.getStatesByNodeId().entrySet()){
+				Integer col = columnIndex.get(entry.getKey());
+				if (col == null){
+					return new MixedCategoricalSelection(new double[0][0], new int[0]);
+				}
+				partitionColsToStates.put(col, entry.getValue());
+			}
 		}
 
 		Map<String, Integer> targetStateIndex = new HashMap<>();
@@ -576,6 +647,18 @@ public class RegressionDataset {
 			}
 			Integer targetIndex = targetStateIndex.get(targetRaw);
 			if (targetIndex == null){
+				continue;
+			}
+
+			boolean partitionOk = true;
+			for (Map.Entry<Integer, String> entry : partitionColsToStates.entrySet()){
+				String raw = rowData[entry.getKey()];
+				if (isMissing(raw) || !raw.equals(entry.getValue())){
+					partitionOk = false;
+					break;
+				}
+			}
+			if (!partitionOk){
 				continue;
 			}
 
