@@ -1,5 +1,6 @@
 package com.agenarisk.learning.structure.result;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +16,27 @@ public class PerformanceEvaluation {
     private boolean success = false;
     private String message = "";
     private String modelLabel = "";
+    private String target = ""; // the target node this result is for (per-target results)
+    // Per-target breakdown (populated on the model-level aggregate result only).
+    private final List<PerformanceEvaluation> targetResults = new ArrayList<>();
     
+	// Discrete-target metrics (classification-style, exact state-label matching).
 	private double brierScore = 1;
 	private double absoluteError = 1;
 	private double sphericalScore = 0;
-	
+
+	// Continuous-target metrics (ContinuousInterval/IntegerInterval targets only - see
+	// PerformanceEvaluationExecutor). Kept as distinct, separately-named fields rather than reusing the
+	// discrete ones above, since a single evaluation is now always one kind or the other (mixed target
+	// lists are rejected), so there's no need to overload a field with two different meanings/units.
+	private Double mae = null;
+	private Double rmse = null;
+	private Double crps = null; // Continuous Ranked Probability Score
+
+	// "continuous" or "discrete", set once a target/evaluation's kind is known; null if not yet determined
+	// (e.g. a failed evaluation with no successful targets).
+	private String targetKind = null;
+
 	private final Map<String, List<Double>> rocScores = new HashMap<>(); // class label -> list of predicted probabilities
 	private final Map<String, List<Integer>> rocTruths = new HashMap<>(); // class label -> list of binary actuals
 	private Map<String, Double> rocAucs = new HashMap<>(); // class label -> AUC value
@@ -59,6 +76,18 @@ public class PerformanceEvaluation {
         this.modelLabel = modelLabel;
     }
 
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target != null ? target : "";
+    }
+
+    public List<PerformanceEvaluation> getTargetResults() {
+        return targetResults;
+    }
+
     public double getBrierScore() {
         return brierScore;
     }
@@ -82,6 +111,38 @@ public class PerformanceEvaluation {
     public void setSphericalScore(double sphericalScore) {
         this.sphericalScore = sphericalScore;
     }
+
+	public Double getMae() {
+		return mae;
+	}
+
+	public void setMae(Double mae) {
+		this.mae = mae;
+	}
+
+	public Double getRmse() {
+		return rmse;
+	}
+
+	public void setRmse(Double rmse) {
+		this.rmse = rmse;
+	}
+
+	public Double getCrps() {
+		return crps;
+	}
+
+	public void setCrps(Double crps) {
+		this.crps = crps;
+	}
+
+	public String getTargetKind() {
+		return targetKind;
+	}
+
+	public void setTargetKind(String targetKind) {
+		this.targetKind = targetKind;
+	}
 
 	public Double getMacroAuc() {
 		return macroAuc;
@@ -135,9 +196,24 @@ public class PerformanceEvaluation {
         json.put("success", success);
         json.put("message", message);
         json.put("modelLabel", modelLabel);
+        if (!target.isEmpty()) {
+            json.put("target", target);
+        }
         json.put("absoluteError", absoluteError);
 		json.put("brierScore", brierScore);
         json.put("sphericalScore", sphericalScore);
+		if (targetKind != null){
+			json.put("targetKind", targetKind);
+		}
+		if (mae != null){
+			json.put("mae", mae);
+		}
+		if (rmse != null){
+			json.put("rmse", rmse);
+		}
+		if (crps != null){
+			json.put("crps", crps);
+		}
 		if (macroAuc != null){
 			json.put("macroAuc", macroAuc);
 		}
@@ -166,6 +242,14 @@ public class PerformanceEvaluation {
 				rocPointsJson.put(entry.getKey(), pointsArray);
 			}
 			json.put("rocPoints", rocPointsJson);
+		}
+
+		if (!targetResults.isEmpty()){
+			JSONArray targetsArray = new JSONArray();
+			for (PerformanceEvaluation te : targetResults) {
+				targetsArray.put(te.toJson());
+			}
+			json.put("targets", targetsArray);
 		}
 
 		return json;
