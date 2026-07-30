@@ -54,6 +54,20 @@
 			<groupId>com.agenarisk</groupId>
 			<artifactId>com.agenarisk.learning.structure</artifactId>
 			<version>0.0.14</version>
+			<!--
+			  Exclude the old engine (com.agenarisk.core:9553) that learning.structure pulls in
+			  transitively. It ships a duplicate copy of every uk.co.agena.minerva.* class, and when
+			  the sidecar jar is shaded the duplicates are resolved arbitrarily per class — so some
+			  classes (e.g. NPTGenerator) silently resolved to the OLD engine, defeating fixes made
+			  in core-parallel. Excluding it leaves core-parallel as the single provider of those
+			  classes so the whole engine is consistent.
+			-->
+			<exclusions>
+				<exclusion>
+					<groupId>com.agenarisk</groupId>
+					<artifactId>com.agenarisk.core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 		<dependency>
