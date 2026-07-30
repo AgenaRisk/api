@@ -938,7 +938,15 @@ public class Model implements IdContainer<ModelException>, Storable {
 			Logger.logIfDebug("Calculation failed. Propagation OK flag: " + getLogicModel().isLastPropagationSuccessful());
 			
 			String message = "Calculation failed";
-			
+
+			// An NPT/junction-tree preflight guard refused an infeasible table before it could OOM.
+			// Surface its specific, actionable message rather than a generic memory/inconsistency error.
+			for (Throwable t = calcException; t != null; t = t.getCause()) {
+				if (t instanceof uk.co.agena.minerva.util.nptgenerator.NptTooLargeError) {
+					throw new OutOfMemoryException(t.getMessage(), calcException);
+				}
+			}
+
 			if (calcException instanceof OutOfMemoryError
 					|| calcException instanceof OutOfMemoryException
 					|| outputCaptured.contains("Java heap space")
