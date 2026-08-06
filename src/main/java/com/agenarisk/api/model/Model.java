@@ -61,6 +61,8 @@ import java.util.Objects;
 import uk.co.agena.minerva.model.extendedbn.ContinuousEN;
 import uk.co.agena.minerva.model.extendedbn.ExtendedBNException;
 import uk.co.agena.minerva.model.Model.PropagationFlag;
+import uk.co.agena.minerva.model.corebn.JunctionTreeTooLargeException;
+import uk.co.agena.minerva.model.jtinspect.JunctionTreeReport;
 import uk.co.agena.minerva.model.ModelEvent;
 import uk.co.agena.minerva.model.extendedbn.ExtendedNodeFunction;
 import uk.co.agena.minerva.util.helpers.ThreadDataStore;
@@ -940,10 +942,14 @@ public class Model implements IdContainer<ModelException>, Storable {
 			
 			if (calcException instanceof OutOfMemoryError
 					|| calcException instanceof OutOfMemoryException
+					|| calcException instanceof JunctionTreeTooLargeException
 					|| outputCaptured.contains("Java heap space")
 					|| outputCaptured.contains("Memory required exceeds that available")
 					|| outputCaptured.contains("Insufficient memory")) {
-				message = "Insufficient memory";
+				// "Insufficient memory" alone tells the user nothing they can act on. This is the one
+				// failure whose cause is precisely measurable, so say which network and which nodes are
+				// responsible and how far over the limit they are.
+				message = "Insufficient memory" + describeInfeasibility();
 				throw new OutOfMemoryException(message, calcException);
 			}
 			
@@ -967,6 +973,162 @@ public class Model implements IdContainer<ModelException>, Storable {
 		}
 	}
 	
+	/**
+	 * Pre-calculation feasibility probe. Builds the junction trees of every network WITHOUT running
+	 * numeric propagation and reports each clique's members and potential-table cell count. The binding
+	 * feasibility signal is the largest clique cell count across all networks.
+	 * <br>
+	 * The trees are built from the binary-factorised working model — the same cliques a real calculation
+	 * would build, so a model the factorisation passes rescue is reported as feasible rather than on its
+	 * un-factorised size. Simulation nodes have no fixed cardinality before calculation, so they are
+	 * charged {@code simNodeStates} states (use 20). Runs on an isolated deep copy and never mutates this
+	 * model.
+	 *
+	 * @param simNodeStates states to charge each simulation node (e.g. 20)
+	 * @return a JSONObject report: {@code simNodeStates, heapMaxBytes/MB, modelMaxCliqueCells,
+	 *         modelTotalCells, estimatedBytes/MB, infeasible, networks:[{id,name,maxCliqueCells,
+	 *         totalCells,estimatedBytes/MB,infeasible,error,cliques:[{id,cells,members[],memberStates[]}]}]}
+	 */
+	public JSONObject inspectJunctionTrees(int simNodeStates) {
+		// Suppress GUI dialogs from the (headless) engine while inspecting, matching calculate().
+		String suppressMessages = uk.co.agena.minerva.model.Model.suppressMessages;
+		uk.co.agena.minerva.model.Model.suppressMessages = "system";
+		JunctionTreeReport report;
+		try {
+			report = getLogicModel().inspectJunctionTrees(simNodeStates);
+		}
+		finally {
+			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
+		}
+
+		final double MB = 1024.0 * 1024.0;
+		JSONObject out = new JSONObject();
+		out.put("simNodeStates", report.simNodeStates);
+		out.put("heapMaxBytes", report.heapMaxBytes);
+		out.put("heapMaxMB", report.heapMaxBytes / MB);
+		out.put("modelMaxCliqueCells", report.modelMaxCliqueCells);
+		out.put("modelTotalCells", report.modelTotalCells);
+		out.put("estimatedBytes", report.estimatedBytes);
+		out.put("estimatedMB", report.estimatedBytes / MB);
+		out.put("infeasible", report.infeasible);
+
+		JSONArray nets = new JSONArray();
+		for (JunctionTreeReport.NetworkJT njt : report.networks) {
+			JSONObject nj = new JSONObject();
+			nj.put("id", njt.networkId);
+			nj.put("name", njt.networkName);
+			nj.put("maxCliqueCells", njt.maxCliqueCells);
+			nj.put("totalCells", njt.totalCells);
+			nj.put("estimatedBytes", njt.estimatedBytes);
+			nj.put("estimatedMB", njt.estimatedBytes / MB);
+			nj.put("infeasible", njt.infeasible);
+			nj.put("error", njt.error == null ? JSONObject.NULL : njt.error);
+
+			JSONArray cliques = new JSONArray();
+			for (JunctionTreeReport.CliqueDim cd : njt.cliques) {
+				JSONObject cj = new JSONObject();
+				cj.put("id", cd.cliqueId);
+				cj.put("cells", cd.cells);
+				cj.put("members", new JSONArray(cd.memberNodeIds));
+				cj.put("memberStates", new JSONArray(cd.memberStates));
+				cliques.put(cj);
+			}
+			nj.put("cliques", cliques);
+			nets.put(nj);
+		}
+		out.put("networks", nets);
+		return out;
+	}
+
+	/**
+	 * A short, human-readable account of WHY the model is too big, appended to an out-of-memory failure.
+	 * Returns "" when nothing useful can be established, so the caller's message degrades to what it
+	 * always said rather than to something misleading.
+	 * <br>
+	 * Deliberately defensive: this runs inside a failure path, so a probe that is itself slow, throwing,
+	 * or defeated by the same size problem must never replace the real error with a diagnostic error.
+	 */
+	private String describeInfeasibility() {
+		// calculate() restores suppressMessages in its finally block before reaching here, so the probe
+		// has to suppress dialogs again itself or it can fail outright in a headless run.
+		String suppressMessages = uk.co.agena.minerva.model.Model.suppressMessages;
+		uk.co.agena.minerva.model.Model.suppressMessages = "system";
+		try {
+			JunctionTreeReport report = getLogicModel().inspectJunctionTrees(20);
+
+			// Select by NETWORK, not by enumerated clique. When a cluster is too large to allocate the
+			// junction-tree build aborts at that point, so it reports the offending size and an error
+			// but no clique list at all — meaning the very worst models, the ones most in need of an
+			// explanation, have cliques.isEmpty(). Per-clique membership is a bonus, not the anchor.
+			JunctionTreeReport.NetworkJT worst = null;
+			for (JunctionTreeReport.NetworkJT njt : report.networks) {
+				if (worst == null || njt.maxCliqueCells > worst.maxCliqueCells
+						|| (njt.error != null && worst.error == null)) {
+					worst = njt;
+				}
+			}
+			if (worst == null || (worst.maxCliqueCells <= 0 && worst.error == null)) {
+				return "";
+			}
+
+			final double GB = 1024.0 * 1024.0 * 1024.0;
+			StringBuilder sb = new StringBuilder(".");
+			if (worst.maxCliqueCells > 0) {
+				sb.append(" Largest clique ").append(String.format("%.3g", worst.maxCliqueCells))
+						.append(" cells");
+				// 8 bytes per cell, the same basis the report's own estimate uses.
+				double needGB = worst.maxCliqueCells * 8.0 / GB;
+				if (needGB >= 0.1) {
+					sb.append(String.format(" (~%.1f GB)", needGB));
+				}
+				if (worst.networkName != null) {
+					sb.append(" in network '").append(worst.networkName).append("'");
+				}
+				sb.append(String.format(", against a %.1f GB heap.", report.heapMaxBytes / GB));
+			}
+
+			// The members ARE the actionable part when we have them: they name the nodes whose joint
+			// dependency is the problem, which is what a user has to change.
+			JunctionTreeReport.CliqueDim worstClique = null;
+			for (JunctionTreeReport.CliqueDim cd : worst.cliques) {
+				if (worstClique == null || cd.cells > worstClique.cells) {
+					worstClique = cd;
+				}
+			}
+			if (worstClique != null && !worstClique.memberNodeIds.isEmpty()) {
+				sb.append(" It spans ").append(worstClique.memberNodeIds.size()).append(" nodes: ");
+				int show = Math.min(8, worstClique.memberNodeIds.size());
+				for (int i = 0; i < show; i++) {
+					sb.append(i == 0 ? "" : ", ").append(worstClique.memberNodeIds.get(i));
+				}
+				if (worstClique.memberNodeIds.size() > show) {
+					sb.append(", and ").append(worstClique.memberNodeIds.size() - show).append(" more");
+				}
+				sb.append(".");
+			}
+			else if (worst.error != null) {
+				// No clique list, so pass through the engine's own account of where it gave up.
+				sb.append(" ").append(worst.error);
+				if (!worst.error.endsWith(".")) {
+					sb.append(".");
+				}
+			}
+			sb.append(" Reduce the number of parents on these nodes, or coarsen their discretisation.");
+			return sb.toString();
+		}
+		catch (Throwable probeFailure) {
+			// Silent by design: the caller already has a real failure to report, and a diagnostic that
+			// cannot be produced must not become a second one. Visible under debug only.
+			Logger.logIfDebug("Feasibility probe failed while explaining a calculation failure: "
+					+ probeFailure);
+			Logger.printThrowableIfDebug(probeFailure);
+			return "";
+		}
+		finally {
+			uk.co.agena.minerva.model.Model.suppressMessages = suppressMessages;
+		}
+	}
+
 	/**
 	 * Saves the Model to a file path specified.<br>
 	 * Output format is determined by path extension:<br>
