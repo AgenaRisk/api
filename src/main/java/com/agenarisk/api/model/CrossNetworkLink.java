@@ -49,7 +49,8 @@ public class CrossNetworkLink extends Link implements Storable {
 		sourceNode,
 		targetNode,
 		type,
-		passState
+		passState,
+		percentile
 	}
 	
 	/**
@@ -63,7 +64,8 @@ public class CrossNetworkLink extends Link implements Storable {
 		StandardDeviation,
 		LowerPercentile,
 		UpperPercentile,
-		State
+		State,
+		Mode
 	}
 	
 	/**
@@ -82,6 +84,12 @@ public class CrossNetworkLink extends Link implements Storable {
 	private String stateToPass = null;
 	
 	/**
+	 * The percentile to pass for a LowerPercentile / UpperPercentile link, or null to use the source
+	 * Node's own percentile setting (which is how it behaved before links could carry one).
+	 */
+	private Double percentile = null;
+	
+	/**
 	 * Constructor for CrossNetworkLink.
 	 * <br>
 	 * Only sets instance variable values, does not do any checks and does not create the underlying logical link.
@@ -93,10 +101,11 @@ public class CrossNetworkLink extends Link implements Storable {
 	 * @param type the type of CrossNetworkLink
 	 * @param stateToPass state to pass (if any)
 	 */
-	private CrossNetworkLink(Node fromNode, Node toNode, Type type, String stateToPass) {
+	private CrossNetworkLink(Node fromNode, Node toNode, Type type, String stateToPass, Double percentile) {
 		super(fromNode, toNode);
 		this.type = type;
 		this.stateToPass = stateToPass;
+		this.percentile = percentile;
 	}
 	
 	/**
@@ -114,6 +123,15 @@ public class CrossNetworkLink extends Link implements Storable {
 	 * @throws LinkException if source and target are in the same Network; no CrossNetworkLink type specified; type passes state, but state not specified; type does not pass a state but state specified
 	 */
 	protected static CrossNetworkLink createCrossNetworkLink(Node fromNode, Node toNode, Type type, String stateToPass) throws LinkException{
+		return createCrossNetworkLink(fromNode, toNode, type, stateToPass, null);
+	}
+	
+	/**
+	 * As above, with an explicit percentile for a LowerPercentile / UpperPercentile link.
+	 * 
+	 * @param percentile 0-100, or null to fall back to the source Node's own percentile setting
+	 */
+	protected static CrossNetworkLink createCrossNetworkLink(Node fromNode, Node toNode, Type type, String stateToPass, Double percentile) throws LinkException{
 		if (Objects.equals(fromNode.getNetwork(), toNode.getNetwork())){
 			throw new LinkException("Trying to link nodes in same network by a cross network link");
 		}
@@ -130,7 +148,7 @@ public class CrossNetworkLink extends Link implements Storable {
 			throw new LinkException("Link type `"+type.toString()+"` does not pass a state `" + stateToPass + "`");
 		}
 		
-		CrossNetworkLink link = new CrossNetworkLink(fromNode, toNode, type, stateToPass);
+		CrossNetworkLink link = new CrossNetworkLink(fromNode, toNode, type, stateToPass, percentile);
 		
 		return link;
 	}
@@ -288,6 +306,9 @@ public class CrossNetworkLink extends Link implements Storable {
 			}
 			
 			switch (type) {
+				case Mode:
+					summaryStat = MathsHelper.SummaryStatistic.MODE;
+					break;
 				case Mean:
 					summaryStat = MathsHelper.SummaryStatistic.MEAN;
 					break;
@@ -310,7 +331,10 @@ public class CrossNetworkLink extends Link implements Storable {
 					throw new LinkException("Invalid cross network link type: `"+type+"`");
 			}
 
-			logicLink = new ConstantSummaryMessagePassingLink(summaryStat,constantName, ebn2.getId(),  ebn1.getId(), en2.getId(), en1.getId());
+			ConstantSummaryMessagePassingLink summaryLink = new ConstantSummaryMessagePassingLink(summaryStat,constantName, ebn2.getId(),  ebn1.getId(), en2.getId(), en1.getId());
+			// Null leaves the engine reading the source node's own setting, as it always did.
+			summaryLink.setPercentile(percentile);
+			logicLink = summaryLink;
 		}
 		
 		uk.co.agena.minerva.model.Model model = getFromNode().getNetwork().getModel().getLogicModel();
@@ -357,6 +381,15 @@ public class CrossNetworkLink extends Link implements Storable {
 	 */
 	public String getStateToPass() {
 		return stateToPass;
+	}
+	
+	/**
+	 * Returns the percentile this link passes, or null when it defers to the source Node's setting.
+	 * 
+	 * @return the percentile or null
+	 */
+	public Double getPercentile() {
+		return percentile;
 	}
 	
 	/**

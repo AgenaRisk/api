@@ -345,6 +345,9 @@ public class JSONAdapter {
 		if (mpl instanceof ConstantSummaryMessagePassingLink){
 			ConstantSummaryMessagePassingLink csmpl = (ConstantSummaryMessagePassingLink)mpl;
 			switch(csmpl.getSummaryStatistic()){
+				case MODE:
+					linkType = CrossNetworkLink.Type.Mode;
+					break;
 				case MEAN:
 					linkType = CrossNetworkLink.Type.Mean;
 					break;
@@ -365,6 +368,12 @@ public class JSONAdapter {
 					break;
 				default:
 					throw new AgenaRiskRuntimeException("Invalid link summary statistic: " + csmpl.getSummaryStatistic().name());
+			}
+			
+			// Written only when the link carries its own percentile; omitted means "use the source
+			// node's setting", which is what every model saved before this says by omission.
+			if (csmpl.getPercentile() != null){
+				jsonLink.put(CrossNetworkLink.Field.percentile.toString(), csmpl.getPercentile().doubleValue());
 			}
 		}
 		else if (mpl instanceof ConstantStateMessagePassingLink){
