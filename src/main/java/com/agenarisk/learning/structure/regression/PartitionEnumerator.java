@@ -73,12 +73,19 @@ public class PartitionEnumerator {
 
 		List<Combination> combinations = new ArrayList<>();
 		int[] indices = new int[statesPerParent.size()];
-		int total = 1;
+		// Product in long, then range-check: an int product silently overflows for many/high-cardinality parents,
+		// which would yield a wrong (often negative → empty) combination list rather than an honest error.
+		long total = 1L;
 		for (List<String> states : statesPerParent){
 			total *= states.size();
 		}
+		if (total > Integer.MAX_VALUE){
+			throw new IllegalStateException("Too many parent-state combinations to enumerate (" + total
+					+ "); this structure is too dense for a full table.");
+		}
+		int totalInt = (int) total;
 
-		for (int combIndex = 0; combIndex < total; combIndex++){
+		for (int combIndex = 0; combIndex < totalInt; combIndex++){
 			Map<String, String> statesByNodeId = new LinkedHashMap<>();
 			for (int p = 0; p < partitionParents.size(); p++){
 				statesByNodeId.put(partitionParents.get(p).getId(), statesPerParent.get(p).get(indices[p]));

@@ -103,19 +103,30 @@ public class RegressionParameterLearningExecutor extends Configurer<RegressionPa
 					}
 				}
 
-				RegressionNodeFitter.NodeFitOutcome outcome = fitter.fitAndWrite(node);
-
 				JSONObject jNode = new JSONObject();
-				jNode.put("nodeId", outcome.getNodeId());
-				jNode.put("skipped", outcome.isSkipped());
+				jNode.put("nodeId", node.getId());
 
-				if (outcome.isSkipped()){
-					reportSkip(jNode, outcome.getSkipReason());
-				}
-				else if (outcome.getDetail() != null){
-					for (String key : outcome.getDetail().keySet()){
-						jNode.put(key, outcome.getDetail().get(key));
+				// A single node that can't be fitted must NOT abort the whole
+				// candidate: fitAndWrite throws when a learned table/expression
+				// can't be written back (e.g. a dense structure whose NPT doesn't
+				// fit the node's state space). Treat that like a skip — the node
+				// keeps its existing (uniform) table and the rest of the model
+				// still learns and exports — instead of producing no output at all.
+				try {
+					RegressionNodeFitter.NodeFitOutcome outcome = fitter.fitAndWrite(node);
+					jNode.put("skipped", outcome.isSkipped());
+					if (outcome.isSkipped()){
+						reportSkip(jNode, outcome.getSkipReason());
 					}
+					else if (outcome.getDetail() != null){
+						for (String key : outcome.getDetail().keySet()){
+							jNode.put(key, outcome.getDetail().get(key));
+						}
+					}
+				}
+				catch (Exception nodeEx){
+					jNode.put("skipped", true);
+					reportSkip(jNode, "Could not fit node '" + node.getId() + "' — kept its existing table. (" + nodeEx.getMessage() + ")");
 				}
 				jNodes.put(jNode);
 			}

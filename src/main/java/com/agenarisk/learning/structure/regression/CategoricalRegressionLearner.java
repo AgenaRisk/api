@@ -104,6 +104,16 @@ public class CategoricalRegressionLearner {
 	 */
 	private static final String PARTITION_KEY_DELIMITER = String.valueOf((char) 1);
 
+	/**
+	 * Cap on a categorical node's full conditional table size (parent-state combinations × target states). A manual
+	 * NPT is exponential in the parent count, so a dense discovered structure (a node with several high-cardinality
+	 * binned parents) can produce a table with billions of cells — which overflows the enumerator's combination count
+	 * and/or exhausts memory when allocated, killing the whole candidate. Beyond this cap we skip the node (leaving its
+	 * table unchanged) with an advisory rather than attempting the intractable table. 2,000,000 cells (~16 MB of
+	 * doubles) is comfortably learnable while well short of the overflow/OOM regime.
+	 */
+	private static final long MAX_NPT_CELLS = 2_000_000L;
+
 	private final RegressionDataset dataset;
 	private final double ridgeLambda;
 
@@ -172,6 +182,22 @@ public class CategoricalRegressionLearner {
 		// constant in this data slice, or a numeric column binned to a single bin).
 		if (targetStates.size() < 2){
 			return new NodeLearningResult(target, true, "Node '" + target.getId() + "' has fewer than two states in this data, so no distribution can be learned for it; leaving its table unchanged", null, null, 0, Double.NaN, false);
+		}
+
+		// A full manual NPT is exponential in the parent count. Compute its size with long arithmetic (the enumerator
+		// counts combinations in an int, which would silently overflow) and, if it exceeds what we can tractably build,
+		// skip the node instead of overflowing/OOMing on an intractable table. This is the common failure for dense
+		// discovered structures (a node with several high-cardinality binned parents).
+		long combinations = 1L;
+		for (Node parent : parents){
+			combinations *= Math.max(1, statesOf(parent).size());
+			if (combinations * (long) targetStates.size() > MAX_NPT_CELLS){
+				return new NodeLearningResult(target, true,
+						"Node '" + target.getId() + "' has too many parents (" + parents.size() + ") to learn a full "
+						+ "conditional table from this data — its table would need more than " + MAX_NPT_CELLS
+						+ " cells. Leaving its table unchanged; use a sparser search or coarser bins if you need it learned.",
+						null, null, 0, Double.NaN, false);
+			}
 		}
 
 		List<Node> partitionParents = new ArrayList<>();
