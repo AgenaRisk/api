@@ -2,6 +2,7 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.model.interfaces.Storable;
 import org.json.JSONObject;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 
 /**
  * This is a class for Model calculation settings.
@@ -60,10 +61,74 @@ public class Settings implements Storable {
 	}
 	
 	/**
+	 * Utility method to load per-network settings from the provided JSON onto the provided API1 Network.<br>
+	 * Only the fields actually present in the JSON become overrides; any other field is left to inherit
+	 * the model-level setting, which is what every model without a network settings block does.<br>
+	 * Note that only a subset of the model-level fields is supported per network: sample size for ranked
+	 * nodes is applied during NPT generation rather than per network, and the logging flags write to a
+	 * single shared log.
+	 *
+	 * @param ebn API1 Network to load settings onto
+	 * @param jsonSettings JSON to load settings from; null or empty clears all overrides
+	 */
+	public static void loadSettings(ExtendedBN ebn, JSONObject jsonSettings){
+		if (ebn == null){
+			return;
+		}
+
+		ebn.clearSimulationSettingOverrides();
+
+		if (jsonSettings == null){
+			return;
+		}
+
+		if (jsonSettings.has(Field.iterations.toString())){
+			ebn.setSimulationNoOfIterationsOverride(jsonSettings.getInt(Field.iterations.toString()));
+		}
+		if (jsonSettings.has(Field.convergence.toString())){
+			ebn.setSimulationEntropyConvergenceToleranceOverride(jsonSettings.getDouble(Field.convergence.toString()));
+		}
+		if (jsonSettings.has(Field.tolerance.toString())){
+			ebn.setSimulationEvidenceTolerancePercentOverride(jsonSettings.getDouble(Field.tolerance.toString()));
+		}
+		if (jsonSettings.has(Field.discreteTails.toString())){
+			ebn.setSimulationTailsOverride(jsonSettings.getBoolean(Field.discreteTails.toString()));
+		}
+	}
+
+	/**
+	 * Utility method to build a JSON equivalent of the per-network settings of the provided API1 Network.
+	 *
+	 * @param ebn API1 Network
+	 *
+	 * @return JSON equivalent of the network's setting overrides, or null if the network overrides nothing
+	 */
+	public static JSONObject toJson(ExtendedBN ebn) {
+		if (ebn == null || !ebn.hasSimulationSettingOverrides()){
+			return null;
+		}
+
+		JSONObject jsonSettings = new JSONObject();
+		if (ebn.getSimulationNoOfIterationsOverride() != null){
+			jsonSettings.put(Field.iterations.toString(), ebn.getSimulationNoOfIterationsOverride().intValue());
+		}
+		if (ebn.getSimulationEntropyConvergenceToleranceOverride() != null){
+			jsonSettings.put(Field.convergence.toString(), ebn.getSimulationEntropyConvergenceToleranceOverride().doubleValue());
+		}
+		if (ebn.getSimulationEvidenceTolerancePercentOverride() != null){
+			jsonSettings.put(Field.tolerance.toString(), ebn.getSimulationEvidenceTolerancePercentOverride().doubleValue());
+		}
+		if (ebn.getSimulationTailsOverride() != null){
+			jsonSettings.put(Field.discreteTails.toString(), ebn.getSimulationTailsOverride().booleanValue());
+		}
+		return jsonSettings;
+	}
+
+	/**
 	 * Utility method to build a JSON equivalent of settings from the provided API1 model
-	 * 
+	 *
 	 * @param model API1 model
-	 * 
+	 *
 	 * @return JSON equivalent of the Settings
 	 */
 	public static JSONObject toJson(uk.co.agena.minerva.model.Model model) {

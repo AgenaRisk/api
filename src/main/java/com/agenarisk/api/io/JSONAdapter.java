@@ -429,7 +429,14 @@ public class JSONAdapter {
 		if (ebn.getName().getLongDescription().trim().length() > 0){
 			jsonNetwork.put(Network.Field.description.toString(), ebn.getName().getLongDescription());
 		}
-		
+
+		// Per-network simulation settings. Omitted entirely unless the network overrides something,
+		// so models that only use model-level settings serialise exactly as they did before.
+		JSONObject jsonNetworkSettings = Settings.toJson(ebn);
+		if (jsonNetworkSettings != null){
+			jsonNetwork.put(Settings.Field.settings.toString(), jsonNetworkSettings);
+		}
+
 		// Nodes
 		JSONArray jsonNodes = new JSONArray();
 		for(ExtendedNode en: (List<ExtendedNode>) ebn.getExtendedNodes()){
