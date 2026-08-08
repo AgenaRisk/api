@@ -183,6 +183,19 @@ public class AggregationBfStatusProbe {
     report("sum nested in arithmetic", "sum(" + args() + ") / " + N);
     report("min nested in arithmetic", "min(" + args() + ") + 1");
 
+    // The forms fixed 2026-08-08. Everything above was already reported; these are the ones that used
+    // to throw. Worst in-degree <= 2 plus a sane expression on y is the pass condition.
+    report("wmean() unequal weights", "wmean(2,p1,3,p2,1,p3,4,p4,2,p5)");
+    report("wmin() equal weights", "wmin(2,p1,2,p2,2,p3,2,p4,2,p5)");
+    report("wmin() unequal weights", "wmin(2,p1,3,p2,1,p3,4,p4,2,p5)");
+    report("wmax() equal weights", "wmax(2,p1,2,p2,2,p3,2,p4,2,p5)");
+    report("wmax() unequal weights", "wmax(2,p1,3,p2,1,p3,4,p4,2,p5)");
+    report("mixminmax()", "mixminmax(1,2," + args() + ")");
+    report("max nested in arithmetic", "max(" + args() + ") * 2");
+    report("min/max mixed with sum", "sum(p1,p2) + max(p3,p4)");
+    report("two-arg function pow", "pow(p1,p2) + p3");
+    report("two-arg function mod", "mod(p1,p2) + p3");
+
     System.out.println("==== does core's PARSER know these at all? ====");
     parserKnows("sum(1,2,3)");
     parserKnows("avg(1,2,3)");
