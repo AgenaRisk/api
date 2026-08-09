@@ -20,9 +20,9 @@ public class Settings implements Storable {
 		convergence,
 		tolerance,
 		sampleSizeRanked,
-		discreteTails,
 		simulationLogging,
-		parameterLearningLogging
+		parameterLearningLogging,
+		splitMetric
 	}
 	
 	/**
@@ -55,7 +55,7 @@ public class Settings implements Storable {
 		logicModel.setSimulationEntropyConvergenceTolerance(jsonSettings.optDouble(Field.convergence.toString(), logicModel.getSimulationEntropyConvergenceTolerance()));
 		logicModel.setSimulationEvidenceTolerancePercent(jsonSettings.optDouble(Field.tolerance.toString(), logicModel.getSimulationEvidenceTolerancePercent()));
 		logicModel.setRankedSampleSize(jsonSettings.optInt(Field.sampleSizeRanked.toString(), logicModel.getRankedSampleSize()));
-		logicModel.setSimulationTails(jsonSettings.optBoolean(Field.discreteTails.toString(), logicModel.isSimulationTails()));
+		logicModel.setSplitMetric(jsonSettings.optString(Field.splitMetric.toString(), logicModel.getSplitMetric()));
 		logicModel.setSimulationLogging(jsonSettings.optBoolean(Field.simulationLogging.toString(), logicModel.isSimulationLogging()));
 		logicModel.setEMLogging(jsonSettings.optBoolean(Field.parameterLearningLogging.toString(), logicModel.isEMLogging()));
 	}
@@ -91,8 +91,8 @@ public class Settings implements Storable {
 		if (jsonSettings.has(Field.tolerance.toString())){
 			ebn.setSimulationEvidenceTolerancePercentOverride(jsonSettings.getDouble(Field.tolerance.toString()));
 		}
-		if (jsonSettings.has(Field.discreteTails.toString())){
-			ebn.setSimulationTailsOverride(jsonSettings.getBoolean(Field.discreteTails.toString()));
+		if (jsonSettings.has(Field.splitMetric.toString())){
+			ebn.setSplitMetricOverride(jsonSettings.getString(Field.splitMetric.toString()));
 		}
 	}
 
@@ -118,8 +118,8 @@ public class Settings implements Storable {
 		if (ebn.getSimulationEvidenceTolerancePercentOverride() != null){
 			jsonSettings.put(Field.tolerance.toString(), ebn.getSimulationEvidenceTolerancePercentOverride().doubleValue());
 		}
-		if (ebn.getSimulationTailsOverride() != null){
-			jsonSettings.put(Field.discreteTails.toString(), ebn.getSimulationTailsOverride().booleanValue());
+		if (ebn.getSplitMetricOverride() != null){
+			jsonSettings.put(Field.splitMetric.toString(), ebn.getSplitMetricOverride());
 		}
 		return jsonSettings;
 	}
@@ -137,7 +137,7 @@ public class Settings implements Storable {
 		jsonSettings.put(Settings.Field.convergence.toString(), model.getSimulationEntropyConvergenceTolerance());
 		jsonSettings.put(Settings.Field.tolerance.toString(), model.getSimulationEvidenceTolerancePercent());
 		jsonSettings.put(Settings.Field.sampleSizeRanked.toString(), model.getRankedSampleSize());
-		jsonSettings.put(Settings.Field.discreteTails.toString(), model.isSimulationTails());
+		jsonSettings.put(Settings.Field.splitMetric.toString(), model.getSplitMetric());
 		jsonSettings.put(Settings.Field.simulationLogging.toString(), model.isSimulationLogging());
 		jsonSettings.put(Settings.Field.parameterLearningLogging.toString(), model.isEMLogging());
 		return jsonSettings;
@@ -222,10 +222,31 @@ public class Settings implements Storable {
 	}
 
 	/**
+	 * Returns the dynamic-discretisation split metric in force for this model.
+	 *
+	 * @return {@code entropy} (classic) or {@code entropyVarianceLeverage}
+	 */
+	public String getSplitMetric() {
+		return model.getLogicModel().getSplitMetric();
+	}
+
+	/**
+	 * Sets the dynamic-discretisation split metric. Anything unrecognised - including null - selects
+	 * the classic entropy metric, so an unexpected value can never silently change results.
+	 *
+	 * @param splitMetric {@code entropy} or {@code entropyVarianceLeverage}
+	 */
+	public void setSplitMetric(String splitMetric) {
+		model.getLogicModel().setSplitMetric(splitMetric);
+	}
+
+	/**
 	 * Checks whether tails are discretized during simulated calculation.
 	 * 
-	 * @return true if tails are discretized during simulated calculation, false otherwise
+	 * @return always false. The percentile tail-split pass was removed from the engine.
+	 * @deprecated retained for source compatibility; has no effect
 	 */
+	@Deprecated
 	public boolean isDiscretizeTails() {
 		return model.getLogicModel().isSimulationTails();
 	}
@@ -233,8 +254,10 @@ public class Settings implements Storable {
 	/**
 	 * Sets whether tails are discretized during simulated calculation.
 	 * 
-	 * @param discretizeTails whether tails are discretized during simulated calculation
+	 * @param discretizeTails ignored. The percentile tail-split pass was removed from the engine.
+	 * @deprecated retained for source compatibility; has no effect
 	 */
+	@Deprecated
 	public void setDiscretizeTails(boolean discretizeTails) {
 		model.getLogicModel().setSimulationTails(discretizeTails);
 	}
