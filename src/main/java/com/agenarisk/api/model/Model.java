@@ -1025,6 +1025,17 @@ public class Model implements IdContainer<ModelException>, Storable {
 			nj.put("infeasible", njt.infeasible);
 			nj.put("error", njt.error == null ? JSONObject.NULL : njt.error);
 
+			// Why the tree is this size, where there is an attributable cause (see AggregationOverlap).
+			// maxCliqueMembers / soloMaxCliqueMembers are graph properties and do NOT move with
+			// simNodeStates, unlike every cell and byte figure here - a client explaining a large tree
+			// should lead with them and present the sizes as indicative of the charge used.
+			nj.put("maxCliqueMembers", njt.maxCliqueMembers);
+			nj.put("aggregationRoots", new JSONArray(njt.aggregationRootIds));
+			nj.put("aggregationRootNames", new JSONArray(njt.aggregationRootNames));
+			nj.put("aggregationSharedParents", njt.aggregationSharedParents);
+			nj.put("aggregationRootsSharingParents", njt.aggregationRootsSharingParents);
+			nj.put("soloMaxCliqueMembers", njt.soloMaxCliqueMembers);
+
 			JSONArray cliques = new JSONArray();
 			for (JunctionTreeReport.CliqueDim cd : njt.cliques) {
 				JSONObject cj = new JSONObject();
