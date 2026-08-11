@@ -40,7 +40,7 @@ public class NetworkSettingsTest {
 		assertEquals(logicModel.getSimulationNoOfIterations(), logicModel.getSimulationNoOfIterations(ebn));
 		assertEquals(logicModel.getSimulationEvidenceTolerancePercent(),
 				logicModel.getSimulationEvidenceTolerancePercent(ebn));
-		assertEquals(logicModel.isSimulationTails(), logicModel.isSimulationTails(ebn));
+		assertEquals(logicModel.getSplitMetric(), logicModel.getSplitMetric(ebn));
 
 		JSONObject json = JSONAdapter.toJSONObject(model.getLogicModel());
 		JSONObject jsonNetwork = json.getJSONObject(Model.Field.model.toString())
@@ -61,21 +61,21 @@ public class NetworkSettingsTest {
 
 		logicModel.setSimulationEntropyConvergenceTolerance(0.001);
 		logicModel.setSimulationNoOfIterations(50);
-		logicModel.setSimulationTails(false);
+		logicModel.setSplitMetric(uk.co.agena.minerva.model.Model.SPLIT_METRIC_ENTROPY);
 
 		JSONObject jsonSettings = new JSONObject();
 		jsonSettings.put(Settings.Field.convergence.toString(), 1e-5);
-		jsonSettings.put(Settings.Field.discreteTails.toString(), true);
+		jsonSettings.put(Settings.Field.splitMetric.toString(), uk.co.agena.minerva.model.Model.SPLIT_METRIC_ENTROPY_VARIANCE_LEVERAGE);
 		network.setSettings(jsonSettings);
 
 		// Overridden
 		assertEquals(1e-5, logicModel.getSimulationEntropyConvergenceTolerance(ebn));
-		assertTrue(logicModel.isSimulationTails(ebn));
+		assertEquals(uk.co.agena.minerva.model.Model.SPLIT_METRIC_ENTROPY_VARIANCE_LEVERAGE, logicModel.getSplitMetric(ebn));
 		// Not overridden - still the model value
 		assertEquals(50, logicModel.getSimulationNoOfIterations(ebn));
 		// And the model settings themselves are untouched
 		assertEquals(0.001, logicModel.getSimulationEntropyConvergenceTolerance());
-		assertFalse(logicModel.isSimulationTails());
+		assertEquals(uk.co.agena.minerva.model.Model.SPLIT_METRIC_ENTROPY, logicModel.getSplitMetric());
 
 		// Null network resolves to the model settings (used by helpers outside a propagation)
 		assertEquals(0.001, logicModel.getSimulationEntropyConvergenceTolerance(null));
@@ -94,7 +94,7 @@ public class NetworkSettingsTest {
 		jsonSettings.put(Settings.Field.convergence.toString(), 1e-5);
 		jsonSettings.put(Settings.Field.iterations.toString(), 25);
 		jsonSettings.put(Settings.Field.tolerance.toString(), 2.5);
-		jsonSettings.put(Settings.Field.discreteTails.toString(), true);
+		jsonSettings.put(Settings.Field.splitMetric.toString(), uk.co.agena.minerva.model.Model.SPLIT_METRIC_ENTROPY_VARIANCE_LEVERAGE);
 		network.setSettings(jsonSettings);
 
 		JSONObject json = JSONAdapter.toJSONObject(model.getLogicModel());
@@ -116,7 +116,7 @@ public class NetworkSettingsTest {
 		assertEquals(1e-5, ebn.getSimulationEntropyConvergenceToleranceOverride().doubleValue());
 		assertEquals(25, ebn.getSimulationNoOfIterationsOverride().intValue());
 		assertEquals(2.5, ebn.getSimulationEvidenceTolerancePercentOverride().doubleValue());
-		assertTrue(ebn.getSimulationTailsOverride().booleanValue());
+		assertEquals(uk.co.agena.minerva.model.Model.SPLIT_METRIC_ENTROPY_VARIANCE_LEVERAGE, ebn.getSplitMetricOverride());
 	}
 
 	/**
