@@ -606,7 +606,12 @@ public class DataSet implements Identifiable<DataSetException>, Storable {
 		for (int i = 0; i < jsonEntries.length(); i++) {
 			JSONObject jsonEntry = jsonEntries.getJSONObject(i);
 			String value = jsonEntry.get(Observation.Field.value.toString())+"";
-			Double weight = jsonEntry.getDouble(Observation.Field.weight.toString());
+			// Weight defaults to 1. It is read before the single-entry branch below but only USED for soft
+			// evidence, so demanding it made a hard observation fail on a field it then discarded — and the
+			// caller never saw the failure (see the catch in createDataSet: the observation is dropped and
+			// the calculation proceeds unobserved). For soft evidence, equal weights are a saner reading of
+			// an omitted weight than silently discarding the whole observation.
+			Double weight = jsonEntry.optDouble(Observation.Field.weight.toString(), 1.0);
 			
 			if (jsonEntries.length() == 1){
 				
