@@ -119,7 +119,7 @@ public class RegressionStructureSearch {
 
 	/** Estimated table size of a node given a parent set - the thing the penalty above is charged on. */
 	private double familyCost(Node child, List<Node> parents) {
-		double cost = nodeWeight(child);
+		double cost = childWeight(child);
 		for (Node parent : parents){
 			cost *= nodeWeight(parent);
 		}
@@ -232,17 +232,27 @@ public class RegressionStructureSearch {
 	 * state list, or {@link #ASSUMED_SIMULATED_CONTINUOUS_BINS} for a simulated-continuous node, whose real bin
 	 * count is only decided by dynamic discretization at calculation time
 	 */
-	private double nodeWeight(Node node) {
-		// A node written as an exact expression has no NPT enumerated over its parents' states, so it does not
-		// carry a table of its own into the clique. Its parents still have to sit together for inference, which is
-		// why the moralisation edges it induces are left in place - only its own weight is discounted.
-		if (deterministicNodeIds.contains(node.getId())){
-			return 1;
-		}
+	private static double nodeWeight(Node node) {
 		if (isSimulatedContinuous(node)){
 			return ASSUMED_SIMULATED_CONTINUOUS_BINS;
 		}
 		return Math.max(1, node.getStates().size());
+	}
+
+	/**
+	 * The weight of a node as the SUBJECT of its own table.
+	 * <br>
+	 * A node written as an exact expression has no NPT enumerated over its parents' states and no parameters to
+	 * estimate, so it costs nothing to give it the parents its relation names. That discount applies to the node's
+	 * own table and nowhere else: as somebody ELSE's parent it contributes its full state space exactly like any
+	 * other node, and discounting it there made a deterministic node an almost free parent - the search then hung
+	 * them off everything, including discrete nodes they have no business explaining.
+	 */
+	private double childWeight(Node node) {
+		if (deterministicNodeIds.contains(node.getId())){
+			return 1;
+		}
+		return nodeWeight(node);
 	}
 
 	/**
