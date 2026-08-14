@@ -106,6 +106,19 @@ public class RegressionParameterLearningExecutor extends Configurer<RegressionPa
 				JSONObject jNode = new JSONObject();
 				jNode.put("nodeId", node.getId());
 
+				// Deliberately not fitted: the caller has declared this node's
+				// table to be exact (e.g. an Arithmetic expression over its
+				// parents, because the data proves the relationship holds). A
+				// regression would fit it perfectly and then restate it as a
+				// distribution with a vanishing residual, which is weaker than
+				// what is already there.
+				if (originalConfigurer.getSkipNodes().contains(node.getId())){
+					jNode.put("skipped", true);
+					reportSkip(jNode, "Kept the deterministic expression on node '" + node.getId() + "' — not fitted.");
+					jNodes.put(jNode);
+					continue;
+				}
+
 				// A single node that can't be fitted must NOT abort the whole
 				// candidate: fitAndWrite throws when a learned table/expression
 				// can't be written back (e.g. a dense structure whose NPT doesn't

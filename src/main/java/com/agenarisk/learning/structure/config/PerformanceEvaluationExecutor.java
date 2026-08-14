@@ -302,7 +302,30 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 		// Entering only the roots and letting the model compute every downstream node itself (including the
 		// target's own parents) matches how a learned regression chain is meant to be evaluated: predict from
 		// the exogenous inputs, don't clamp the intermediate computed values to their real-world observations.
-		Set<String> rootAncestorIds = collectRootAncestorIds(targetNode);
+		// An explicit observation set overrides the per-model root ancestors. Only
+		// names this model actually has are kept, so one shared list can be given
+		// to candidates whose structures differ.
+		Set<String> evidenceIds;
+		boolean curatedEvidence = !originalConfigurer.getObservedNodes().isEmpty();
+		if (curatedEvidence){
+			evidenceIds = new java.util.LinkedHashSet<>();
+			for (String id : originalConfigurer.getObservedNodes()){
+				if (!Objects.equals(id, targetNode.getId()) && network.getNode(id) != null){
+					evidenceIds.add(id);
+				}
+			}
+		}
+		else {
+			evidenceIds = collectRootAncestorIds(targetNode);
+		}
+		Set<String> rootAncestorIds = evidenceIds;
+
+		// Rows that can't supply the whole observation set are skipped rather than
+		// scored on partial evidence — a row evaluated with fewer inputs is an
+		// easier or harder case than the rest and would silently distort the mean.
+		// Counted and reported, because "some rows were skipped" is exactly the
+		// kind of thing that must not be discovered later.
+		int skippedIncomplete = 0;
 
 		// Accumulate from zero (the metric fields default to worst-case values,
 		// which must not be folded into the running sum).
@@ -323,6 +346,21 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 			}
 			List<String> row = data.get(rowIndex);
 			try {
+				// A row missing any of the required observations is not scored at
+				// all. Checked before anything is entered, so a partially-observed
+				// row never reaches model.calculate().
+				boolean missingEvidence = false;
+				for (int i = 0; i < row.size() && !missingEvidence; i += 1){
+					String nodeId = dataHeaders.get(i);
+					if (rootAncestorIds.contains(nodeId) && row.get(i).trim().isEmpty()){
+						missingEvidence = true;
+					}
+				}
+				if (missingEvidence){
+					skippedIncomplete += 1;
+					continue;
+				}
+
 				// Reset evidence from the previous case so a cell that fails to
 				// enter cannot leave a stale observation on this row.
 				dataCase.clearObservations();
@@ -416,9 +454,23 @@ public class PerformanceEvaluationExecutor extends Configurer<PerformanceEvaluat
 		if (successRows == 0){
 			evaluation.setSuccess(false);
 			if (evaluation.getMessage().isEmpty()){
-				evaluation.setMessage("All cases failed to calculate for target '" + targetId + "'");
+				evaluation.setMessage(skippedIncomplete > 0
+						? "No case could be scored for target '" + targetId + "': all " + skippedIncomplete
+								+ " rows were missing at least one of the required observations"
+						: "All cases failed to calculate for target '" + targetId + "'");
 			}
 			return evaluation;
+		}
+
+		// Surfaced whenever it happens, and worded as a shortfall in the
+		// validation data rather than a quirk of the run — the fix is a
+		// validation set that observes what the evaluation was told to observe.
+		if (skippedIncomplete > 0){
+			String note = skippedIncomplete + " of " + (skippedIncomplete + successRows)
+					+ " validation rows were skipped: they do not observe every "
+					+ (curatedEvidence ? "required input" : "root input")
+					+ ". Scores are over the remaining " + successRows + ".";
+			evaluation.setMessage(evaluation.getMessage().isEmpty() ? note : evaluation.getMessage() + " " + note);
 		}
 
 		if (numericTarget){

@@ -21,6 +21,7 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 	private Path dataPath;
 	private String target = "";
 	private final List<String> targets = new ArrayList<>();
+	private final List<String> observedNodes = new ArrayList<>();
 	private int maxRows = 0; // 0 = use all rows; otherwise subsample to this many
 	private boolean calculateRoc = false;
 	private String valueSeparator = ",";
@@ -65,9 +66,33 @@ public class PerformanceEvaluationConfigurer extends ApplicableConfigurer implem
 				}
 			}
 		}
+		// Variables to enter as evidence, explicitly. When empty, each model's own
+		// root (parentless) ancestors of the target are used instead.
+		//
+		// The explicit list matters most when several models are being COMPARED:
+		// root ancestors are a property of each model's structure, so a candidate
+		// that leaves a variable parentless is handed that variable as evidence
+		// while a candidate that models it must predict it — the two are then not
+		// scored on the same information. A fixed list also lets the evaluation
+		// match what is actually observed when the model is used, which is rarely
+		// the exogenous roots.
+		observedNodes.clear();
+		JSONArray jObserved = jParameters.optJSONArray("observedNodes");
+		if (jObserved != null) {
+			for (int i = 0; i < jObserved.length(); i++) {
+				String o = jObserved.optString(i, "").trim();
+				if (!o.isEmpty() && !observedNodes.contains(o)) {
+					observedNodes.add(o);
+				}
+			}
+		}
 		maxRows = Math.max(0, jParameters.optInt("maxRows", 0));
 		calculateRoc = jParameters.optBoolean("calculateRoc", false);
 		return this;
+	}
+
+	public List<String> getObservedNodes() {
+		return observedNodes;
 	}
 
 	@Override

@@ -35,6 +35,7 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 	private double ridgeLambda = com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA;
 	private String nodeLabel = "";
 	private boolean progressEnabled = false;
+	private final java.util.Set<String> skipNodes = new java.util.LinkedHashSet<>();
 
 	public RegressionParameterLearningConfigurer(Config config) {
 		super(config);
@@ -72,7 +73,26 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 			throw new StructureLearningException("residualMode must be '" + RESIDUAL_MODE_NORMAL + "' or '" + RESIDUAL_MODE_ARITHMETIC + "', got: " + residualMode);
 		}
 
+		// Nodes whose table must be left exactly as the incoming model defines
+		// it. The caller uses this for a node that is arithmetic on its parents:
+		// fitting it would replace an exact expression with a regression that has
+		// R2 = 1 and a near-zero residual — numerically the same relationship, but
+		// no longer stated as a deterministic one.
+		org.json.JSONArray jSkip = jParameters.optJSONArray("skipNodes");
+		if (jSkip != null){
+			for (int i = 0; i < jSkip.length(); i++){
+				String id = jSkip.optString(i, "").trim();
+				if (!id.isEmpty()){
+					skipNodes.add(id);
+				}
+			}
+		}
+
 		return this;
+	}
+
+	public java.util.Set<String> getSkipNodes() {
+		return skipNodes;
 	}
 
 	@Override
