@@ -35,7 +35,7 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 	private double ridgeLambda = com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA;
 	private String nodeLabel = "";
 	private boolean progressEnabled = false;
-	private final java.util.Set<String> skipNodes = new java.util.LinkedHashSet<>();
+	private final java.util.Map<String, String> deterministicExpressions = new java.util.LinkedHashMap<>();
 
 	public RegressionParameterLearningConfigurer(Config config) {
 		super(config);
@@ -73,17 +73,19 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 			throw new StructureLearningException("residualMode must be '" + RESIDUAL_MODE_NORMAL + "' or '" + RESIDUAL_MODE_ARITHMETIC + "', got: " + residualMode);
 		}
 
-		// Nodes whose table must be left exactly as the incoming model defines
-		// it. The caller uses this for a node that is arithmetic on its parents:
-		// fitting it would replace an exact expression with a regression that has
-		// R2 = 1 and a near-zero residual — numerically the same relationship, but
-		// no longer stated as a deterministic one.
-		org.json.JSONArray jSkip = jParameters.optJSONArray("skipNodes");
-		if (jSkip != null){
-			for (int i = 0; i < jSkip.length(); i++){
-				String id = jSkip.optString(i, "").trim();
-				if (!id.isEmpty()){
-					skipNodes.add(id);
+		// Nodes whose table is an exact arithmetic function of their parents,
+		// given as { nodeId: expression }. Written as Arithmetic(expression)
+		// instead of being fitted: a regression over a relation that holds
+		// exactly returns R2 = 1 and a residual variance that only escapes being
+		// zero because it is floored, so the fitted node asserts an uncertainty
+		// that does not exist and carries coefficients estimated from a sample
+		// where the true ones are known by algebra.
+		org.json.JSONObject jExpressions = jParameters.optJSONObject("deterministicExpressions");
+		if (jExpressions != null){
+			for (String nodeId : jExpressions.keySet()){
+				String expression = jExpressions.optString(nodeId, "").trim();
+				if (!nodeId.trim().isEmpty() && !expression.isEmpty()){
+					deterministicExpressions.put(nodeId.trim(), expression);
 				}
 			}
 		}
@@ -91,8 +93,8 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 		return this;
 	}
 
-	public java.util.Set<String> getSkipNodes() {
-		return skipNodes;
+	public java.util.Map<String, String> getDeterministicExpressions() {
+		return deterministicExpressions;
 	}
 
 	@Override

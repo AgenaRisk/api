@@ -98,6 +98,17 @@ public class RegressionStructureSearchExecutor extends Configurer<RegressionStru
 
 			List<RegressionNodeFitter.NodeFitOutcome> outcomes = RegressionModelMaterializer.materialize(model, result, fitter);
 
+			// After the structure is materialised, because the check is against the
+			// structure the search actually chose: a node only gets its exact
+			// expression if the search gave it exactly the parents the relation
+			// names. Before the export below, so the written model carries it.
+			java.util.Map<String, String> deterministic = com.agenarisk.learning.structure.regression.DeterministicExpressions
+					.apply(model.getNetworkList().get(0), originalConfigurer.getDeterministicExpressions());
+			for (java.util.Map.Entry<String, String> entry : deterministic.entrySet()){
+				com.agenarisk.learning.structure.logger.BLogger.out.println(
+						"Deterministic node '" + entry.getKey() + "': " + entry.getValue());
+			}
+
 			lastResult = buildResultJson(result, outcomes);
 
 			byte[] bytes = model.export(Model.ExportFlag.KEEP_META, Model.ExportFlag.KEEP_OBSERVATIONS, Model.ExportFlag.KEEP_RESULTS).toString().getBytes();

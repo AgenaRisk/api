@@ -9,6 +9,7 @@ import com.agenarisk.learning.structure.execution.graph.node.GraphNode;
 import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.regression.CategoricalRegressionLearner;
 import com.agenarisk.learning.structure.regression.ContinuousRegressionLearner;
+import com.agenarisk.learning.structure.regression.DeterministicExpressions;
 import com.agenarisk.learning.structure.regression.LogisticRegressionLearner;
 import com.agenarisk.learning.structure.regression.RegressionDataset;
 import com.agenarisk.learning.structure.regressiondiscovery.RegressionNodeFitter;
@@ -106,17 +107,30 @@ public class RegressionParameterLearningExecutor extends Configurer<RegressionPa
 				JSONObject jNode = new JSONObject();
 				jNode.put("nodeId", node.getId());
 
-				// Deliberately not fitted: the caller has declared this node's
-				// table to be exact (e.g. an Arithmetic expression over its
-				// parents, because the data proves the relationship holds). A
-				// regression would fit it perfectly and then restate it as a
-				// distribution with a vanishing residual, which is weaker than
-				// what is already there.
-				if (originalConfigurer.getSkipNodes().contains(node.getId())){
-					jNode.put("skipped", true);
-					reportSkip(jNode, "Kept the deterministic expression on node '" + node.getId() + "' — not fitted.");
-					jNodes.put(jNode);
-					continue;
+				// Declared exact by the caller: this node is arithmetic on its
+				// parents, so the relation is written straight in rather than
+				// estimated. Only applied when the model agrees — the node and
+				// everything the expression names must be continuous, and the
+				// names must be exactly this node's parents. A structure search
+				// that honoured a directed constraint only softly can leave a
+				// node with different parents, and an expression referring to a
+				// non-parent is unresolvable; there the node falls through to an
+				// ordinary fit with the reason recorded, rather than producing a
+				// broken model.
+				String declared = originalConfigurer.getDeterministicExpressions().get(node.getId());
+				if (declared != null){
+					String rejection = DeterministicExpressions.rejection(node, declared);
+					if (rejection == null){
+						node.setTableFunction("Arithmetic(" + declared + ")");
+						jNode.put("skipped", true);
+						jNode.put("deterministic", true);
+						reportSkip(jNode, "Set node '" + node.getId() + "' to the exact expression " + declared
+								+ " — not fitted.");
+						jNodes.put(jNode);
+						continue;
+					}
+					jNode.put("deterministicDeclined", rejection);
+					BLogger.logConditional("Not applying the exact expression for '" + node.getId() + "': " + rejection);
 				}
 
 				// A single node that can't be fitted must NOT abort the whole
