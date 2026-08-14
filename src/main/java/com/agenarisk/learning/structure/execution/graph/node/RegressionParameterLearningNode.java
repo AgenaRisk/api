@@ -89,6 +89,12 @@ public class RegressionParameterLearningNode extends ModelNode {
 			jParams.put("valueSeparator", valueSeparator);
 			jParams.put("residualMode", residualMode);
 			jParams.put("minRowsPerPartition", minRowsPerPartition);
+			// Relations the caller has established hold exactly. Forwarded explicitly because this block is
+			// assembled key by key - an option absent from it is dropped in silence, which is how a declared
+			// deterministic expression reached the configurer as an empty map and every node was fitted anyway.
+			if (jOptions != null && jOptions.has("deterministicExpressions")){
+				jParams.put("deterministicExpressions", jOptions.getJSONObject("deterministicExpressions"));
+			}
 			jParams.put("ridgeLambda", ridgeLambda);
 			jParams.put("dataPath", dataPath.toString());
 			jParams.put("modelStageLabel", model);

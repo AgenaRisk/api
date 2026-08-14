@@ -88,6 +88,12 @@ public class RegressionStructureDiscoveryNode extends ModelNode {
 			jParams.put("maxParentsPerNode", maxParentsPerNode);
 			jParams.put("maxIterations", maxIterations);
 			jParams.put("dataPath", dataPath.toString());
+			// Relations the caller has established hold exactly. Forwarded explicitly because this block is
+			// assembled key by key - an option absent from it is dropped in silence, which is how a declared
+			// deterministic expression reached the configurer as an empty map and every node was fitted anyway.
+			if (jOptions != null && jOptions.has("deterministicExpressions")){
+				jParams.put("deterministicExpressions", jOptions.getJSONObject("deterministicExpressions"));
+			}
 			jConfig.put("parameters", jParams);
 			if (jOptions != null && jOptions.has("knowledge")){
 				jConfig.put("knowledge", jOptions.getJSONObject("knowledge"));

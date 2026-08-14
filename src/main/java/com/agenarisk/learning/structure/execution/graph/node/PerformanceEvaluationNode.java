@@ -29,6 +29,7 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 	private String dataSource;
 	private String target = "";
 	private final List<String> targets = new ArrayList<>();
+	private final java.util.List<String> observedNodes = new java.util.ArrayList<>();
 	private int maxRows = 0;
 	private boolean calculateRoc = false;
 	private String valueSeparator = ",";
@@ -55,6 +56,16 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 				String t = jTargets.optString(i, "").trim();
 				if (!t.isEmpty() && !targets.contains(t)) {
 					targets.add(t);
+				}
+			}
+		}
+		observedNodes.clear();
+		JSONArray jObserved = jOptions.optJSONArray("observedNodes");
+		if (jObserved != null){
+			for (int i = 0; i < jObserved.length(); i++){
+				String o = jObserved.optString(i, "").trim();
+				if (!o.isEmpty() && !observedNodes.contains(o)){
+					observedNodes.add(o);
 				}
 			}
 		}
@@ -112,6 +123,12 @@ public class PerformanceEvaluationNode extends EvaluationNode {
 			jParams.put("maxRows", maxRows);
 			jParams.put("calculateRoc", calculateRoc);
 			jParams.put("valueSeparator", valueSeparator);
+			// Same reason as deterministicExpressions on the discovery nodes: this block is assembled key by key,
+			// so an option missing from it is dropped without a word. Left out, every model silently fell back to
+			// its own root ancestors as evidence - which is exactly the unevenness observedNodes exists to remove.
+			if (!observedNodes.isEmpty()){
+				jParams.put("observedNodes", new JSONArray(observedNodes));
+			}
 			configurer.configureFromJson(new JSONObject().put("parameters", jParams));
 			configurer.setOutputDirPath(outputDirPath);
 			configurer.setModelPrefixes(modelPrefixes);
