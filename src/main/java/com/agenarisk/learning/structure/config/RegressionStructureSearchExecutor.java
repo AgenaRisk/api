@@ -86,6 +86,9 @@ public class RegressionStructureSearchExecutor extends Configurer<RegressionStru
 			RegressionBicScorer scorer = new RegressionBicScorer(dataset, originalConfigurer.getRidgeLambda());
 			RegressionStructureSearch search = new RegressionStructureSearch(scorer, originalConfigurer.getKnowledge(),
 					originalConfigurer.getMaxParentsPerNode(), originalConfigurer.getMaxIterations());
+			// Declared-exact nodes are cheap to represent - no NPT is enumerated over their parents' states - so the
+			// structure cost model must not price them as if they were fitted tables.
+			search.withDeterministicNodes(originalConfigurer.getDeterministicExpressions().keySet());
 			if (originalConfigurer.isProgressEnabled()){
 				search.enableProgressReporting(originalConfigurer.getNodeLabel());
 			}

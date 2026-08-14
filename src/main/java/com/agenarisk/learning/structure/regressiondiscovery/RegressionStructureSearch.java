@@ -78,6 +78,55 @@ public class RegressionStructureSearch {
 	}
 
 	/**
+	 * Nodes whose table will be written as an exact expression rather than fitted. They contribute far less to the
+	 * cost of the structure than an ordinary node: there is no NPT to enumerate over their parents' states, and no
+	 * parameters to estimate. Declared by the caller, since only the caller knows which relations the data proved.
+	 */
+	public RegressionStructureSearch withDeterministicNodes(Set<String> nodeIds) {
+		deterministicNodeIds.clear();
+		if (nodeIds != null){
+			deterministicNodeIds.addAll(nodeIds);
+		}
+		return this;
+	}
+
+	private final Set<String> deterministicNodeIds = new HashSet<>();
+
+	/**
+	 * How hard to prefer a cheap structure, in BIC units per natural-log unit of family table size.
+	 * <br>
+	 * The clique budget below is a hard gate, and a gate can only say no - it cannot express that a discrete parent
+	 * of a continuous child (a partitioned expression: cheap, and how such a relationship is naturally written) is
+	 * preferable to the reverse (a softmax over a continuous parent: expensive to represent, awkward to read). This
+	 * term makes that a preference rather than a prohibition: adding a 20-bin continuous parent costs about
+	 * {@code ln(20) * WEIGHT} more than a 3-state discrete one, which breaks ties toward the cheaper orientation
+	 * while leaving plenty of room for the data to insist otherwise.
+	 */
+	private static final double COMPLEXITY_PENALTY_WEIGHT = 4;
+
+	/**
+	 * The extra structural cost of moving a node from one parent set to another, in BIC units. Positive when the
+	 * new parent set is more expensive to represent, so it is subtracted from the move's score.
+	 */
+	private double complexityPenalty(Node child, List<Node> oldParents, List<Node> newParents) {
+		double before = familyCost(child, oldParents);
+		double after = familyCost(child, newParents);
+		if (before <= 0 || after <= 0){
+			return 0;
+		}
+		return COMPLEXITY_PENALTY_WEIGHT * (Math.log(after) - Math.log(before));
+	}
+
+	/** Estimated table size of a node given a parent set - the thing the penalty above is charged on. */
+	private double familyCost(Node child, List<Node> parents) {
+		double cost = nodeWeight(child);
+		for (Node parent : parents){
+			cost *= nodeWeight(parent);
+		}
+		return cost;
+	}
+
+	/**
 	 * Enables interim progress reporting (via {@link GraphNode#emitProgress}) from the search loop below - off by
 	 * default, since this class has no inherent notion of "am I running under athena's progress-output protocol".
 	 */
@@ -183,7 +232,13 @@ public class RegressionStructureSearch {
 	 * state list, or {@link #ASSUMED_SIMULATED_CONTINUOUS_BINS} for a simulated-continuous node, whose real bin
 	 * count is only decided by dynamic discretization at calculation time
 	 */
-	private static double nodeWeight(Node node) {
+	private double nodeWeight(Node node) {
+		// A node written as an exact expression has no NPT enumerated over its parents' states, so it does not
+		// carry a table of its own into the clique. Its parents still have to sit together for inference, which is
+		// why the moralisation edges it induces are left in place - only its own weight is discounted.
+		if (deterministicNodeIds.contains(node.getId())){
+			return 1;
+		}
 		if (isSimulatedContinuous(node)){
 			return ASSUMED_SIMULATED_CONTINUOUS_BINS;
 		}
@@ -298,7 +353,16 @@ public class RegressionStructureSearch {
 		else {
 			candidate.reverseEdge(parentId, childId);
 		}
-		return estimateMaxCliqueCost(candidate, nodesById) > MAX_CLIQUE_COST;
+		double candidateCost = estimateMaxCliqueCost(candidate, nodesById);
+		if (candidateCost <= MAX_CLIQUE_COST){
+			return false;
+		}
+		// Over budget - but the question is whether THIS move is what put it there. Required edges are seeded
+		// before the search starts and are not optional, so a graph can begin over budget through no choice of the
+		// search; judged absolutely, every subsequent move is then rejected for a cost it neither caused nor can
+		// reduce, and the search returns the seed graph having never run an iteration. Judged as a delta, moves
+		// that leave the expensive region alone still proceed.
+		return candidateCost > estimateMaxCliqueCost(graph, nodesById);
 	}
 
 	private Move findBestMove(CandidateGraph graph, Map<String, Node> nodesById, Map<String, LocalScore> scoreByNodeId) {
@@ -326,12 +390,14 @@ public class RegressionStructureSearch {
 						continue;
 					}
 					List<Node> newParents = idsToNodes(graph.getParents(childId), nodesById);
+					List<Node> oldParents = idsToNodes(graph.getParents(childId), nodesById);
 					newParents.add(nodesById.get(parentId));
 					LocalScore newScore = scorer.score(nodesById.get(childId), newParents);
 					if (newScore == null){
 						continue;
 					}
-					double delta = newScore.getBic() - scoreByNodeId.get(childId).getBic();
+					double delta = newScore.getBic() - scoreByNodeId.get(childId).getBic()
+							- complexityPenalty(nodesById.get(childId), oldParents, newParents);
 					if (best == null || delta > best.delta + MIN_IMPROVEMENT){
 						Move move = new Move();
 						move.delta = delta;
