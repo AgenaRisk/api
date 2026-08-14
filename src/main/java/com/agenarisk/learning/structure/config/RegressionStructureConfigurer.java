@@ -38,7 +38,7 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 	private String missingValue = "";
 	private String valueSeparator = ",";
 	private double ridgeLambda = com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA;
-	private final java.util.Map<String, String> deterministicExpressions = new java.util.LinkedHashMap<>();
+	private final java.util.Map<String, com.agenarisk.learning.structure.regression.DeterministicExpressions.Declaration> deterministicExpressions = new java.util.LinkedHashMap<>();
 	private int maxParentsPerNode = 5;
 	private int maxIterations = 500;
 	private RegressionKnowledge knowledge = new RegressionKnowledge();
@@ -106,20 +106,13 @@ public class RegressionStructureConfigurer extends ApplicableConfigurer implemen
 		// This search fits its own tables, so without this a node that is arithmetic on
 		// its parents would be written as a regression of it — see DeterministicExpressions.
 		deterministicExpressions.clear();
-		JSONObject jDeterministic = jParameters.optJSONObject("deterministicExpressions");
-		if (jDeterministic != null){
-			for (String nodeId : jDeterministic.keySet()){
-				String expression = jDeterministic.optString(nodeId, "").trim();
-				if (!nodeId.trim().isEmpty() && !expression.isEmpty()){
-					deterministicExpressions.put(nodeId.trim(), expression);
-				}
-			}
-		}
+		deterministicExpressions.putAll(com.agenarisk.learning.structure.regression.DeterministicExpressions
+				.parse(jParameters.optJSONObject("deterministicExpressions")));
 
 		return this;
 	}
 
-	public java.util.Map<String, String> getDeterministicExpressions() {
+	public java.util.Map<String, com.agenarisk.learning.structure.regression.DeterministicExpressions.Declaration> getDeterministicExpressions() {
 		return deterministicExpressions;
 	}
 

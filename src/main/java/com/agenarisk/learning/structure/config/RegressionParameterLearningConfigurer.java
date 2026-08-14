@@ -35,7 +35,7 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 	private double ridgeLambda = com.agenarisk.learning.structure.regression.MultinomialLogisticRegression.DEFAULT_RIDGE_LAMBDA;
 	private String nodeLabel = "";
 	private boolean progressEnabled = false;
-	private final java.util.Map<String, String> deterministicExpressions = new java.util.LinkedHashMap<>();
+	private final java.util.Map<String, com.agenarisk.learning.structure.regression.DeterministicExpressions.Declaration> deterministicExpressions = new java.util.LinkedHashMap<>();
 
 	public RegressionParameterLearningConfigurer(Config config) {
 		super(config);
@@ -80,20 +80,14 @@ public class RegressionParameterLearningConfigurer extends ApplicableConfigurer 
 		// zero because it is floored, so the fitted node asserts an uncertainty
 		// that does not exist and carries coefficients estimated from a sample
 		// where the true ones are known by algebra.
-		org.json.JSONObject jExpressions = jParameters.optJSONObject("deterministicExpressions");
-		if (jExpressions != null){
-			for (String nodeId : jExpressions.keySet()){
-				String expression = jExpressions.optString(nodeId, "").trim();
-				if (!nodeId.trim().isEmpty() && !expression.isEmpty()){
-					deterministicExpressions.put(nodeId.trim(), expression);
-				}
-			}
-		}
+		deterministicExpressions.clear();
+		deterministicExpressions.putAll(com.agenarisk.learning.structure.regression.DeterministicExpressions
+				.parse(jParameters.optJSONObject("deterministicExpressions")));
 
 		return this;
 	}
 
-	public java.util.Map<String, String> getDeterministicExpressions() {
+	public java.util.Map<String, com.agenarisk.learning.structure.regression.DeterministicExpressions.Declaration> getDeterministicExpressions() {
 		return deterministicExpressions;
 	}
 

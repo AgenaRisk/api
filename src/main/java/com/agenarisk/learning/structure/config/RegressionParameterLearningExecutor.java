@@ -117,20 +117,21 @@ public class RegressionParameterLearningExecutor extends Configurer<RegressionPa
 				// non-parent is unresolvable; there the node falls through to an
 				// ordinary fit with the reason recorded, rather than producing a
 				// broken model.
-				String declared = originalConfigurer.getDeterministicExpressions().get(node.getId());
+				DeterministicExpressions.Declaration declared =
+						originalConfigurer.getDeterministicExpressions().get(node.getId());
 				if (declared != null){
-					String rejection = DeterministicExpressions.rejection(node, declared);
-					if (rejection == null){
-						node.setTableFunction("Arithmetic(" + declared + ")");
+					String outcome = DeterministicExpressions
+							.apply(network, java.util.Collections.singletonMap(node.getId(), declared))
+							.get(node.getId());
+					if (outcome != null && !outcome.startsWith("not applied")){
 						jNode.put("skipped", true);
 						jNode.put("deterministic", true);
-						reportSkip(jNode, "Set node '" + node.getId() + "' to the exact expression " + declared
-								+ " — not fitted.");
+						reportSkip(jNode, "Node '" + node.getId() + "' " + outcome + " — not fitted.");
 						jNodes.put(jNode);
 						continue;
 					}
-					jNode.put("deterministicDeclined", rejection);
-					BLogger.logConditional("Not applying the exact expression for '" + node.getId() + "': " + rejection);
+					jNode.put("deterministicDeclined", outcome);
+					BLogger.logConditional("Exact expression for '" + node.getId() + "': " + outcome);
 				}
 
 				// A single node that can't be fitted must NOT abort the whole
