@@ -887,7 +887,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 				String expression = jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()).getString(0);
 				
 				try {
-					setTableFunction(expression, allowedTokens);
+					setTableFunction(expression, withNodeReferenceTokens(allowedTokens, expression));
 				}
 				catch (NodeException ex){
 					if (Advisory.getCurrentThreadGroup() != null){
@@ -904,7 +904,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					List<String> partitionParentIDs = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.partitions.toString()), String.class);
 					List<Node> partitionParents = partitionParentIDs.stream().map(id -> getNetwork().getNode(id)).collect(Collectors.toList());
 					List<String> expressions = JSONUtils.toList(jsonTable.getJSONArray(NodeConfiguration.Table.expressions.toString()), String.class);
-					setTableFunctions(expressions, allowedTokens, false, partitionParents);
+					setTableFunctions(expressions, withNodeReferenceTokens(allowedTokens, expressions), false, partitionParents);
 				}
 				catch(JSONException ex){
 					if (Advisory.getCurrentThreadGroup() != null){
@@ -942,6 +942,73 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * 
 	 * @return list of allowed function tokens for this node
 	 */
+	/**
+	 * Adds any node named by an argument that is a node REFERENCE rather than a value.
+	 *
+	 * <p>
+	 * A few functions consume another node's whole distribution instead of conditioning on its value --
+	 * a compound sum's severity is the case this exists for. Such a node must NOT be a parent, because an
+	 * arc would assert this node is conditioned on its value, and the factorisation the function installs
+	 * has no such arc. The token list is otherwise built from parents and variables only, so without this
+	 * the reference is rejected at load time as an unknown token and the whole table fails to load with
+	 * "Failed to load table for node".
+	 * </p>
+	 * <p>
+	 * The positions are read from the function classes in core, so this cannot drift from what the
+	 * engine's own expression check declares.
+	 * </p>
+	 *
+	 * @param tokens existing allowed tokens; not modified
+	 * @param expressions the expressions about to be set
+	 * @return tokens plus any node reference those expressions name
+	 */
+	private List<String> withNodeReferenceTokens(List<String> tokens, List<String> expressions){
+		List<String> widened = tokens;
+		for (String expression: expressions){
+			widened = withNodeReferenceTokens(widened, expression);
+		}
+		return widened;
+	}
+
+	private List<String> withNodeReferenceTokens(List<String> tokens, String expression){
+		if (expression == null || expression.trim().isEmpty()){
+			return tokens;
+		}
+
+		String trimmed = expression.trim();
+		int[] positions;
+		if (trimmed.startsWith(uk.co.agena.minerva.util.nptgenerator.CompoundSum.displayName + "(")){
+			positions = uk.co.agena.minerva.util.nptgenerator.CompoundSum.NODE_REFERENCE_POSITIONS;
+		}
+		else if (trimmed.startsWith(uk.co.agena.minerva.util.nptgenerator.NFold.displayName + "(")){
+			positions = uk.co.agena.minerva.util.nptgenerator.NFold.NODE_REFERENCE_POSITIONS;
+		}
+		else {
+			return tokens;
+		}
+
+		int open = trimmed.indexOf('(');
+		int close = trimmed.lastIndexOf(')');
+		if (open < 0 || close <= open){
+			return tokens;
+		}
+		String[] args = trimmed.substring(open + 1, close).split(",");
+
+		List<String> widened = new ArrayList<>(tokens);
+		for (int position: positions){
+			if (position >= args.length){
+				continue;
+			}
+			String id = args[position].trim();
+			// Only a node that actually exists in this network. Anything else is left to fail as the
+			// unknown token it is, rather than being waved through.
+			if (!id.isEmpty() && getNetwork().getNode(id) != null && !widened.contains(id)){
+				widened.add(id);
+			}
+		}
+		return widened;
+	}
+
 	public List<String> getAllowedFunctionTokens(){
 		List<String> allowedTokens = new ArrayList<>();
 		
