@@ -980,7 +980,11 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 		if (trimmed.startsWith(uk.co.agena.minerva.util.nptgenerator.CompoundSum.displayName + "(")){
 			positions = uk.co.agena.minerva.util.nptgenerator.CompoundSum.NODE_REFERENCE_POSITIONS;
 		}
-		else if (trimmed.startsWith(uk.co.agena.minerva.util.nptgenerator.NFold.displayName + "(")){
+		// Both spellings: this runs on the raw expression TEXT out of a CMPX, which is read before core's
+		// checkExpressions has had a chance to migrate the pre-rename name, so matching only the current
+		// spelling would drop the node-reference token on exactly the legacy models the alias exists for.
+		else if (trimmed.startsWith(uk.co.agena.minerva.util.nptgenerator.NFold.displayName + "(")
+				|| trimmed.startsWith(uk.co.agena.minerva.util.nptgenerator.NFold.legacyDisplayName + "(")){
 			positions = uk.co.agena.minerva.util.nptgenerator.NFold.NODE_REFERENCE_POSITIONS;
 		}
 		else {
