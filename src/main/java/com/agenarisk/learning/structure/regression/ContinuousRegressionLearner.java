@@ -154,18 +154,42 @@ public class ContinuousRegressionLearner {
 
 	private static final int ABSOLUTE_MIN_ROWS = 5;
 
+	/**
+	 * How far beyond the observed range a bounded residual distribution may reach, as a multiple of that range.
+	 * <br>
+	 * Deliberately generous. A tight bound is not merely conservative, it is a failure mode: a parent observed
+	 * outside its own training range moves the fitted mean with it, and a case whose mean falls outside the child's
+	 * bounds has no probability mass at all - the engine rejects it as inconsistent evidence rather than scoring it
+	 * as surprising. Fitting y over x in [0,5] and then observing x = 10 is enough to trigger it. So the padding is
+	 * wide enough that ordinary extrapolation stays calculable, and the work of excluding impossible values is left
+	 * to the sign clamp in {@link #residualBounds}, which is the part that actually matters.
+	 */
+	private static final double BOUND_PADDING = 5.0;
+
 	private final RegressionDataset dataset;
 	private final ResidualMode residualMode;
 	private final int minRowsPerPartition;
+	private final boolean boundResiduals;
 
 	public ContinuousRegressionLearner(RegressionDataset dataset, ResidualMode residualMode) {
 		this(dataset, residualMode, ABSOLUTE_MIN_ROWS);
 	}
 
 	public ContinuousRegressionLearner(RegressionDataset dataset, ResidualMode residualMode, int minRowsPerPartition) {
+		this(dataset, residualMode, minRowsPerPartition, true);
+	}
+
+	/**
+	 * @param boundResiduals when true (the default), a continuous target's fitted distribution is truncated to the
+	 * range its data spans rather than emitted as an unbounded {@code Normal} - see {@link #residualBounds}. Pass
+	 * false to restore the unbounded form, for a variable whose plausible values genuinely extend beyond anything
+	 * observed.
+	 */
+	public ContinuousRegressionLearner(RegressionDataset dataset, ResidualMode residualMode, int minRowsPerPartition, boolean boundResiduals) {
 		this.dataset = dataset;
 		this.residualMode = residualMode;
 		this.minRowsPerPartition = minRowsPerPartition;
+		this.boundResiduals = boundResiduals;
 	}
 
 	/**
@@ -367,7 +391,60 @@ public class ContinuousRegressionLearner {
 			return "Arithmetic(" + meanExpression + ")";
 		}
 
+		double[] bounds = residualBounds(target);
+		if (bounds != null){
+			return "TNormal(" + meanExpression + ", " + formatNumber(effectiveVariance) + ", "
+					+ formatNumber(bounds[0]) + ", " + formatNumber(bounds[1]) + ")";
+		}
+
 		return "Normal(" + meanExpression + ", " + formatNumber(effectiveVariance) + ")";
+	}
+
+	/**
+	 * Bounds to truncate a continuous target's fitted residual distribution to, from the range its column actually
+	 * spans in the data. Null when the column is missing, degenerate, or bounding is switched off, in which case
+	 * the caller emits a plain {@code Normal}.
+	 * <br>
+	 * Two things are being traded here. An unbounded {@code Normal} is wrong about the variable's support - a
+	 * fitted mileage or cost distribution that assigns probability to negative values is stating something the data
+	 * denies - and it is disastrous when such a variable divides something downstream, since the quotient's variance
+	 * becomes effectively unbounded and drags every variance-derived score with it. But truncating too tightly is a
+	 * worse failure: a case whose mean falls outside the bounds has no mass under the model, so it cannot be
+	 * calculated at all (see {@link #BOUND_PADDING}).
+	 * <br>
+	 * Hence the asymmetry. The range is widened generously in both directions, and then clamped so it never crosses
+	 * zero when the data never crosses zero. Only that clamp does real work: it is what keeps a strictly positive
+	 * variable strictly positive, which is the property a divisor needs, and half the smallest observed value is a
+	 * bound the data supports far better than negative infinity does. The generous padding costs nothing, because
+	 * nothing pathological happens at the far end of a variable's range - it is the approach to zero that ruins a
+	 * quotient.
+	 */
+	private double[] residualBounds(Node target) {
+		if (!boundResiduals){
+			return null;
+		}
+		double[] observed = dataset.observedRange(target.getId());
+		if (observed == null){
+			return null;
+		}
+		double min = observed[0];
+		double max = observed[1];
+		double span = max - min;
+		if (!(span > 0)){
+			// A constant column has no range to widen; anything symmetric here would be invented rather than
+			// measured, so leave it unbounded and let the variance floor speak.
+			return null;
+		}
+		double padding = BOUND_PADDING * span;
+		double lower = min - padding;
+		double upper = max + padding;
+		if (min > 0){
+			lower = Math.max(lower, min / 2);
+		}
+		if (max < 0){
+			upper = Math.min(upper, max / 2);
+		}
+		return new double[]{lower, upper};
 	}
 
 	/**

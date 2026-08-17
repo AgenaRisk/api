@@ -719,6 +719,41 @@ public class RegressionDataset {
 	}
 
 	/**
+	 * Smallest and largest value observed in a column, over every row that parses.
+	 * <br>
+	 * Used to bound a learned residual distribution to the values the variable can actually take. An unbounded
+	 * {@code Normal} fitted to strictly positive data puts mass on impossible values, which is wrong on its own
+	 * terms and catastrophic when that variable is a divisor somewhere downstream: the quotient then has an
+	 * effectively unbounded variance, and every summary computed from that variance (CRPS in particular) reports a
+	 * model as hopeless when its point predictions are the best available.
+	 *
+	 * @param nodeId column to measure
+	 *
+	 * @return {@code {min, max}}, or null if the column is absent or has no parseable value
+	 */
+	public double[] observedRange(String nodeId) {
+		Integer col = columnIndex.get(nodeId);
+		if (col == null){
+			return null;
+		}
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (int row = 1; row < data.obsDataArray.length; row++){
+			String[] rowData = data.obsDataArray[row];
+			if (col >= rowData.length || isMissing(rowData[col])){
+				continue;
+			}
+			Double value = parseDoubleOrNull(rowData[col], col);
+			if (value == null || value.isNaN() || value.isInfinite()){
+				continue;
+			}
+			min = Math.min(min, value);
+			max = Math.max(max, value);
+		}
+		return min <= max ? new double[]{min, max} : null;
+	}
+
+	/**
 	 * Parses a raw cell value as a number for use as a regressor/target. Plain numeric parsing is tried first; if
 	 * that fails and {@code col} is a known Ranked column, falls back to mapping the value as a state label to its
 	 * normalized position ({@code index / (numStates - 1)}, spanning [0, 1] to match a Ranked node's TNormal bounds

@@ -275,7 +275,9 @@ public class ContinuousRegressionLearnerTest {
 
 		Assertions.assertFalse(result.isSkipped());
 		ContinuousRegressionLearner.PartitionResult pr = result.getPartitionResults().get(0);
-		Assertions.assertTrue(pr.getExpression().startsWith("Normal("));
+		// TNormal, not Normal: NORMAL mode now truncates to the range the data spans (residualBounds).
+		Assertions.assertTrue(pr.getExpression().startsWith("TNormal("), "Expected TNormal(...), got: " + pr.getExpression());
+		Assertions.assertTrue(variance(pr.getExpression()) > 0, "Residual variance must survive: " + pr.getExpression());
 		Assertions.assertTrue(pr.getR2() > 0.99);
 		Assertions.assertTrue(pr.getResidualVariance() > 0);
 
@@ -327,8 +329,10 @@ public class ContinuousRegressionLearnerTest {
 
 		Assertions.assertFalse(result.isSkipped());
 		ContinuousRegressionLearner.PartitionResult pr = result.getPartitionResults().get(0);
+		// Plain Normal here, and correctly so: a constant column spans no range, so there is nothing measured to
+		// truncate to and residualBounds declines to invent one.
 		Assertions.assertTrue(pr.getExpression().startsWith("Normal("), "Expected Normal(...), got: " + pr.getExpression());
-		Assertions.assertFalse(pr.getExpression().endsWith(", 0)"), "Expression must not have a literal zero variance: " + pr.getExpression());
+		Assertions.assertTrue(variance(pr.getExpression()) > 0, "Expression must not have a zero variance: " + pr.getExpression());
 
 		RegressionTableWriter.apply(result);
 
@@ -367,5 +371,70 @@ public class ContinuousRegressionLearnerTest {
 
 		Assertions.assertTrue(result.isSkipped());
 		Assertions.assertTrue(result.getSkipReason().contains("x1"));
+	}
+	/**
+	 * The variance argument of a {@code Normal(mean, variance)} or {@code TNormal(mean, variance, lo, hi)}, for
+	 * tests that care that residual uncertainty survived rather than where exactly it landed.
+	 */
+	private static double variance(String expression) {
+		String[] args = args(expression);
+		return Double.parseDouble(args[1].trim());
+	}
+
+	private static String[] args(String expression) {
+		String inside = expression.substring(expression.indexOf('(') + 1, expression.lastIndexOf(')'));
+		return inside.split(",");
+	}
+
+	@Test
+	public void testResidualBoundsStayPositiveForStrictlyPositiveData() throws Exception {
+		// Strictly positive target, and deliberately close to zero relative to its spread: an unbounded Normal
+		// fitted here puts real mass below zero, which is the case this bounding exists for - such a variable
+		// used as a divisor downstream gives the quotient an effectively unbounded variance.
+		StringBuilder csv = new StringBuilder("y,x1\n");
+		for (int i = 0; i < 40; i++){
+			double x = i;
+			double y = 6 + 0.1 * x + ((i % 5) - 2) * 1.5;
+			csv.append(y).append(",").append(x).append("\n");
+		}
+
+		Model model = Model.createModel(new JSONObject(MODEL_NO_PARTITION));
+		Network network = model.getNetworkList().get(0);
+		Node y = network.getNode("y");
+
+		RegressionDataset dataset = new RegressionDataset(writeAndLoadData(csv.toString()));
+		ContinuousRegressionLearner learner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL, 5);
+		ContinuousRegressionLearner.NodeLearningResult result = learner.learn(y);
+
+		Assertions.assertFalse(result.isSkipped());
+		String expression = result.getPartitionResults().get(0).getExpression();
+		Assertions.assertTrue(expression.startsWith("TNormal("), "Expected TNormal(...), got: " + expression);
+		String[] args = args(expression);
+		double lower = Double.parseDouble(args[2].trim());
+		double upper = Double.parseDouble(args[3].trim());
+		Assertions.assertTrue(lower > 0, "A strictly positive variable must not be given a non-positive lower bound: " + expression);
+		Assertions.assertTrue(upper > lower, "Bounds must be ordered: " + expression);
+	}
+
+	@Test
+	public void testResidualBoundsCanBeSwitchedOff() throws Exception {
+		String csv = "y,x1\n"
+				+ "2.1,0\n"
+				+ "4.9,1\n"
+				+ "8.2,2\n"
+				+ "10.8,3\n"
+				+ "14.1,4\n"
+				+ "16.9,5\n";
+
+		Model model = Model.createModel(new JSONObject(MODEL_NO_PARTITION));
+		Network network = model.getNetworkList().get(0);
+		Node y = network.getNode("y");
+
+		RegressionDataset dataset = new RegressionDataset(writeAndLoadData(csv));
+		ContinuousRegressionLearner learner = new ContinuousRegressionLearner(dataset, ContinuousRegressionLearner.ResidualMode.NORMAL, 5, false);
+		ContinuousRegressionLearner.NodeLearningResult result = learner.learn(y);
+
+		String expression = result.getPartitionResults().get(0).getExpression();
+		Assertions.assertTrue(expression.startsWith("Normal("), "Expected the unbounded form when bounding is off, got: " + expression);
 	}
 }
