@@ -7,8 +7,13 @@
 		<version.com.agenarisk.core>master-SNAPSHOT</version.com.agenarisk.core>
 		
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<!--
+		  release, not source/target: it compiles against the Java 8 API as well as
+		  emitting Java 8 bytecode, so a call that exists only in a later JDK fails
+		  at build time here rather than at a customer's. Matches core, which pins
+		  the same way for the same reason (ARC-281).
+		-->
+		<maven.compiler.release>8</maven.compiler.release>
 	</properties>
 	
 	<groupId>com.agenarisk</groupId>
