@@ -13,3 +13,6 @@ nbactions.xml
 /lib-enterprise
 /src/main/java/adev
 /src/main/java/atest
+# Local classpath dumps (mvn dependency:build-classpath output)
+api-cp.txt
+*-cp.txt
