@@ -221,15 +221,15 @@ public class CalculationResult implements Storable {
 		
 		if (jsonResult.has(SummaryStatistic.Field.summaryStatistics.toString())){
 			JSONObject jsonSS = jsonResult.getJSONObject(SummaryStatistic.Field.summaryStatistics.toString());
-			double confidenceInterval = jsonSS.optDouble(SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
-			double mean = jsonSS.optDouble(SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
-			double median = jsonSS.optDouble(SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
-			double standardDeviation = jsonSS.optDouble(SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
-			double variance = jsonSS.optDouble(SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
-			double entropy = jsonSS.optDouble(SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
-			double percentile = jsonSS.optDouble(SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
-			double lowerPercentile = jsonSS.optDouble(SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
-			double upperPercentile = jsonSS.optDouble(SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
+			double confidenceInterval = optStatistic(jsonSS, SummaryStatistic.Field.confidenceInterval.toString(), mdi.getConfidenceInterval());
+			double mean = optStatistic(jsonSS, SummaryStatistic.Field.mean.toString(), mdi.getMeanValue());
+			double median = optStatistic(jsonSS, SummaryStatistic.Field.median.toString(), mdi.getMedianValue());
+			double standardDeviation = optStatistic(jsonSS, SummaryStatistic.Field.standardDeviation.toString(), mdi.getStandardDeviationValue());
+			double variance = optStatistic(jsonSS, SummaryStatistic.Field.variance.toString(), mdi.getVarianceValue());
+			double entropy = optStatistic(jsonSS, SummaryStatistic.Field.entropy.toString(), mdi.getEntropyValue());
+			double percentile = optStatistic(jsonSS, SummaryStatistic.Field.percentile.toString(), mdi.getPercentileValue());
+			double lowerPercentile = optStatistic(jsonSS, SummaryStatistic.Field.lowerPercentile.toString(), mdi.getLowerPercentile());
+			double upperPercentile = optStatistic(jsonSS, SummaryStatistic.Field.upperPercentile.toString(), mdi.getUpperPercentile());
 			
 			mdi.setConfidenceInterval(confidenceInterval);
 			mdi.setMeanValue(mean);
@@ -421,22 +421,84 @@ public class CalculationResult implements Storable {
 		if (continuous){
 			JSONObject ssJson = new JSONObject();
 			
-			ssJson.put(SummaryStatistic.Field.confidenceInterval.toString(), getConfidenceInterval());
-			ssJson.put(SummaryStatistic.Field.entropy.toString(), getEntropy());
-			ssJson.put(SummaryStatistic.Field.lowerPercentile.toString(), getLowerPercentile());
-			ssJson.put(SummaryStatistic.Field.mean.toString(), getMean());
-			ssJson.put(SummaryStatistic.Field.median.toString(), getMedian());
-			ssJson.put(SummaryStatistic.Field.percentile.toString(), getPercentile());
-			ssJson.put(SummaryStatistic.Field.standardDeviation.toString(), getStandardDeviation());
-			ssJson.put(SummaryStatistic.Field.upperPercentile.toString(), getUpperPercentile());
-			ssJson.put(SummaryStatistic.Field.variance.toString(), getVariance());
-			
+			putStatistic(ssJson, SummaryStatistic.Field.confidenceInterval.toString(), getConfidenceInterval());
+			putStatistic(ssJson, SummaryStatistic.Field.entropy.toString(), getEntropy());
+			putStatistic(ssJson, SummaryStatistic.Field.lowerPercentile.toString(), getLowerPercentile());
+			putStatistic(ssJson, SummaryStatistic.Field.mean.toString(), getMean());
+			putStatistic(ssJson, SummaryStatistic.Field.median.toString(), getMedian());
+			putStatistic(ssJson, SummaryStatistic.Field.percentile.toString(), getPercentile());
+			putStatistic(ssJson, SummaryStatistic.Field.standardDeviation.toString(), getStandardDeviation());
+			putStatistic(ssJson, SummaryStatistic.Field.upperPercentile.toString(), getUpperPercentile());
+			putStatistic(ssJson, SummaryStatistic.Field.variance.toString(), getVariance());
+
 			json.put(SummaryStatistic.Field.summaryStatistics.toString(), ssJson);
 		}
-		
+
 		return json;
 	}
-	
+
+	/**
+	 * Writes a double statistic, preserving a non-finite value as its {@code Double.toString()} form
+	 * ({@code "NaN"}, {@code "Infinity"}, {@code "-Infinity"}) instead of aborting the whole result.
+	 *
+	 * <p>{@code JSONObject.put(String, double)} runs {@code testValidity}, which throws
+	 * {@code JSONException("JSON does not allow non-finite numbers.")} for NaN or an infinity. Because
+	 * every node's results are serialised into one document, a single non-finite statistic on a single
+	 * node lost the entire calculation — every other node, every other network — with an error naming
+	 * neither the node nor the field. The engine does not behave that way: {@code MarginalDataItem}
+	 * stores whatever the maths produced and writes it to XML as {@code value+""}, so the Swing path
+	 * displays the value and carries on.
+	 *
+	 * <p>This matches that. The string form round-trips: {@code JSONObject.getDouble} falls back to
+	 * {@code Double.parseDouble} for a non-Number, and {@code Double.parseDouble("NaN")} is NaN, so
+	 * {@code optDouble} on the read side in {@code loadSummaryStatistics} recovers the same value the
+	 * engine produced. Nothing is silently replaced by zero or null, which would misreport a failed
+	 * statistic as a real one.
+	 *
+	 * @param json the object to write into
+	 * @param field field name
+	 * @param value statistic value, finite or not
+	 */
+	private static void putStatistic(JSONObject json, String field, double value){
+		if (Double.isFinite(value)){
+			json.put(field, value);
+		}
+		else {
+			json.put(field, Double.toString(value));
+		}
+	}
+
+	/**
+	 * Reads a double statistic written by {@link #putStatistic}, accepting either a JSON number or the
+	 * {@code Double.toString()} form of a non-finite value.
+	 *
+	 * <p>{@code JSONObject.optDouble} cannot be used for this: org.json's number parser rejects
+	 * {@code "NaN"} / {@code "Infinity"}, so it silently returns the supplied default and the stored
+	 * value is lost. {@code Double.parseDouble} does accept them, which is why the engine's XML path
+	 * round-trips ({@code MarginalDataItem} writes {@code value+""} and reads back through
+	 * {@code Double.parseDouble}). This keeps the JSON path equivalent.
+	 *
+	 * @param json the object to read from
+	 * @param field field name
+	 * @param defaultValue value to use when the field is absent, null, or unparseable
+	 * @return the statistic, possibly NaN or an infinity
+	 */
+	private static double optStatistic(JSONObject json, String field, double defaultValue){
+		Object value = json.opt(field);
+		if (value == null || JSONObject.NULL.equals(value)){
+			return defaultValue;
+		}
+		if (value instanceof Number){
+			return ((Number) value).doubleValue();
+		}
+		try {
+			return Double.parseDouble(value.toString());
+		}
+		catch (NumberFormatException ex){
+			return defaultValue;
+		}
+	}
+
 	/**
 	 * Returns a String value of the JSON representation of this object.
 	 * 

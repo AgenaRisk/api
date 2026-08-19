@@ -339,8 +339,17 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 			
 			String stateId = jsonLink.optString(CrossNetworkLink.Field.passState.toString(), null);
 			
+			// Absent in every model saved before links could carry a percentile, and in any link that
+			// simply does not set one - both mean "use the source node's own setting".
+			Double percentile = jsonLink.has(CrossNetworkLink.Field.percentile.toString())
+					? jsonLink.optDouble(CrossNetworkLink.Field.percentile.toString(), Double.NaN)
+					: null;
+			if (percentile != null && Double.isNaN(percentile)){
+				percentile = null;
+			}
+			
 			try {
-				Node.linkNodes(sourceNode, targetNode, linkType, stateId);
+				Node.linkNodes(sourceNode, targetNode, linkType, stateId, percentile);
 			}
 			catch (LinkException ex){
 				throw new NodeException("Failed to create a link between nodes " + sourceNode + " and " + targetNode, ex);
@@ -393,6 +402,25 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 	 * @throws LinkException if Link already exists, or a cross network link is being created with invalid arguments
 	 */
 	public static Link linkNodes(Node fromNode, Node toNode, CrossNetworkLink.Type type, String stateToPass) throws LinkException {
+		return linkNodes(fromNode, toNode, type, stateToPass, null);
+	}
+	
+	/**
+	 * Creates a Link between two nodes in same or different Networks, with an explicit percentile.
+	 * 
+	 * @param fromNode Node to link from
+	 * @param toNode Node to link to
+	 * @param type type of CrossNetworkLink if applicable
+	 * @param stateToPass if type is State, this specifies the state to pass
+	 * @param percentile for a LowerPercentile / UpperPercentile link: the percentile to pass, or null
+	 *                   to fall back to the source Node's own percentile setting
+	 * 
+	 * @return created Link
+	 * 
+	 * @throws LinkException if Link already exists, or a cross network link is being created between
+	 *                       nodes in the same network, or the link is otherwise not permitted
+	 */
+	public static Link linkNodes(Node fromNode, Node toNode, CrossNetworkLink.Type type, String stateToPass, Double percentile) throws LinkException {
 		// Sync on class to prevent multiple links established by multiple threads
 		synchronized(Network.class){
 			
@@ -451,7 +479,7 @@ public class Node implements Networked<Node>, Comparable<Node>, Identifiable<Nod
 					throw new LinkException("Cross network link can only be created between nodes with the same number of states");
 				}
 				
-				link = CrossNetworkLink.createCrossNetworkLink(fromNode, toNode, type, stateToPass);
+				link = CrossNetworkLink.createCrossNetworkLink(fromNode, toNode, type, stateToPass, percentile);
 			}
 			else {
 				if (fromNode.getChildren().contains(toNode)){

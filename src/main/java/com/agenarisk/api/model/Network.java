@@ -151,7 +151,11 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 		catch (NetworkException ex){
 			throw new NetworkException("Failed to add a network to model with ID `" + id + "`", ex);
 		}
-		
+
+		// Optional per-network simulation setting overrides. Absent in every model saved before
+		// these existed, in which case the network inherits the model-level settings.
+		Settings.loadSettings(network.getLogicNetwork(), jsonNetwork.optJSONObject(Settings.Field.settings.toString()));
+
 		// Create nodes
 		JSONArray jsonNodes = jsonNetwork.getJSONArray(Node.Field.nodes.toString());
 		if (jsonNodes != null){
@@ -639,6 +643,30 @@ public class Network implements Networked<Network>, Comparable<Network>, Identif
 	
 	public JSONObject getGraphicsJson(){
 		return jsonGraphics;
+	}
+
+	/**
+	 * Returns this Network's simulation setting overrides.
+	 * <br>
+	 * Only the fields this Network actually overrides are present; anything else is inherited from
+	 * the Model settings at calculation time.
+	 *
+	 * @return JSONObject of the overrides, or null if this Network overrides nothing
+	 */
+	public JSONObject getSettingsJson(){
+		return Settings.toJson(getLogicNetwork());
+	}
+
+	/**
+	 * Replaces this Network's simulation setting overrides with those in the given JSON.
+	 * <br>
+	 * Fields absent from the JSON are cleared, so the Network inherits them from the Model settings.
+	 * Passing null clears all overrides.
+	 *
+	 * @param jsonSettings JSONObject of overrides, using the same field names as the Model settings
+	 */
+	public void setSettings(JSONObject jsonSettings){
+		Settings.loadSettings(getLogicNetwork(), jsonSettings);
 	}
 
 	/**

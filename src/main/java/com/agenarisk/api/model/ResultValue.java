@@ -82,7 +82,15 @@ public class ResultValue {
 	public JSONObject toJson(){
 		JSONObject json = new JSONObject();
 		json.put(Field.label.toString(), label);
-		json.put(Field.value.toString(), value);
+		// A non-finite probability mass is preserved as its Double.toString() form rather than throwing
+		// JSONException("JSON does not allow non-finite numbers.") and taking every other node's results
+		// with it. Same rule as CalculationResult.putStatistic — see the note there.
+		if (Double.isFinite(value)){
+			json.put(Field.value.toString(), value);
+		}
+		else {
+			json.put(Field.value.toString(), Double.toString(value));
+		}
 		return json;
 	}
 	

@@ -58,12 +58,19 @@ public class SettingsTest {
 		}
 	}
 
+	/**
+	 * The percentile tail-split pass was removed from the engine, and
+	 * Model.setSimulationTails/isSimulationTails are deprecated no-ops: the setter does nothing and
+	 * the getter always returns false. Settings keeps its accessors so existing callers still
+	 * compile. This pins that contract rather than the round-trip the feature used to provide, so a
+	 * change that silently revived the field would still be caught.
+	 */
 	@Test
-	public void testSimulationTails(){
+	public void testSimulationTailsIsANoOp(){
 		for(boolean discr: new boolean[]{true, false, true}){
 			model.getSettings().setDiscretizeTails(discr);
-			Assertions.assertEquals(discr, model.getSettings().isDiscretizeTails());
-			Assertions.assertEquals(discr, model.getLogicModel().isSimulationTails());
+			Assertions.assertFalse(model.getSettings().isDiscretizeTails());
+			Assertions.assertFalse(model.getLogicModel().isSimulationTails());
 		}
 	}
 

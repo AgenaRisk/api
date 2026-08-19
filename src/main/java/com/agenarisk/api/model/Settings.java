@@ -2,6 +2,7 @@ package com.agenarisk.api.model;
 
 import com.agenarisk.api.model.interfaces.Storable;
 import org.json.JSONObject;
+import uk.co.agena.minerva.model.extendedbn.ExtendedBN;
 
 /**
  * This is a class for Model calculation settings.
@@ -19,9 +20,9 @@ public class Settings implements Storable {
 		convergence,
 		tolerance,
 		sampleSizeRanked,
-		discreteTails,
 		simulationLogging,
-		parameterLearningLogging
+		parameterLearningLogging,
+		splitMetric
 	}
 	
 	/**
@@ -54,16 +55,80 @@ public class Settings implements Storable {
 		logicModel.setSimulationEntropyConvergenceTolerance(jsonSettings.optDouble(Field.convergence.toString(), logicModel.getSimulationEntropyConvergenceTolerance()));
 		logicModel.setSimulationEvidenceTolerancePercent(jsonSettings.optDouble(Field.tolerance.toString(), logicModel.getSimulationEvidenceTolerancePercent()));
 		logicModel.setRankedSampleSize(jsonSettings.optInt(Field.sampleSizeRanked.toString(), logicModel.getRankedSampleSize()));
-		logicModel.setSimulationTails(jsonSettings.optBoolean(Field.discreteTails.toString(), logicModel.isSimulationTails()));
+		logicModel.setSplitMetric(jsonSettings.optString(Field.splitMetric.toString(), logicModel.getSplitMetric()));
 		logicModel.setSimulationLogging(jsonSettings.optBoolean(Field.simulationLogging.toString(), logicModel.isSimulationLogging()));
 		logicModel.setEMLogging(jsonSettings.optBoolean(Field.parameterLearningLogging.toString(), logicModel.isEMLogging()));
 	}
 	
 	/**
+	 * Utility method to load per-network settings from the provided JSON onto the provided API1 Network.<br>
+	 * Only the fields actually present in the JSON become overrides; any other field is left to inherit
+	 * the model-level setting, which is what every model without a network settings block does.<br>
+	 * Note that only a subset of the model-level fields is supported per network: sample size for ranked
+	 * nodes is applied during NPT generation rather than per network, and the logging flags write to a
+	 * single shared log.
+	 *
+	 * @param ebn API1 Network to load settings onto
+	 * @param jsonSettings JSON to load settings from; null or empty clears all overrides
+	 */
+	public static void loadSettings(ExtendedBN ebn, JSONObject jsonSettings){
+		if (ebn == null){
+			return;
+		}
+
+		ebn.clearSimulationSettingOverrides();
+
+		if (jsonSettings == null){
+			return;
+		}
+
+		if (jsonSettings.has(Field.iterations.toString())){
+			ebn.setSimulationNoOfIterationsOverride(jsonSettings.getInt(Field.iterations.toString()));
+		}
+		if (jsonSettings.has(Field.convergence.toString())){
+			ebn.setSimulationEntropyConvergenceToleranceOverride(jsonSettings.getDouble(Field.convergence.toString()));
+		}
+		if (jsonSettings.has(Field.tolerance.toString())){
+			ebn.setSimulationEvidenceTolerancePercentOverride(jsonSettings.getDouble(Field.tolerance.toString()));
+		}
+		if (jsonSettings.has(Field.splitMetric.toString())){
+			ebn.setSplitMetricOverride(jsonSettings.getString(Field.splitMetric.toString()));
+		}
+	}
+
+	/**
+	 * Utility method to build a JSON equivalent of the per-network settings of the provided API1 Network.
+	 *
+	 * @param ebn API1 Network
+	 *
+	 * @return JSON equivalent of the network's setting overrides, or null if the network overrides nothing
+	 */
+	public static JSONObject toJson(ExtendedBN ebn) {
+		if (ebn == null || !ebn.hasSimulationSettingOverrides()){
+			return null;
+		}
+
+		JSONObject jsonSettings = new JSONObject();
+		if (ebn.getSimulationNoOfIterationsOverride() != null){
+			jsonSettings.put(Field.iterations.toString(), ebn.getSimulationNoOfIterationsOverride().intValue());
+		}
+		if (ebn.getSimulationEntropyConvergenceToleranceOverride() != null){
+			jsonSettings.put(Field.convergence.toString(), ebn.getSimulationEntropyConvergenceToleranceOverride().doubleValue());
+		}
+		if (ebn.getSimulationEvidenceTolerancePercentOverride() != null){
+			jsonSettings.put(Field.tolerance.toString(), ebn.getSimulationEvidenceTolerancePercentOverride().doubleValue());
+		}
+		if (ebn.getSplitMetricOverride() != null){
+			jsonSettings.put(Field.splitMetric.toString(), ebn.getSplitMetricOverride());
+		}
+		return jsonSettings;
+	}
+
+	/**
 	 * Utility method to build a JSON equivalent of settings from the provided API1 model
-	 * 
+	 *
 	 * @param model API1 model
-	 * 
+	 *
 	 * @return JSON equivalent of the Settings
 	 */
 	public static JSONObject toJson(uk.co.agena.minerva.model.Model model) {
@@ -72,7 +137,7 @@ public class Settings implements Storable {
 		jsonSettings.put(Settings.Field.convergence.toString(), model.getSimulationEntropyConvergenceTolerance());
 		jsonSettings.put(Settings.Field.tolerance.toString(), model.getSimulationEvidenceTolerancePercent());
 		jsonSettings.put(Settings.Field.sampleSizeRanked.toString(), model.getRankedSampleSize());
-		jsonSettings.put(Settings.Field.discreteTails.toString(), model.isSimulationTails());
+		jsonSettings.put(Settings.Field.splitMetric.toString(), model.getSplitMetric());
 		jsonSettings.put(Settings.Field.simulationLogging.toString(), model.isSimulationLogging());
 		jsonSettings.put(Settings.Field.parameterLearningLogging.toString(), model.isEMLogging());
 		return jsonSettings;
@@ -157,10 +222,31 @@ public class Settings implements Storable {
 	}
 
 	/**
+	 * Returns the dynamic-discretisation split metric in force for this model.
+	 *
+	 * @return {@code entropy} (classic) or {@code entropyVarianceLeverage}
+	 */
+	public String getSplitMetric() {
+		return model.getLogicModel().getSplitMetric();
+	}
+
+	/**
+	 * Sets the dynamic-discretisation split metric. Anything unrecognised - including null - selects
+	 * the classic entropy metric, so an unexpected value can never silently change results.
+	 *
+	 * @param splitMetric {@code entropy} or {@code entropyVarianceLeverage}
+	 */
+	public void setSplitMetric(String splitMetric) {
+		model.getLogicModel().setSplitMetric(splitMetric);
+	}
+
+	/**
 	 * Checks whether tails are discretized during simulated calculation.
 	 * 
-	 * @return true if tails are discretized during simulated calculation, false otherwise
+	 * @return always false. The percentile tail-split pass was removed from the engine.
+	 * @deprecated retained for source compatibility; has no effect
 	 */
+	@Deprecated
 	public boolean isDiscretizeTails() {
 		return model.getLogicModel().isSimulationTails();
 	}
@@ -168,8 +254,10 @@ public class Settings implements Storable {
 	/**
 	 * Sets whether tails are discretized during simulated calculation.
 	 * 
-	 * @param discretizeTails whether tails are discretized during simulated calculation
+	 * @param discretizeTails ignored. The percentile tail-split pass was removed from the engine.
+	 * @deprecated retained for source compatibility; has no effect
 	 */
+	@Deprecated
 	public void setDiscretizeTails(boolean discretizeTails) {
 		model.getLogicModel().setSimulationTails(discretizeTails);
 	}
