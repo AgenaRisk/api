@@ -9,6 +9,7 @@ import com.agenarisk.learning.structure.config.MahcConfigurer;
 import com.agenarisk.learning.structure.config.SaiyanHConfigurer;
 import com.agenarisk.learning.structure.config.TabuConfigurer;
 import com.agenarisk.learning.structure.exception.StructureLearningException;
+import com.agenarisk.learning.structure.logger.BLogger;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutionContext;
 import com.agenarisk.learning.structure.execution.graph.GraphExecutor;
 import com.agenarisk.learning.structure.execution.graph.GraphResult;
@@ -106,6 +107,8 @@ public class StructureLearner {
 	}
 	
 	public void executeJson(JSONObject json){
+		applyThreadBudget(json);
+
 		boolean hasGraph = json.has("graph");
 		boolean hasPipeline = json.has("pipeline");
 
@@ -118,6 +121,27 @@ public class StructureLearner {
 		} else {
 			executePipeline(json);
 		}
+	}
+
+	/**
+	 * Applies the optional top-level {@code threads} key: how many engine worker threads
+	 * THIS process may use. The engine's default is every core bar the reserved ones, which
+	 * is right for a process that has the machine to itself and wrong for a host running
+	 * several engine processes at once — there, each process has to be told its share or
+	 * they collectively oversubscribe the CPU by a factor of the process count.
+	 * <br>
+	 * Absent (or 0, or unparseable) leaves the engine default in place. The value is clamped
+	 * to the maximum by {@link uk.co.agena.minerva.util.Concurrency}, and is not persisted.
+	 */
+	private void applyThreadBudget(JSONObject json) {
+		int threads = json.optInt("threads", 0);
+		if (threads < 1) {
+			return;
+		}
+		uk.co.agena.minerva.util.Concurrency.applyThreadCount(threads);
+		BLogger.logConditional("Engine worker threads for this run: "
+				+ uk.co.agena.minerva.util.Concurrency.resolveThreadCount()
+				+ " of " + uk.co.agena.minerva.util.Concurrency.getDefaultThreadCount() + " available");
 	}
 
 	private void executePipeline(JSONObject json) {
