@@ -1,3 +1,18 @@
+# ⚠️ This repository is frozen
+
+Development has moved to a private repository. No longer updated; final release here is **1.042**.
+
+**Nothing here stops working** — existing installs and clone-and-build clients keep working.
+
+**From v2.0 the API ships as a pre-built binary** instead of source. All official clients will
+update to use v2.0 automatically.
+
+**Licensing of code published here is unchanged**, and usage terms are unchanged.
+
+Questions: support@agena.ai
+
+---
+
 # agena.ai Java API
 This is a wrapper API for the AgenaRisk Core engine and puts the focus on:
 - providing shortcuts for operations that previously used to be extremely complicated
